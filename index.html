@@ -1,50 +1,525 @@
-
 <!DOCTYPE html>
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>Pasto Sano - Ordina</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pasto Sano - Ordina i tuoi pasti</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 0; background: #f8f8f8; }
-        header { background: #fff; padding: 20px; text-align: center; border-bottom: 2px solid #eee; }
-        .logo { display: flex; align-items: center; justify-content: center; }
-        .logo img { height: 50px; margin-right: 10px; }
-        h1 { font-size: 24px; margin: 0; }
-        .section { padding: 20px; }
-        .section h2 { color: #cc6600; }
-        .product { background: #fff; margin-bottom: 10px; padding: 10px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .product-name { font-weight: bold; }
-        .price { color: #008000; float: right; }
+        /* Stili Base per tutti i dispositivi */
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 15px;
+            background-color: #fdfaf5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+            background-color: #f5f3ef;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+
+        h2 {
+            font-size: 1.6em;
+            margin-top: 20px;
+            margin-bottom: 15px;
+            color: #3f6844;
+        }
+
+        h3 {
+            font-size: 1.2em;
+            margin: 0;
+            color: #3f6844;
+        }
+
+        main {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        #menu, #order-summary {
+            position: sticky;
+            top: 15px;
+            align-self: start;
+            background-color: #f5f3ef;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            flex: 1;
+            width: 100%;
+        }
+
+        .meal-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .meal-item {
+            border: 1px solid #ddd;
+            padding: 12px;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .meal-item h3 {
+            font-size: 1em;
+            line-height: 1.3;
+        }
+
+        .meal-img {
+            width: 100%;
+            max-width: 200px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 5px;
+            background-color: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 0.8em;
+        }
+
+        .meal-item input[type="number"] {
+            width: 50px;
+            padding: 6px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 1em;
+        }
+
+        .add-to-cart {
+            background-color: #7a9e7e;
+            color: white;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .add-to-cart:hover {
+            background-color: #678b6b;
+        }
+
+        #cart-items {
+            list-style: none;
+            padding: 0;
+            margin: 10px 0;
+        }
+
+        #cart-items li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px dashed #eee;
+            font-size: 0.95em;
+        }
+
+        #cart-items li:last-child {
+            border-bottom: none;
+        }
+
+        #total-items, #total-price {
+            font-weight: bold;
+            color: #3f6844;
+            font-size: 1.1em;
+        }
+
+        #pickup-date {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-top: 10px;
+            width: calc(100% - 16px);
+            box-sizing: border-box;
+            font-size: 1em;
+        }
+
+        .note {
+            font-size: 0.75em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        #submit-order {
+            background-color: #5a7f65;
+            color: white;
+            padding: 15px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.1em;
+            margin-top: 20px;
+            width: 100%;
+            box-sizing: border-box;
+            transition: background-color 0.3s ease;
+        }
+
+        #submit-order:hover {
+            background-color: #3f6844;
+        }
+
+        #order-message {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #e9ecef;
+            color: #495057;
+            text-align: center;
+            display: none;
+            font-size: 0.9em;
+        }
+
+        .whatsapp-send-button {
+            display: inline-block;
+            background-color: #25D366;
+            color: white;
+            padding: 12px 22px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 15px;
+            transition: background-color 0.3s ease;
+            font-size: 1em;
+        }
+
+        .whatsapp-send-button:hover {
+            background-color: #1DA851;
+        }
+
+        @media screen and (max-width: 768px) {
+            h1 { font-size: 1.8em; }
+            h2 { font-size: 1.4em; }
+            h3 { font-size: 1.1em; }
+
+            main {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            #menu, #order-summary {
+            position: sticky;
+            top: 15px;
+            align-self: start;
+                padding: 15px;
+            }
+
+            .meal-item {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .whatsapp-send-button {
+                width: 100%;
+                box-sizing: border-box;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            body { padding: 10px; }
+            h1 { font-size: 1.6em; }
+            h2 { font-size: 1.3em; }
+            h3 { font-size: 1em; }
+            
+            #menu, #order-summary, header {
+                padding: 10px;
+            }
+        }
     </style>
 </head>
 <body>
+    <header>
+        <h1><img src="logo.png" alt="Logo Pasto Sano" style="width:80px; vertical-align:middle; margin-right:10px;" onerror="this.style.display='none'">Pasto Sano</h1>
+        
+    </header>
+    <main>
+       <section id="menu">
+            <h2>Pasti Completi</h2>
+            <div class="meal-list">
 
-<header>
-    <div class="logo">
-        <img src="logo-pasto-sano.png" alt="Pasto Sano Logo">
-        <h1>Pasto Sano</h1>
-    </div>
-</header>
+                <div class="meal-item" data-id="1" data-price="8">
+                    <h3>1. FUSILLI, MACINATO MANZO, ZUCCHINE, MELANZANE</h3>
+                    <img src="fusilli-macinato-zucchine-melanzane.jpg" alt="FUSILLI, MACINATO MANZO, ZUCCHINE, MELANZANE" class="meal-img">
+                    <input type="number" value="0" min="0" class="quantity-input">
+                    <button class="add-to-cart">Aggiungi</button>
+                </div>
+    
+                <div class="meal-item" data-id="2" data-price="8">
+                    <h3>2. ROASTBEEF, PATATE AL FORNO, FAGIOLINI</h3>
+                    <img src="roastbeef-patatealforno-fagiolini.jpg" alt="ROASTBEEF, PATATE AL FORNO, FAGIOLINI" class="meal-img">
+                    <input type="number" value="0" min="0" class="quantity-input">
+                    <button class="add-to-cart">Aggiungi</button>
+                </div>
+    
+                <div class="meal-item" data-id="3" data-price="8">
+                    <h3>3. RISO, HAMBURGER MANZO, CAROTINE BABY</h3>
+                    <img src="risobasmati-hamburgermanzo-carotine.jpg" alt="RISO, HAMBURGER MANZO, CAROTINE BABY" class="meal-img">
+                    <input type="number" value="0" min="0" class="quantity-input">
+                    <button class="add-to-cart">Aggiungi</button>
+                </div>
+    
+                <div class="meal-item" data-id="4" data-price="8">
+                    <h3>4. RISO NERO, GAMBERI, TONNO, PISELLI</h3>
+                    <img src="riso nero-gamberi-tonno-piselli.jpg" alt="RISO NERO, GAMBERI, TONNO, PISELLI" class="meal-img">
+                    <input type="number" value="0" min="0" class="quantity-input">
+                    <button class="add-to-cart">Aggiungi</button>
+                </div>
+    
+                <div class="meal-item" data-id="5" data-price="8">
+                    <h3>5. PATATE, SALMONE GRIGLIATO, BROCCOLI</h3>
+                    <img src="salmonegrigliato-patatealforno-broccoli.jpg" alt="PATATE, SALMONE GRIGLIATO, BROCCOLI" class="meal-img">
+                    <input type="number" value="0" min="0" class="quantity-input">
+                    <button class="add-to-cart">Aggiungi</button>
+                </div>
+    
+                <div class="meal-item" data-id="6" data-price="8">
+                    <h3>6. POLLO GRIGLIATO, PATATE AL FORNO, ZUCCHINE</h3>
+                    <img src="pollogrigliato-patatealforno-zucchine.jpg" alt="POLLO GRIGLIATO, PATATE AL FORNO, ZUCCHINE" class="meal-img">
+                    <input type="number" value="0" min="0" class="quantity-input">
+                    <button class="add-to-cart">Aggiungi</button>
+                </div>
+    
+                <div class="meal-item" data-id="7" data-price="8">
+                    <h3>7. ORZO, CECI, FETA, POMODORINI, BASILICO</h3>
+                    <img src="orzo-ceci-feta-pomodorini-basilico.jpg" alt="ORZO, CECI, FETA, POMODORINI, BASILICO" class="meal-img">
+                    <input type="number" value="0" min="0" class="quantity-input">
+                    <button class="add-to-cart">Aggiungi</button>
+                </div>
+    
+                <div class="meal-item" data-id="8" data-price="8">
+                    <h3>8. TORTILLAS, TACCHINO AFFUMICATO, HUMMUS CECI, INSALATA</h3>
+                    <img src="tortillas-tacchinoaffumicato-hummusceci-insalata.jpg" alt="TORTILLAS, TACCHINO AFFUMICATO, HUMMUS CECI, INSALATA" class="meal-img">
+                    <input type="number" value="0" min="0" class="quantity-input">
+                    <button class="add-to-cart">Aggiungi</button>
+                </div>
+    
+                <div class="meal-item" data-id="9" data-price="8">
+                    <h3>9. TORTILLAS, SALMONE AFFUMICATO, FORMAGGIO SPALMABILE, INSALATA</h3>
+                    <img src="tortillas-salmoneaffumicato-formaggiospalmabile-insalata.jpg" alt="TORTILLAS, SALMONE AFFUMICATO, FORMAGGIO SPALMABILE, INSALATA" class="meal-img">
+                    <input type="number" value="0" min="0" class="quantity-input">
+                    <button class="add-to-cart">Aggiungi</button>
+                </div>
+    
+                <div class="meal-item" data-id="10" data-price="8">
+                    <h3>10. RISO, POLLO AL CURRY, ZUCCHINE</h3>
+                    <img src="risobasmati-polloalcurry-zucchine.jpg" alt="RISO, POLLO AL CURRY, ZUCCHINE" class="meal-img">
+                    <input type="number" value="0" min="0" class="quantity-input">
+                    <button class="add-to-cart">Aggiungi</button>
+                </div>
+    
+                <div class="meal-item" data-id="11" data-price="6">
+                    <h3>11. UOVA STRAPAZZATE, BACON, FRUTTI DI BOSCO</h3>
+                    <img src="uovastrapazzate-bacon-fruttidibosco.jpg" alt="UOVA STRAPAZZATE, BACON, FRUTTI DI BOSCO" class="meal-img">
+                    <input type="number" value="0" min="0" class="quantity-input">
+                    <button class="add-to-cart">Aggiungi</button>
+                </div>
+    
+                <div class="meal-item" data-id="12" data-price="6">
+                    <h3>12. PANCAKES</h3>
+                    <img src="pancakes.jpg" alt="PANCAKES" class="meal-img">
+                    <input type="number" value="0" min="0" class="quantity-input">
+                    <button class="add-to-cart">Aggiungi</button>
+                </div>
 
-<div class="section">
-    <h2>Pasti Completi</h2>
-    <div class="product"><span class="product-name">1. Fusilli, macinato manzo, zucchine, melanzane</span><span class="price">8€</span></div>
-    <div class="product"><span class="product-name">2. Roastbeef, patate al forno, fagiolini</span><span class="price">8€</span></div>
-    <div class="product"><span class="product-name">3. Riso, hamburger manzo, carotine baby</span><span class="price">8€</span></div>
-    <div class="product"><span class="product-name">4. Riso nero, gamberi, tonno, piselli</span><span class="price">8€</span></div>
-    <div class="product"><span class="product-name">5. Patate, salmone grigliato, broccoli</span><span class="price">8€</span></div>
-    <div class="product"><span class="product-name">6. Pollo grigliato, patate al forno, zucchine</span><span class="price">8€</span></div>
-    <div class="product"><span class="product-name">7. Orzo, ceci, feta, pomodorini, basilico</span><span class="price">8€</span></div>
-    <div class="product"><span class="product-name">8. Tortillas, tacchino affumicato, hummus ceci, insalata</span><span class="price">8€</span></div>
-    <div class="product"><span class="product-name">9. Tortillas, salmone affumicato, Philadelphia, insalata</span><span class="price">8€</span></div>
-    <div class="product"><span class="product-name">10. Riso, pollo al curry, zucchine</span><span class="price">8€</span></div>
-</div>
+            </div>
+        </section>        <section id="order-summary">
+            <h2>Il tuo Ordine</h2>
+            <ul id="cart-items"></ul>
+            <p>Totale Articoli: <span id="total-items">0</span></p>
+            <p>Totale: <span id="total-price">0.00€</span></p>
+            <label for="pickup-date">Seleziona il Giorno di Ritiro</label>
+            <input type="date" id="pickup-date" name="pickup-date">
+            <p class="note">L'ordine deve essere effettuato con 2 giorni di anticipo (AxC).</p>
+            <button id="submit-order">Procedi all'Ordine</button>
+<button id="clear-cart" style="background-color: #d9d3cb; color: white; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 1em; margin-top: 10px; width: 100%; box-sizing: border-box;">Svuota Carrello</button>
 
-<div class="section">
-    <h2>Colazioni / Spuntini</h2>
-    <div class="product"><span class="product-name">11. Uova strapazzate, bacon, frutti di bosco</span><span class="price">6€</span></div>
-    <div class="product"><span class="product-name">12. Pancakes</span><span class="price">6€</span></div>
-</div>
+            <div id="order-message"></div>
+        </section>
+    </main>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const mealItems = document.querySelectorAll('.meal-item');
+            const cartItemsList = document.getElementById('cart-items');
+            const totalPriceSpan = document.getElementById('total-price');
+            const totalItemsSpan = document.getElementById('total-items');
+            const submitOrderButton = document.getElementById('submit-order');
+            const pickupDateInput = document.getElementById('pickup-date');
+            const orderMessage = document.getElementById('order-message');
+
+            let cart = [];
+
+            function updateCartDisplay() {
+                cartItemsList.innerHTML = '';
+                let total = 0;
+                let totalQuantity = 0;
+
+                cart.forEach(item => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <span>${item.name} (x${item.quantity})</span>
+                        <span>${(item.price * item.quantity).toFixed(2)}€</span>
+                    `;
+                    cartItemsList.appendChild(li);
+                    total += item.price * item.quantity;
+                    totalQuantity += item.quantity;
+                });
+
+                totalPriceSpan.textContent = `${total.toFixed(2)}€`;
+                totalItemsSpan.textContent = totalQuantity;
+            }
+
+            mealItems.forEach(item => {
+                const addButton = item.querySelector('.add-to-cart');
+                const quantityInput = item.querySelector('.quantity-input');
+
+                addButton.addEventListener('click', () => {
+                    const id = item.dataset.id;
+                    const name = item.querySelector('h3').textContent;
+                    const price = parseFloat(item.dataset.price);
+                    const quantity = parseInt(quantityInput.value);
+
+                    if (quantity > 0) {
+                        const existingItemIndex = cart.findIndex(cartItem => cartItem.id === id);
+
+                        if (existingItemIndex > -1) {
+                            cart[existingItemIndex].quantity += quantity;
+                        } else {
+                            cart.push({ id, name, price, quantity });
+                        }
+                        updateCartDisplay();
+                        quantityInput.value = 0;
+                    } else {
+                        alert('Seleziona una quantità valida per aggiungere al carrello.');
+                    }
+                });
+            });
+
+            function setMinPickupDate() {
+                const today = new Date();
+                today.setDate(today.getDate() + 2);
+
+                const year = today.getFullYear();
+                const month = String(today.getMonth() + 1).padStart(2, '0');
+                const day = String(today.getDate()).padStart(2, '0');
+                
+                pickupDateInput.min = `${year}-${month}-${day}`;
+            }
+            setMinPickupDate();
+            const clearCartButton = document.getElementById('clear-cart');
+            clearCartButton.addEventListener('click', () => {
+                cart = [];
+                updateCartDisplay();
+                pickupDateInput.value = '';
+                orderMessage.style.display = 'none';
+
+                // resetto anche tutti i campi input delle quantità
+                document.querySelectorAll('.quantity-input').forEach(input => input.value = 0);
+            });
+
+
+            submitOrderButton.addEventListener('click', () => {
+                const totalQuantity = parseInt(totalItemsSpan.textContent);
+                const pickupDate = pickupDateInput.value;
+
+                if (totalQuantity < 4) {
+                    orderMessage.style.display = 'block';
+                    orderMessage.style.backgroundColor = '#f8d7da';
+                    orderMessage.style.color = '#721c24';
+                    orderMessage.textContent = 'Errore: Il minimo d\'ordine è 4 pezzi a scelta.';
+                    const existingWhatsappButton = orderMessage.querySelector('.whatsapp-send-button');
+                    if (existingWhatsappButton) {
+                        existingWhatsappButton.remove();
+                    }
+                    return;
+                }
+
+                if (!pickupDate) {
+                    orderMessage.style.display = 'block';
+                    orderMessage.style.backgroundColor = '#f8d7da';
+                    orderMessage.style.color = '#721c24';
+                    orderMessage.textContent = 'Errore: Seleziona una data di ritiro.';
+                    const existingWhatsappButton = orderMessage.querySelector('.whatsapp-send-button');
+                    if (existingWhatsappButton) {
+                        existingWhatsappButton.remove();
+                    }
+                    return;
+                }
+
+                const selectedDate = new Date(pickupDate);
+                const minDate = new Date();
+                minDate.setDate(minDate.getDate() + 2);
+
+                selectedDate.setHours(0,0,0,0);
+                minDate.setHours(0,0,0,0);
+
+                if (selectedDate < minDate) {
+                    orderMessage.style.display = 'block';
+                    orderMessage.style.backgroundColor = '#f8d7da';
+                    orderMessage.style.color = '#721c24';
+                    orderMessage.textContent = 'Errore: La data di ritiro deve essere almeno due giorni dopo la data odierna.';
+                    const existingWhatsappButton = orderMessage.querySelector('.whatsapp-send-button');
+                    if (existingWhatsappButton) {
+                        existingWhatsappButton.remove();
+                    }
+                    return;
+                }
+
+                orderMessage.style.display = 'block';
+                orderMessage.style.backgroundColor = '#d4edda';
+                orderMessage.style.color = '#155724';
+                
+                let orderDetails = "🎉 Nuovo Ordine Pasti Sani! 🎉\n\n";
+                orderDetails += "Dettagli dell'Ordine:\n";
+                orderDetails += "-----------------------------------\n";
+                cart.forEach(item => {
+                    orderDetails += `• ${item.name}\n  Quantità: ${item.quantity}\n  Costo: ${(item.price * item.quantity).toFixed(2)}€\n`;
+                });
+                orderDetails += "-----------------------------------\n";
+                orderDetails += `📦 Totale Articoli: ${totalQuantity}\n`;
+                orderDetails += `💰 Totale Ordine: ${totalPriceSpan.textContent}\n`;
+                orderDetails += `🗓️ Data di Ritiro Prevista: ${pickupDate}\n`;
+                orderDetails += "-----------------------------------\n";
+                orderDetails += "Si prega di confermare la disponibilità. Grazie!";
+
+                const encodedMessage = encodeURIComponent(orderDetails);
+                const phoneNumber = "+393478881515";
+                const whatsappLink = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+
+                orderMessage.innerHTML = `Ordine inviato con successo!<br>Totale: ${totalPriceSpan.textContent}<br>Data di ritiro: ${pickupDate}<br><br>`;
+                
+                const whatsappButton = document.createElement('a');
+                whatsappButton.href = whatsappLink;
+                whatsappButton.target = "_blank";
+                whatsappButton.className = "whatsapp-send-button"; 
+                whatsappButton.textContent = "Invia Ordine su WhatsApp";
+                
+                orderMessage.appendChild(whatsappButton);
+
+                cart = [];
+                updateCartDisplay();
+                pickupDateInput.value = '';
+            });
+        });
+    </script>
 </body>
 </html>
