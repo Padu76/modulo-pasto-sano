@@ -1,110 +1,104 @@
 <!DOCTYPE html>
+
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pasto Sano - Ordina i tuoi pasti</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Pasto Sano - Ordina i tuoi pasti</title>
+<link href="style.css" rel="stylesheet"/>
 </head>
 <body>
-    <header>
-        <h1><img src="logo.png" alt="Logo Pasto Sano" style="width:80px; vertical-align:middle; margin-right:10px;">Pasto Sano</h1>
-        <p>Ordina i tuoi pasti e colazioni sani!</p>
-    </header>
-
-    <main>
-        <section id="menu">
-            <h2>Pasti Completi </h2>
-            <div class="meal-list">
-                <div class="meal-item" data-id="1" data-price="8">
-                    <h3>1. FUSILLI, MACINATO MANZO, ZUCCHINE, MELANZANE</h3>
-                    <input type="number" value="0" min="0" class="quantity-input">
-                    <button class="add-to-cart">Aggiungi</button>
-                </div>
-                <div class="meal-item" data-id="2" data-price="8">
-                    <h3>2. ROASTBEEF, PATATE AL FORNO, FAGIOLINI</h3>
-                    <input type="number" value="0" min="0" class="quantity-input">
-                    <button class="add-to-cart">Aggiungi</button>
-                </div>
-                <div class="meal-item" data-id="3" data-price="8">
-                    <h3>3. RISO, HAMBURGER MANZO, CAROTINE BABY</h3>
-                    <input type="number" value="0" min="0" class="quantity-input">
-                    <button class="add-to-cart">Aggiungi</button>
-                </div>
-                <div class="meal-item" data-id="4" data-price="8">
-                    <h3>4. RISO NERO, GAMBERI, TONNO, PISELLI</h3>
-                    <input type="number" value="0" min="0" class="quantity-input">
-                    <button class="add-to-cart">Aggiungi</button>
-                </div>
-                <div class="meal-item" data-id="5" data-price="8">
-                    <h3>5. PATATE, SALMONE GRIGLIATO, BROCCOLI</h3>
-                    <input type="number" value="0" min="0" class="quantity-input">
-                    <button class="add-to-cart">Aggiungi</button>
-                </div>
-                <div class="meal-item" data-id="6" data-price="8">
-                    <h3>6. POLLO GRIGLIATO, PATATE AL FORNO, ZUCCHINE</h3>
-                    <input type="number" value="0" min="0" class="quantity-input">
-                    <button class="add-to-cart">Aggiungi</button>
-                </div>
-                <div class="meal-item" data-id="7" data-price="8">
-                    <h3>7. ORZO, CECI, FETA, POMODORINI, BASILICO</h3>
-                    <input type="number" value="0" min="0" class="quantity-input">
-                    <button class="add-to-cart">Aggiungi</button>
-                </div>
-                <div class="meal-item" data-id="8" data-price="8">
-                    <h3>8. TORTILLAS, TACCHINO AFFUMICATO, HUMMUS CECI, INSALATA</h3>
-                    <input type="number" value="0" min="0" class="quantity-input">
-                    <button class="add-to-cart">Aggiungi</button>
-                </div>
-                <div class="meal-item" data-id="9" data-price="8">
-                    <h3>9. TORTILLAS, SALMONE AFFUMICATO, PHILADELPHIA, INSALATA</h3>
-                    <input type="number" value="0" min="0" class="quantity-input">
-                    <button class="add-to-cart">Aggiungi</button>
-                </div>
-                <div class="meal-item" data-id="10" data-price="8">
-                    <h3>10. RISO, POLLO AL CURRY, ZUCCHINE</h3>
-                    <input type="number" value="0" min="0" class="quantity-input">
-                    <button class="add-to-cart">Aggiungi</button>
-                </div>
-            </div>
-
-            <h2>Colazioni </h2>
-            <div class="meal-list">
-                <div class="meal-item" data-id="11" data-price="6">
-                    <h3>11. UOVA STRAPAZZATE, BACON, FRUTTI DI BOSCO</h3>
-                    <input type="number" value="0" min="0" class="quantity-input">
-                    <button class="add-to-cart">Aggiungi</button>
-                </div>
-                <div class="meal-item" data-id="12" data-price="6">
-                    <h3>12. PANCAKES</h3>
-                    <input type="number" value="0" min="0" class="quantity-input">
-                    <button class="add-to-cart">Aggiungi</button>
-                </div>
-            </div>
-        </section>
-
-        <section id="cart">
-            <h2>Il tuo Ordine</h2>
-            <ul id="cart-items">
-                </ul>
-            <p>Totale Articoli: <span id="total-items">0</span></p>
-            <p>Totale: <span id="cart-total">0.00€</span></p>
-
-            <div id="order-details">
-                <h3>Seleziona il Giorno di Ritiro</h3>
-                <input type="date" id="pickup-date">
-                <p class="small-text">L'ordine deve essere effettuato con 2 giorni di anticipo (AxC).</p>
-            </div>
-
-            <button id="checkout-button">Procedi all'Ordine</button>
-            <p id="order-message"></p>
-        </section>
-    </main>
-
-    <footer>
-        <p>&copy; 2025 Laboratorio Alimentare. Tutti i diritti riservati.</p>
-    </footer>
-
-    <script src="script.js"></script>
+<header>
+<h1><img alt="Logo Pasto Sano" src="logo.png" style="width:80px; vertical-align:middle; margin-right:10px;"/>Pasto Sano</h1>
+<p>Ordina i tuoi pasti e colazioni sani!</p>
+</header>
+<main>
+<section id="menu">
+<h2>Pasti Completi </h2>
+<div class="meal-list">
+<div class="meal-item" data-id="1" data-price="8">
+<h3>1. FUSILLI, MACINATO MANZO, ZUCCHINE, MELANZANE</h3><img alt="FUSILLI, MACINATO MANZO, ZUCCHINE, MELANZANE" src="fusilli- macinato-zucchine-melanzane.jpg" style="width: 100px; display: block; margin-top: 5px;"/>
+<input class="quantity-input" min="0" type="number" value="0"/>
+<button class="add-to-cart">Aggiungi</button>
+</div>
+<div class="meal-item" data-id="2" data-price="8">
+<h3>2. ROASTBEEF, PATATE AL FORNO, FAGIOLINI</h3><img alt="ROASTBEEF, PATATE AL FORNO, FAGIOLINI" src="roastbeef-patatealforno-fagiolini.jpg" style="width: 100px; display: block; margin-top: 5px;"/>
+<input class="quantity-input" min="0" type="number" value="0"/>
+<button class="add-to-cart">Aggiungi</button>
+</div>
+<div class="meal-item" data-id="3" data-price="8">
+<h3>3. RISO, HAMBURGER MANZO, CAROTINE BABY</h3><img alt="RISO, HAMBURGER MANZO, CAROTINE BABY" src="risobasmati-hamburger-carotine.jpg" style="width: 100px; display: block; margin-top: 5px;"/>
+<input class="quantity-input" min="0" type="number" value="0"/>
+<button class="add-to-cart">Aggiungi</button>
+</div>
+<div class="meal-item" data-id="4" data-price="8">
+<h3>4. RISO NERO, GAMBERI, TONNO, PISELLI</h3><img alt="RISO NERO, GAMBERI, TONNO, PISELLI" src="riso nero, gamberi, tonno, piselli.jpg" style="width: 100px; display: block; margin-top: 5px;"/>
+<input class="quantity-input" min="0" type="number" value="0"/>
+<button class="add-to-cart">Aggiungi</button>
+</div>
+<div class="meal-item" data-id="5" data-price="8">
+<h3>5. PATATE, SALMONE GRIGLIATO, BROCCOLI</h3><img alt="PATATE, SALMONE GRIGLIATO, BROCCOLI" src="salmonegrigliato-patate-broccoli.jpg" style="width: 100px; display: block; margin-top: 5px;"/>
+<input class="quantity-input" min="0" type="number" value="0"/>
+<button class="add-to-cart">Aggiungi</button>
+</div>
+<div class="meal-item" data-id="6" data-price="8">
+<h3>6. POLLO GRIGLIATO, PATATE AL FORNO, ZUCCHINE</h3><img alt="POLLO GRIGLIATO, PATATE AL FORNO, ZUCCHINE" src="pollo grigliato-patate al forno-zucchine.jpg" style="width: 100px; display: block; margin-top: 5px;"/>
+<input class="quantity-input" min="0" type="number" value="0"/>
+<button class="add-to-cart">Aggiungi</button>
+</div>
+<div class="meal-item" data-id="7" data-price="8">
+<h3>7. ORZO, CECI, FETA, POMODORINI, BASILICO</h3><img alt="ORZO, CECI, FETA, POMODORINI, BASILICO" src="orzo-ceci-feta-pomodorini-basilico.jpg" style="width: 100px; display: block; margin-top: 5px;"/>
+<input class="quantity-input" min="0" type="number" value="0"/>
+<button class="add-to-cart">Aggiungi</button>
+</div>
+<div class="meal-item" data-id="8" data-price="8">
+<h3>8. TORTILLAS, TACCHINO AFFUMICATO, HUMMUS CECI, INSALATA</h3><img alt="TORTILLAS, TACCHINO AFFUMICATO, HUMMUS CECI, INSALATA" src="tortillas-tacchinoaffumicato-hummus-insalata.png" style="width: 100px; display: block; margin-top: 5px;"/>
+<input class="quantity-input" min="0" type="number" value="0"/>
+<button class="add-to-cart">Aggiungi</button>
+</div>
+<div class="meal-item" data-id="9" data-price="8">
+<h3>9. TORTILLAS, SALMONE AFFUMICATO, PHILADELPHIA, INSALATA</h3><img alt="TORTILLAS, SALMONE AFFUMICATO, PHILADELPHIA, INSALATA" src="tortillas-salmoneaffumicato-formaggio-insalata.jpg" style="width: 100px; display: block; margin-top: 5px;"/>
+<input class="quantity-input" min="0" type="number" value="0"/>
+<button class="add-to-cart">Aggiungi</button>
+</div>
+<div class="meal-item" data-id="10" data-price="8">
+<h3>10. RISO, POLLO AL CURRY, ZUCCHINE</h3><img alt="RISO, POLLO AL CURRY, ZUCCHINE" src="riso basmati, pollo al curry, zucchine.jpg" style="width: 100px; display: block; margin-top: 5px;"/>
+<input class="quantity-input" min="0" type="number" value="0"/>
+<button class="add-to-cart">Aggiungi</button>
+</div>
+</div>
+<h2>Colazioni </h2>
+<div class="meal-list">
+<div class="meal-item" data-id="11" data-price="6">
+<h3>11. UOVA STRAPAZZATE, BACON, FRUTTI DI BOSCO</h3><img alt="UOVA STRAPAZZATE, BACON, FRUTTI DI BOSCO" src="uovastrapazzate-bacon-fruttidibosco.jpg" style="width: 100px; display: block; margin-top: 5px;"/>
+<input class="quantity-input" min="0" type="number" value="0"/>
+<button class="add-to-cart">Aggiungi</button>
+</div>
+<div class="meal-item" data-id="12" data-price="6">
+<h3>12. PANCAKES</h3><img alt="PANCAKES" src="pancakes.jpeg" style="width: 100px; display: block; margin-top: 5px;"/>
+<input class="quantity-input" min="0" type="number" value="0"/>
+<button class="add-to-cart">Aggiungi</button>
+</div>
+</div>
+</section>
+<section id="cart">
+<h2>Il tuo Ordine</h2>
+<ul id="cart-items">
+</ul>
+<p>Totale Articoli: <span id="total-items">0</span></p>
+<p>Totale: <span id="cart-total">0.00€</span></p>
+<div id="order-details">
+<h3>Seleziona il Giorno di Ritiro</h3>
+<input id="pickup-date" type="date"/>
+<p class="small-text">L'ordine deve essere effettuato con 2 giorni di anticipo (AxC).</p>
+</div>
+<button id="checkout-button">Procedi all'Ordine</button>
+<p id="order-message"></p>
+</section>
+</main>
+<footer>
+<p>© 2025 Laboratorio Alimentare. Tutti i diritti riservati.</p>
+</footer>
+<script src="script.js"></script>
 </body>
 </html>
