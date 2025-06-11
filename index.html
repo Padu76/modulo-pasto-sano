@@ -344,6 +344,8 @@
             <input type="date" id="pickup-date" name="pickup-date">
             <p class="note">L'ordine deve essere effettuato con 2 giorni di anticipo (AxC).</p>
             <button id="submit-order">Procedi all'Ordine</button>
+<button id="clear-cart" style="background-color: #dc3545; color: white; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 1em; margin-top: 10px; width: 100%; box-sizing: border-box;">Svuota Carrello</button>
+
             <div id="order-message"></div>
         </section>
     </main>
@@ -417,6 +419,17 @@
                 pickupDateInput.min = `${year}-${month}-${day}`;
             }
             setMinPickupDate();
+            const clearCartButton = document.getElementById('clear-cart');
+            clearCartButton.addEventListener('click', () => {
+                cart = [];
+                updateCartDisplay();
+                pickupDateInput.value = '';
+                orderMessage.style.display = 'none';
+
+                // resetto anche tutti i campi input delle quantità
+                document.querySelectorAll('.quantity-input').forEach(input => input.value = 0);
+            });
+
 
             submitOrderButton.addEventListener('click', () => {
                 const totalQuantity = parseInt(totalItemsSpan.textContent);
