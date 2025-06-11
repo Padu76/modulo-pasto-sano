@@ -306,10 +306,80 @@ footer {
         padding: 8px 0;
     }
 }
-#cart {
-    padding: 10px !important;
-    font-size: 0.95em;
-    background-color: #eaeaea;
+
+/* === UI Enhancement Step 2 === */
+
+
+/* === Pulsanti === */
+button {
+    background-color: #f57c00;
+    color: white;
+    padding: 10px 16px;
+    font-size: 1em;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+button:hover {
+    background-color: #e65100;
+}
+
+/* === Pulsanti quantità === */
+.quantity-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.quantity-controls button {
+    width: 35px;
+    height: 35px;
+    font-size: 1.2em;
+    padding: 0;
     border-radius: 8px;
-    max-width: 300px;
+    background-color: #eee;
+    color: #333;
+    border: 1px solid #ccc;
+}
+
+.quantity-controls span {
+    min-width: 30px;
+    text-align: center;
+    font-size: 1em;
+}
+
+/* === Box carrello === */
+#cart {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+#cart h2 {
+    margin-bottom: 15px;
+    color: #333;
+}
+
+#cart ul {
+    list-style: none;
+    padding-left: 0;
+    margin-bottom: 20px;
+}
+
+#cart li {
+    margin-bottom: 8px;
+    font-size: 0.95em;
+    border-bottom: 1px dashed #ccc;
+    padding-bottom: 5px;
+}
+
+#total {
+    font-weight: bold;
+    font-size: 1.1em;
+    color: #222;
+    margin-top: 10px;
 }
