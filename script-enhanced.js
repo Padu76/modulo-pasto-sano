@@ -1,8 +1,12 @@
 // script-enhanced.js
-// Importa Firebase functions
-import { saveOrder } from './firebase-config.js';
+// Rimuovo import ES6 e uso funzioni globali
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Carica Firebase config
+    const script = document.createElement('script');
+    script.src = './firebase-config.js';
+    document.head.appendChild(script);
+    
     const mealItems = document.querySelectorAll('.meal-item');
     const cartItemsList = document.getElementById('cart-items');
     const totalPriceSpan = document.getElementById('total-price');
@@ -323,8 +327,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 orderNotes: orderNotes
             };
 
-            const orderId = await saveOrder(orderData);
-            console.log('✅ Ordine salvato in Firebase:', orderId);
+            // Usa funzione globale invece di import
+            if (typeof window.saveOrder === 'function') {
+                const orderId = await window.saveOrder(orderData);
+                console.log('✅ Ordine salvato in Firebase:', orderId);
+            } else {
+                console.log('⚠️ Firebase non disponibile, ordine non salvato');
+            }
             
         } catch (error) {
             console.error('❌ Errore salvataggio Firebase:', error);
