@@ -335,7 +335,6 @@
                 <div class="section-header">
                     <h2 class="section-title">🛍️ Ordini Recenti</h2>
                     <button class="export-btn" onclick="exportToCSV()">📥 Esporta CSV</button>
-<button class="export-btn" onclick="generaPDF()">📄 Esporta PDF Fornitore</button>
                 </div>
                 
                 <div class="filters">
@@ -370,36 +369,6 @@
         </div>
     </div>
 
-    <script type="module" src="dashboard.js"></script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script>
-  async function generaPDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    let y = 10;
-
-    doc.setFontSize(16);
-    doc.text("ORDINI PASTO SANO - FORNITORE", 10, y);
-    y += 10;
-
-    document.querySelectorAll(".order-item").forEach((el, i) => {
-      const nome = el.querySelector(".order-id")?.innerText || "Sconosciuto";
-      const dettagli = Array.from(el.querySelectorAll(".order-details"))
-        .map(e => e.innerText)
-        .join(", ");
-
-      doc.setFontSize(12);
-      doc.text(`${i + 1}. ${nome}`, 10, y);
-      y += 7;
-      doc.setFontSize(11);
-      doc.text(`- ${dettagli}`, 14, y);
-      y += 10;
-    });
-
-    doc.save("ordini_fornitore.pdf");
-  }
-</script>
+    <script src="dashboard.js"></script>
 </body>
-
 </html>
