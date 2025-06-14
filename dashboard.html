@@ -384,7 +384,7 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.8);
-            display: none;
+            display: flex;
             align-items: center;
             justify-content: center;
             z-index: 9999;
@@ -607,31 +607,24 @@ const DASHBOARD_PASSWORD = 'pastosano2025';
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('🚀 Dashboard inizializzata');
     
-    // Carica sempre i dati, anche senza auth (per test)
+    // Mostra subito il modal di login
+    showAuthModal();
+    
+    // Carica i dati in background
     try {
         await loadFirebaseConfig();
         await waitForFirebase();
         await loadAllData();
-        
-        if (lastOrderCount === 0) lastOrderCount = allOrders.length;
-        updateStats();
-        displayOrders();
-        updateTopProducts();
-        initSalesChart();
-        console.log('✅ Dashboard caricata con dati');
+        console.log('✅ Dati caricati in background');
     } catch (error) {
-        console.error('❌ Errore caricamento iniziale:', error);
-        // Usa dati mock se Firebase non funziona
+        console.error('❌ Errore caricamento:', error);
+        // Fallback con dati mock
         allOrders = getMockOrders();
-        lastOrderCount = allOrders.length;
-        updateStats();
-        displayOrders();
-        updateTopProducts();
-        initSalesChart();
+        console.log('🔄 Usando dati mock');
     }
     
-    // Poi mostra auth se necessario
-    showAuthModal();
+    // Inizializza contatore
+    if (lastOrderCount === 0) lastOrderCount = allOrders.length;
 });
 
 // AUTH SEMPLIFICATO
