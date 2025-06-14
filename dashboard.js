@@ -464,3 +464,32 @@ setInterval(async () => {
 
 // Inizializzazione al caricamento
 console.log('📊 Dashboard.js caricato completamente');
+
+function generateProductionDoc() {
+    getOrders().then(orders => {
+        let content = '';
+        orders.forEach(order => {
+            content += `🧾 Ordine di ${order.nome}\n`;
+            order.prodotti.forEach(prodotto => {
+                content += `- ${prodotto.nome} x${prodotto.quantita}\n`;
+            });
+            content += `\n-----------------------------\n\n`;
+        });
+
+        const blob = new Blob([content], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'riepilogo_ordini_fornitore.pdf';
+        a.click();
+        URL.revokeObjectURL(url);
+    });
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+const pdfButton = document.createElement("button");
+pdfButton.textContent = "📋 Doc Produzione";
+pdfButton.className = "button export-button";
+pdfButton.addEventListener("click", generateProductionDoc);
+document.querySelector(".export-controls").appendChild(pdfButton);
+});
