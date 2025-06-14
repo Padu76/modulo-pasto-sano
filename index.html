@@ -530,7 +530,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <img src="logo pasto sano.png" alt="Logo Pasto Sano" class="header-logo" 
+            <img src="logo.png" alt="Logo Pasto Sano" class="header-logo" 
                  onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='block';">
             <div id="logo-fallback" style="display: none; width: 80px; height: 80px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem;">🥗</div>
             <div class="header-text">
@@ -653,6 +653,9 @@
                 </div>
 
                 <div style="text-align: center; margin-top: 25px;">
+                    <button class="modal-btn btn-confirm" onclick="sendToWhatsApp()" style="width: auto; padding: 12px 30px; margin-right: 10px; background: #25D366;">
+                        📱 Invia su WhatsApp
+                    </button>
                     <button class="modal-btn btn-confirm" onclick="closeSuccessModal()" style="width: auto; padding: 12px 30px;">
                         Perfetto!
                     </button>
@@ -973,6 +976,7 @@
             const now = new Date();
             const orderDate = now.toLocaleDateString('it-IT');
             const orderTime = now.toLocaleTimeString('it-IT');
+            const orderDateTime = now.toISOString();
             
             html += `
                 <div class="summary-item">
@@ -993,11 +997,20 @@
             // Prodotti ordinati
             let totalItems = 0;
             let subtotal = 0;
+            let orderItems = [];
 
             Object.keys(cart).forEach(itemId => {
                 const item = [...menuItems.pastiCompleti, ...menuItems.colazioni].find(i => i.id == itemId);
                 const quantity = cart[itemId];
                 const itemTotal = item.price * quantity;
+
+                orderItems.push({
+                    id: itemId,
+                    name: item.name,
+                    price: item.price,
+                    quantity: quantity,
+                    total: itemTotal
+                });
 
                 html += `
                     <div class="summary-item">
@@ -1037,11 +1050,122 @@
             `;
 
             successDetails.innerHTML = html;
+
+            // SALVA L'ORDINE IN LOCALSTORAGE PER LA DASHBOARD
+            saveOrderToLocalStorage({
+                id: Date.now().toString(),
+                orderDateTime: orderDateTime,
+                deliveryDate: deliveryDate,
+                items: orderItems,
+                totalItems: totalItems,
+                subtotal: subtotal,
+                discount: promoDiscount,
+                discountCode: discountCode,
+                total: finalTotal,
+                status: 'Confermato',
+                paymentMethod: 'Alla consegna'
+            });
+
             document.getElementById('successModal').style.display = 'block';
+        }
+
+        function saveOrderToLocalStorage(order) {
+            try {
+                // Recupera ordini esistenti
+                let orders = JSON.parse(localStorage.getItem('pastosano_orders') || '[]');
+                
+                // Converte l'ordine nel formato che si aspetta la dashboard
+                const dashboardOrder = {
+                    id: order.id,
+                    customerName: 'Cliente Web', // Nome generico per ordini web
+                    customerPhone: '+393478881515', // Numero di default
+                    customerEmail: 'ordine@pastosano.com',
+                    items: order.items.map(item => ({
+                        name: item.name,
+                        quantity: item.quantity,
+                        price: item.price
+                    })),
+                    totalAmount: order.total,
+                    pickupDate: order.deliveryDate,
+                    appliedDiscount: order.discount,
+                    discountCode: order.discountCode || '',
+                    timestamp: {
+                        toDate: () => new Date(order.orderDateTime)
+                    }
+                };
+                
+                // Aggiungi il nuovo ordine
+                orders.unshift(dashboardOrder); // unshift per mettere il più recente in cima
+                
+                // Mantieni solo gli ultimi 50 ordini per non appesantire
+                if (orders.length > 50) {
+                    orders = orders.slice(0, 50);
+                }
+                
+                // Salva nel localStorage
+                localStorage.setItem('pastosano_orders', JSON.stringify(orders));
+                
+                console.log('Ordine salvato con successo:', dashboardOrder);
+            } catch (error) {
+                console.error('Errore nel salvare l\'ordine:', error);
+            }
         }
 
         function closeSuccessModal() {
             document.getElementById('successModal').style.display = 'none';
+        }
+
+        function sendToWhatsApp() {
+            const deliveryDate = document.getElementById('delivery-date').value;
+            
+            // Costruisci messaggio WhatsApp usando la stessa logica del vecchio sistema
+            let orderDetails = "🎉 Nuovo Ordine Pasto Sano! 🎉\n\n";
+            orderDetails += "Dettagli dell'Ordine:\n";
+            orderDetails += "-----------------------------------\n";
+            
+            const subtotal = Object.keys(cart).reduce((sum, itemId) => {
+                const item = [...menuItems.pastiCompleti, ...menuItems.colazioni].find(i => i.id == itemId);
+                return sum + (item.price * cart[itemId]);
+            }, 0);
+            
+            const totalQuantity = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
+            
+            Object.keys(cart).forEach(itemId => {
+                const item = [...menuItems.pastiCompleti, ...menuItems.colazioni].find(i => i.id == itemId);
+                const quantity = cart[itemId];
+                const itemTotal = item.price * quantity;
+                
+                if (quantity > 0) {
+                    orderDetails += `• ${item.name}\n  Quantità: ${quantity}\n  Costo: ${itemTotal.toFixed(2)}€\n`;
+                }
+            });
+            
+            orderDetails += "-----------------------------------\n";
+            orderDetails += `📦 Totale Articoli: ${totalQuantity}\n`;
+            
+            if (promoDiscount > 0) {
+                orderDetails += `💰 Subtotale: ${subtotal.toFixed(2)}€\n`;
+                orderDetails += `🎁 Sconto ${discountCode} (-${((promoDiscount/subtotal)*100).toFixed(0)}%): -${promoDiscount.toFixed(2)}€\n`;
+                orderDetails += `💰 Totale Finale: ${(subtotal - promoDiscount).toFixed(2)}€\n`;
+            } else {
+                orderDetails += `💰 Totale Ordine: ${subtotal.toFixed(2)}€\n`;
+            }
+            
+            orderDetails += `🗓️ Data di Ritiro Prevista: ${new Date(deliveryDate).toLocaleDateString('it-IT')}\n`;
+            orderDetails += "-----------------------------------\n";
+            orderDetails += "Si prega di confermare la disponibilità. Grazie!";
+
+            const encodedMessage = encodeURIComponent(orderDetails);
+            const phoneNumber = "+393478881515"; // CAMBIA CON IL TUO NUMERO
+            const whatsappLink = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+
+            // Apri WhatsApp
+            window.open(whatsappLink, '_blank');
+            
+            // Chiudi il modal dopo un breve delay
+            setTimeout(() => {
+                closeSuccessModal();
+            }, 1000);
         }
 
         function resetCart() {

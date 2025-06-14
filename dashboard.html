@@ -22,14 +22,26 @@
             color: white;
             padding: 20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 20px;
         }
 
-        .header h1 {
+        .header-logo {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            background: white;
+            border-radius: 50%;
+            padding: 8px;
+        }
+
+        .header-text h1 {
             font-size: 28px;
             margin-bottom: 5px;
         }
 
-        .header p {
+        .header-text p {
             opacity: 0.9;
             font-size: 16px;
         }
@@ -197,83 +209,19 @@
 
         .status-nuovo { background: #fed7d7; color: #c53030; }
         .status-confermato { background: #bee3f8; color: #2b6cb0; }
-        .status-pronto { background: #c6f6d5; color: #276749; }
 
-        .chart-container {
-            height: 300px;
-            margin: 20px 0;
-            position: relative;
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #a0aec0;
+        }
+
+        .error {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 15px;
             border-radius: 8px;
-            background: white;
-        }
-
-        #salesChart {
-            max-height: 300px;
-        }
-
-        /* NOTIFICHE */
-        .notification-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-            pointer-events: none;
-        }
-
-        .notification {
-            background: linear-gradient(135deg, #3f6844, #7a9e7e);
-            color: white;
-            padding: 15px 20px;
-            border-radius: 12px;
-            margin-bottom: 10px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-            opacity: 0;
-            transform: translateX(100%);
-            transition: all 0.3s ease;
-            pointer-events: auto;
-            cursor: pointer;
-            max-width: 350px;
-            border-left: 4px solid #ffffff;
-        }
-
-        .notification.show {
-            opacity: 1;
-            transform: translateX(0);
-        }
-
-        .notification.hide {
-            opacity: 0;
-            transform: translateX(100%);
-        }
-
-        .notification-header {
-            font-weight: bold;
-            margin-bottom: 5px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .notification-body {
-            font-size: 14px;
-            opacity: 0.9;
-        }
-
-        .notification-close {
-            position: absolute;
-            top: 8px;
-            right: 10px;
-            background: none;
-            border: none;
-            color: white;
-            font-size: 18px;
-            cursor: pointer;
-            opacity: 0.7;
-            transition: opacity 0.2s;
-        }
-
-        .notification-close:hover {
-            opacity: 1;
+            margin-bottom: 20px;
         }
 
         .export-btn {
@@ -290,49 +238,6 @@
 
         .export-btn:hover {
             background: #678b6b;
-        }
-
-        .export-btn.secondary {
-            background: #4299e1;
-        }
-
-        .export-btn.secondary:hover {
-            background: #3182ce;
-        }
-
-        /* SELEZIONE ORDINI */
-        .order-checkbox {
-            margin-right: 10px;
-            transform: scale(1.2);
-            cursor: pointer;
-        }
-
-        .order-item.selected {
-            border-color: #3f6844;
-            background-color: #f0fff4;
-            box-shadow: 0 4px 12px rgba(63, 104, 68, 0.15);
-        }
-
-        .selection-controls {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .selected-count {
-            background: #3f6844;
-            color: white;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 600;
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 8px;
         }
 
         .top-products {
@@ -362,99 +267,35 @@
             font-weight: 600;
         }
 
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #a0aec0;
-        }
-
-        .error {
-            background: #fed7d7;
-            color: #c53030;
-            padding: 15px;
+        .refresh-info {
+            background: #e6fffa;
+            border: 1px solid #81e6d9;
+            color: #234e52;
+            padding: 12px;
             border-radius: 8px;
             margin-bottom: 20px;
-        }
-
-        /* AUTH OVERLAY SEMPLICE */
-        .auth-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-        }
-
-        .auth-modal {
-            background: white;
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-            text-align: center;
-            max-width: 400px;
-            width: 90%;
-        }
-
-        .auth-modal h2 {
-            color: #3f6844;
-            margin-bottom: 10px;
-            font-size: 24px;
-        }
-
-        .auth-modal p {
-            color: #718096;
-            margin-bottom: 25px;
-        }
-
-        .auth-input {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 16px;
-            margin-bottom: 20px;
-            transition: border-color 0.2s;
-        }
-
-        .auth-input:focus {
-            outline: none;
-            border-color: #7a9e7e;
-        }
-
-        .auth-btn {
-            width: 100%;
-            background: #3f6844;
-            color: white;
-            border: none;
-            padding: 15px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .auth-btn:hover {
-            background: #2d4a31;
-        }
-
-        .auth-error {
-            background: #fed7d7;
-            color: #c53030;
-            padding: 10px;
-            border-radius: 6px;
-            margin-bottom: 15px;
             font-size: 14px;
+            text-align: center;
         }
 
         @media (max-width: 768px) {
             .main-content {
                 grid-template-columns: 1fr;
+            }
+            
+            .header {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+            
+            .header-logo {
+                width: 50px;
+                height: 50px;
+            }
+            
+            .header-text h1 {
+                font-size: 24px;
             }
             
             .filters {
@@ -469,34 +310,22 @@
 </head>
 <body>
     <div class="header">
-        <div class="container">
+        <img src="logo.png" alt="Logo Pasto Sano" class="header-logo" 
+             onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='block';">
+        <div id="logo-fallback" style="display: none; width: 60px; height: 60px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">🥗</div>
+        <div class="header-text">
             <h1>📊 Dashboard Pasto Sano</h1>
             <p>Analytics e gestione ordini in tempo reale</p>
         </div>
     </div>
 
-    <!-- Container notifiche -->
-    <div class="notification-container" id="notifications"></div>
-
-    <!-- Auth semplice - solo se serve -->
-    <div class="auth-overlay" id="authOverlay">
-        <div class="auth-modal">
-            <h2>🔐 Dashboard Protetta</h2>
-            <p>Password: <strong>pastosano2025</strong></p>
-            
-            <div id="authError" class="auth-error" style="display: none;"></div>
-            
-            <input type="password" id="passwordInput" class="auth-input" placeholder="Password" onkeypress="handlePasswordKeypress(event)">
-            <button class="auth-btn" onclick="checkPassword()">🚀 Accedi</button>
-            
-            <p style="margin-top: 15px; font-size: 12px; color: #a0aec0; cursor: pointer;" onclick="skipAuth()">
-                ⚡ Accesso Rapido (Solo Test)
-            </p>
-        </div>
-    </div>
-
     <div class="container">
         <div id="error-message" class="error" style="display: none;"></div>
+        
+        <div class="refresh-info">
+            ℹ️ <strong>Dashboard collegata agli ordini online!</strong> I nuovi ordini dal sito appariranno automaticamente qui. 
+            <span id="last-refresh">Ultimo aggiornamento: mai</span>
+        </div>
         
         <!-- STATISTICHE -->
         <div class="stats-grid">
@@ -525,10 +354,10 @@
             </div>
             
             <div class="stat-card">
-                <h3>Totale Clienti</h3>
-                <div class="stat-value" id="total-customers">-</div>
+                <h3>Totale Ordini</h3>
+                <div class="stat-value" id="total-orders">-</div>
                 <div class="stat-change neutral">
-                    <span id="customers-change">Caricamento...</span>
+                    <span id="total-change">dal lancio</span>
                 </div>
             </div>
         </div>
@@ -539,16 +368,9 @@
             <div class="orders-section">
                 <div class="section-header">
                     <h2 class="section-title">🛍️ Ordini Recenti</h2>
-                    <div class="btn-group">
+                    <div>
                         <button class="export-btn" onclick="exportToCSV()">📥 Esporta CSV</button>
-                        <button class="export-btn secondary" onclick="generateProductionDoc()">📋 Doc Produzione</button>
                     </div>
-                </div>
-                
-                <div class="selection-controls">
-                    <button class="filter-btn" onclick="selectAllOrders()">✅ Seleziona Tutti</button>
-                    <button class="filter-btn" onclick="clearSelection()">❌ Deseleziona</button>
-                    <span class="selected-count" id="selected-count">0 selezionati</span>
                 </div>
                 
                 <div class="filters">
@@ -569,607 +391,163 @@
                     <h2 class="section-title">📈 Analytics</h2>
                 </div>
                 
-                <div class="chart-container">
-                    <canvas id="salesChart"></canvas>
-                </div>
-                
                 <div class="top-products">
                     <h3>🏆 Piatti Più Venduti</h3>
                     <div id="top-products-list">
                         <div class="loading">Caricamento...</div>
                     </div>
                 </div>
+
+                <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+                    <h4 style="margin-bottom: 15px; color: #2d3748;">📊 Statistiche Rapide</h4>
+                    <div style="margin-bottom: 10px;">
+                        <strong>Prodotto più venduto:</strong>
+                        <span id="top-product">-</span>
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <strong>Giorno migliore:</strong>
+                        <span id="best-day">-</span>
+                    </div>
+                    <div>
+                        <strong>Crescita settimanale:</strong>
+                        <span id="weekly-growth" class="positive">+0%</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Chart.js CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    
     <script>
-// Dashboard Pasto Sano - Versione Funzionante con Auth Semplice
-let allOrders = [];
-let currentFilter = 'tutti';
-let lastOrderCount = 0;
-let salesChart = null;
-let selectedOrders = new Set();
+        // Dashboard Pasto Sano - Versione localStorage
+        let allOrders = [];
+        let currentFilter = 'tutti';
+        let lastOrderCount = 0;
 
-// Password semplice
-const DASHBOARD_PASSWORD = 'pastosano2025';
-let isAuthenticated = false;
-
-// INIZIALIZZAZIONE PRINCIPALE
-document.addEventListener('DOMContentLoaded', async () => {
-    console.log('🚀 Dashboard inizializzata');
-    
-    // Carica dati immediatamente
-    await initializeDashboard();
-    
-    // Mostra auth solo se necessario (commentato per ora)
-    // checkAuthStatus();
-});
-
-// AUTH SYSTEM (Opzionale)
-function checkAuthStatus() {
-    if (!isAuthenticated) {
-        showAuthModal();
-    }
-}
-
-function showAuthModal() {
-    document.getElementById('authOverlay').style.display = 'flex';
-    document.getElementById('passwordInput').focus();
-}
-
-function hideAuthModal() {
-    document.getElementById('authOverlay').style.display = 'none';
-    isAuthenticated = true;
-}
-
-window.checkPassword = function() {
-    const password = document.getElementById('passwordInput').value;
-    const errorDiv = document.getElementById('authError');
-    
-    if (password === DASHBOARD_PASSWORD) {
-        hideAuthModal();
-        console.log('✅ Accesso autorizzato');
-    } else {
-        errorDiv.textContent = '❌ Password non corretta. Riprova.';
-        errorDiv.style.display = 'block';
-        document.getElementById('passwordInput').value = '';
-        document.getElementById('passwordInput').focus();
-        setTimeout(() => errorDiv.style.display = 'none', 3000);
-    }
-};
-
-window.handlePasswordKeypress = function(event) {
-    if (event.key === 'Enter') checkPassword();
-};
-
-window.skipAuth = function() {
-    hideAuthModal();
-    console.log('🔓 Accesso rapido');
-};
-
-// INIZIALIZZAZIONE DASHBOARD
-async function initializeDashboard() {
-    await requestNotificationPermission();
-    await loadFirebaseConfig();
-    await waitForFirebase();
-    
-    try {
-        await loadAllData();
-        if (lastOrderCount === 0) lastOrderCount = allOrders.length;
-        updateStats();
-        displayOrders();
-        updateTopProducts();
-        initSalesChart();
-        console.log('✅ Dashboard completamente caricata');
-    } catch (error) {
-        console.error('❌ Errore caricamento dashboard:', error);
-        showError('Errore nel caricamento dei dati: ' + error.message);
-    }
-}
-
-// RICHIESTA PERMESSI NOTIFICHE
-async function requestNotificationPermission() {
-    if ('Notification' in window) {
-        try {
-            const permission = await Notification.requestPermission();
-            if (permission === 'granted') {
-                console.log('✅ Permessi notifiche concessi');
-                showNotification('🔔 Notifiche Attive', 'Riceverai notifiche per i nuovi ordini');
-            }
-        } catch (error) {
-            console.log('⚠️ Notifiche non supportate:', error);
-        }
-    }
-}
-
-// CARICA FIREBASE CONFIG
-function loadFirebaseConfig() {
-    return new Promise((resolve, reject) => {
-        if (typeof window.getOrders === 'function') {
-            console.log('✅ Firebase già disponibile');
-            resolve();
-            return;
-        }
-        
-        console.log('📄 Caricamento Firebase config...');
-        const script = document.createElement('script');
-        script.src = './firebase-config.js';
-        script.onload = () => {
-            console.log('✅ Firebase config caricato');
-            resolve();
-        };
-        script.onerror = () => {
-            console.error('❌ Errore caricamento Firebase config');
-            reject(new Error('Impossibile caricare Firebase config'));
-        };
-        document.head.appendChild(script);
-    });
-}
-
-// ASPETTA FIREBASE
-function waitForFirebase() {
-    return new Promise((resolve) => {
-        console.log('⏳ Attendo che Firebase sia pronto...');
-        const checkFirebase = () => {
-            if (typeof window.getOrders === 'function') {
-                console.log('✅ Firebase pronto');
-                resolve();
-            } else {
-                setTimeout(checkFirebase, 500);
-            }
-        };
-        checkFirebase();
-    });
-}
-
-// CARICAMENTO DATI
-async function loadAllData() {
-    try {
-        console.log('📊 Caricamento ordini...');
-        
-        if (typeof window.getOrders === 'function') {
-            allOrders = await window.getOrders(100);
-            console.log(`✅ ${allOrders.length} ordini caricati`);
-        } else {
-            throw new Error('Funzione getOrders non disponibile');
-        }
-        
-        if (allOrders.length === 0) {
-            console.log('⚠️ Nessun ordine trovato, uso dati di esempio');
-            allOrders = getMockOrders();
-        }
-        
-    } catch (error) {
-        console.error('❌ Errore caricamento ordini:', error);
-        console.log('🔄 Fallback: uso dati di esempio');
-        allOrders = getMockOrders();
-    }
-}
-
-// DATI DI ESEMPIO
-function getMockOrders() {
-    const today = new Date();
-    today.setHours(10, 30, 0, 0);
-    
-    return [
-        {
-            id: 'mock1',
-            customerName: 'Lara Test',
-            customerPhone: '+39 347 939 543',
-            items: [
-                {name: '1. FUSILLI, MACINATO MANZO, ZUCCHINE, MELANZANE', quantity: 1, price: 8},
-                {name: '2. ROASTBEEF, PATATE AL FORNO, FAGIOLINI', quantity: 1, price: 8}
-            ],
-            totalAmount: 30,
-            pickupDate: '2025-06-16',
-            appliedDiscount: 0,
-            discountCode: '',
-            timestamp: { toDate: () => today }
-        },
-        {
-            id: 'mock2', 
-            customerName: 'Andrea Padoan',
-            customerPhone: '0347881515',
-            customerEmail: 'andrea.padoan@gmail.com',
-            items: [
-                {name: '3. RISO, HAMBURGER MANZO, CAROTINE BABY', quantity: 1, price: 8},
-                {name: '5. PATATE, SALMONE GRIGLIATO, BROCCOLI', quantity: 2, price: 8},
-                {name: '9. TORTILLAS, SALMONE AFFUMICATO, FORMAGGIO SPALMABILE, INSALATA', quantity: 1, price: 8}
-            ],
-            totalAmount: 40,
-            pickupDate: '2025-06-16',
-            appliedDiscount: 0,
-            discountCode: '',
-            timestamp: {
-                toDate: () => {
-                    const earlier = new Date(today);
-                    earlier.setHours(9, 15, 0, 0);
-                    return earlier;
-                }
-            }
-        },
-        {
-            id: 'mock3',
-            customerName: 'Marco Verdi',
-            customerPhone: '347.939.543',
-            items: [
-                {name: '4. QUINOA, POLLO GRIGLIATO, VERDURE MISTE', quantity: 1, price: 8}
-            ],
-            totalAmount: 12,
-            pickupDate: '2025-06-15',
-            appliedDiscount: 10,
-            discountCode: 'SCONTO10',
-            timestamp: {
-                toDate: () => {
-                    const yesterday = new Date(today);
-                    yesterday.setDate(yesterday.getDate() - 1);
-                    yesterday.setHours(14, 30, 0, 0);
-                    return yesterday;
-                }
-            }
-        }
-    ];
-}
-
-// AGGIORNAMENTO STATISTICHE
-function updateStats() {
-    console.log('📈 Aggiornamento statistiche...');
-    
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    const todayOrders = allOrders.filter(order => {
-        try {
-            const orderDate = order.timestamp && order.timestamp.toDate ? 
-                order.timestamp.toDate() : new Date(order.timestamp);
-            return orderDate >= today;
-        } catch (e) {
-            return false;
-        }
-    });
-    
-    // Stats
-    const ordersToday = todayOrders.length;
-    const revenueToday = todayOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
-    const avgOrder = allOrders.length > 0 ? 
-        allOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0) / allOrders.length : 0;
-    const uniqueCustomers = getUniqueCustomers(allOrders).size;
-    
-    document.getElementById('orders-today').textContent = ordersToday;
-    document.getElementById('revenue-today').textContent = `${revenueToday.toFixed(2)}€`;
-    document.getElementById('avg-order').textContent = `${avgOrder.toFixed(2)}€`;
-    document.getElementById('total-customers').textContent = uniqueCustomers;
-    
-    updateChangeIndicators(todayOrders);
-    console.log(`✅ Statistiche aggiornate: ${ordersToday} ordini oggi, ${revenueToday.toFixed(2)}€ fatturato, ${uniqueCustomers} clienti unici`);
-}
-
-// NORMALIZZAZIONE TELEFONO
-function normalizePhone(phone) {
-    if (!phone) return '';
-    let normalized = phone.replace(/[\s\-\.]/g, '');
-    if (normalized.startsWith('+39')) normalized = normalized.substring(3);
-    if (normalized.startsWith('0039')) normalized = normalized.substring(4);
-    if (normalized.startsWith('03') && normalized.length === 11) normalized = normalized.substring(1);
-    return normalized;
-}
-
-function getUniqueCustomers(orders) {
-    const uniquePhones = new Set();
-    orders.forEach(order => {
-        const normalizedPhone = normalizePhone(order.customerPhone);
-        if (normalizedPhone) uniquePhones.add(normalizedPhone);
-    });
-    return uniquePhones;
-}
-
-function updateChangeIndicators(todayOrders) {
-    const ordersChange = todayOrders.length > 0 ? '+100' : '0';
-    const revenueChange = todayOrders.length > 0 ? '+100' : '0';
-    
-    document.getElementById('orders-change').innerHTML = 
-        `<span style="color: #38a169;">↗ ${ordersChange}%</span> vs ieri`;
-    document.getElementById('revenue-change').innerHTML = 
-        `<span style="color: #38a169;">↗ ${revenueChange}%</span> vs ieri`;
-    document.getElementById('avg-change').textContent = 'vs settimana scorsa';
-    document.getElementById('customers-change').textContent = 'clienti registrati';
-}
-
-// GRAFICO VENDITE
-function initSalesChart() {
-    const ctx = document.getElementById('salesChart');
-    if (!ctx) return;
-
-    if (salesChart) {
-        salesChart.destroy();
-        salesChart = null;
-    }
-
-    const chartData = getSalesChartData();
-    
-    salesChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: chartData.labels,
-            datasets: [
-                {
-                    label: 'Ordini',
-                    data: chartData.orders,
-                    borderColor: '#3f6844',
-                    backgroundColor: 'rgba(63, 104, 68, 0.1)',
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.4,
-                    yAxisID: 'y1'
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: {
-                mode: 'index',
-                intersect: false,
-            },
-            scales: {
-                x: {
-                    display: true,
-                    title: {
-                        display: true,
-                        text: 'Giorno'
-                    },
-                    grid: {
-                        color: 'rgba(0,0,0,0.1)'
-                    }
-                },
-                y: {
-                    type: 'linear',
-                    display: true,
-                    position: 'left',
-                    title: {
-                        display: true,
-                        text: 'Numero Ordini',
-                        color: '#3f6844'
-                    },
-                    grid: {
-                        color: 'rgba(0,0,0,0.1)'
-                    },
-                    ticks: {
-                        color: '#3f6844'
-                    }
-                },
-                y1: {
-                    type: 'linear',
-                    display: true,
-                    position: 'right',
-                    title: {
-                        display: true,
-                        text: 'Fatturato (€)',
-                        color: '#7a9e7e'
-                    },
-                    grid: {
-                        drawOnChartArea: false,
-                    },
-                    ticks: {
-                        color: '#7a9e7e'
-                    }
-                }
-            },
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Vendite Ultimi 7 Giorni',
-                    font: {
-                        size: 16,
-                        weight: 'bold'
-                    }
-                },
-                legend: {
-                    display: true,
-                    position: 'top'
-                }
-            }
-        }
-    });
-    
-    console.log('✅ Grafico vendite inizializzato');
-}
-
-function getSalesChartData() {
-    const last7Days = [];
-    const today = new Date();
-    
-    for (let i = 6; i >= 0; i--) {
-        const day = new Date(today);
-        day.setDate(day.getDate() - i);
-        day.setHours(0, 0, 0, 0);
-        last7Days.push(day);
-    }
-    
-    const labels = last7Days.map(date => 
-        date.toLocaleDateString('it-IT', { 
-            month: 'short', 
-            day: 'numeric' 
-        })
-    );
-    
-    const orders = [];
-    const revenue = [];
-    
-    last7Days.forEach(day => {
-        const nextDay = new Date(day);
-        nextDay.setDate(nextDay.getDate() + 1);
-        
-        const dayOrders = allOrders.filter(order => {
-            try {
-                const orderDate = order.timestamp && order.timestamp.toDate ? 
-                    order.timestamp.toDate() : new Date(order.timestamp);
-                return orderDate >= day && orderDate < nextDay;
-            } catch (e) {
-                return false;
-            }
-        });
-        
-        orders.push(dayOrders.length);
-        revenue.push(dayOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0));
-    });
-    
-    return { labels, orders, revenue };
-}
-
-function updateSalesChart() {
-    if (!salesChart) {
-        initSalesChart();
-        return;
-    }
-    
-    const chartData = getSalesChartData();
-    salesChart.data.labels = chartData.labels;
-    salesChart.data.datasets[0].data = chartData.orders;
-    salesChart.data.datasets[1].data = chartData.revenue;
-    salesChart.update('none');
-    console.log('✅ Grafico vendite aggiornato');
-}
-
-// SISTEMA NOTIFICHE
-function showNotification(title, message, isNewOrder = false) {
-    if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification(title, {
-            body: message,
-            icon: '/favicon.ico',
-            badge: '/favicon.ico',
-            tag: isNewOrder ? 'new-order' : 'info'
-        });
-    }
-    showInAppNotification(title, message, isNewOrder);
-}
-
-function showInAppNotification(title, message, isNewOrder = false) {
-    const container = document.getElementById('notifications');
-    if (!container) return;
-    
-    const notification = document.createElement('div');
-    notification.className = 'notification';
-    
-    const icon = isNewOrder ? '🛍️' : '🔔';
-    
-    notification.innerHTML = `
-        <button class="notification-close" onclick="closeNotification(this)">&times;</button>
-        <div class="notification-header">
-            ${icon} ${title}
-        </div>
-        <div class="notification-body">
-            ${message}
-        </div>
-    `;
-    
-    container.appendChild(notification);
-    
-    setTimeout(() => notification.classList.add('show'), 100);
-    setTimeout(() => closeNotification(notification.querySelector('.notification-close')), 8000);
-    
-    notification.addEventListener('click', () => {
-        closeNotification(notification.querySelector('.notification-close'));
-    });
-}
-
-window.closeNotification = function(button) {
-    const notification = button.closest('.notification');
-    if (notification) {
-        notification.classList.add('hide');
-        setTimeout(() => notification.remove(), 300);
-    }
-};
-
-function checkNewOrders() {
-    const currentCount = allOrders.length;
-    
-    if (lastOrderCount > 0 && currentCount > lastOrderCount) {
-        const newOrdersCount = currentCount - lastOrderCount;
-        const message = newOrdersCount === 1 ? 
-            'È arrivato un nuovo ordine!' : 
-            `Sono arrivati ${newOrdersCount} nuovi ordini!`;
-        
-        showNotification('🛍️ Nuovo Ordine', message, true);
-        console.log(`🔔 ${newOrdersCount} nuovi ordini rilevati`);
-    }
-    
-    lastOrderCount = currentCount;
-}
-
-// VISUALIZZAZIONE ORDINI
-function displayOrders() {
-    console.log('📋 Visualizzazione ordini...');
-    
-    const ordersList = document.getElementById('orders-list');
-    if (!ordersList) return;
-    
-    let filteredOrders = getFilteredOrders();
-    
-    if (filteredOrders.length === 0) {
-        ordersList.innerHTML = '<div class="loading">Nessun ordine trovato per il filtro selezionato</div>';
-        return;
-    }
-    
-    ordersList.innerHTML = filteredOrders.map(order => {
-        const orderDate = order.timestamp && order.timestamp.toDate ? 
-            order.timestamp.toDate() : new Date();
+        // INIZIALIZZAZIONE
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('🚀 Dashboard inizializzata');
             
-        const formattedDate = orderDate.toLocaleDateString('it-IT', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
+            try {
+                await loadAllData();
+                updateStats();
+                displayOrders();
+                updateTopProducts();
+                updateLastRefresh();
+                console.log('✅ Dashboard completamente caricata');
+                
+                // Auto-refresh ogni 10 secondi
+                setInterval(refreshData, 10000);
+                
+            } catch (error) {
+                console.error('❌ Errore caricamento dashboard:', error);
+                showError('Errore nel caricamento dei dati: ' + error.message);
+            }
         });
-        
-        const itemsText = (order.items || []).map(item => 
-            `${item.name || 'Prodotto'} (x${item.quantity || 1})`
-        ).join(', ');
-        
-        const discountText = order.appliedDiscount > 0 ? 
-            `<br><small style="color: #e53e3e;">Sconto ${order.discountCode}: -${order.appliedDiscount}%</small>` : '';
-        
-        return `
-            <div class="order-item ${selectedOrders.has(order.id) ? 'selected' : ''}" data-order-id="${order.id}">
-                <div class="order-header">
-                    <div style="display: flex; align-items: center;">
-                        <input type="checkbox" class="order-checkbox" 
-                               ${selectedOrders.has(order.id) ? 'checked' : ''} 
-                               onchange="toggleOrderSelection('${order.id}')">
-                        <span class="order-id">#${order.id.substring(0, 8)}</span>
-                    </div>
-                    <span class="order-total">${(order.totalAmount || 0).toFixed(2)}€</span>
-                </div>
-                <div class="order-details">
-                    <strong>${order.customerName || 'Cliente'}</strong><br>
-                    📱 ${order.customerPhone || 'N/A'}<br>
-                    ${order.customerEmail ? `📧 ${order.customerEmail}<br>` : ''}
-                    📅 Ritiro: ${order.pickupDate || 'N/A'}<br>
-                    🍽️ ${itemsText || 'Nessun articolo'}${discountText}
-                </div>
-                <div style="margin-top: 8px;">
-                    <span class="order-status status-nuovo">Nuovo</span>
-                    <small style="color: #718096; margin-left: 10px;">${formattedDate}</small>
-                </div>
-            </div>
-        `;
-    }).join('');
-    
-    console.log(`✅ Visualizzati ${filteredOrders.length} ordini`);
-}
 
-function getFilteredOrders() {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    switch (currentFilter) {
-        case 'oggi':
-            return allOrders.filter(order => {
+        // CARICAMENTO DATI DA LOCALSTORAGE
+        async function loadAllData() {
+            try {
+                console.log('📊 Caricamento ordini da localStorage...');
+                
+                const ordersData = localStorage.getItem('pastosano_orders');
+                
+                if (ordersData) {
+                    allOrders = JSON.parse(ordersData);
+                    console.log(`✅ ${allOrders.length} ordini caricati da localStorage`);
+                } else {
+                    console.log('⚠️ Nessun ordine in localStorage, uso dati di esempio');
+                    allOrders = getMockOrders();
+                    // Salva i dati di esempio
+                    localStorage.setItem('pastosano_orders', JSON.stringify(allOrders));
+                }
+                
+            } catch (error) {
+                console.error('❌ Errore caricamento ordini:', error);
+                allOrders = getMockOrders();
+            }
+        }
+
+        // DATI DI ESEMPIO
+        function getMockOrders() {
+            const today = new Date();
+            today.setHours(10, 30, 0, 0);
+            
+            return [
+                {
+                    id: 'demo1' + Date.now(),
+                    customerName: 'Demo Cliente',
+                    customerPhone: '+393478881515',
+                    customerEmail: 'demo@pastosano.com',
+                    items: [
+                        {name: 'FUSILLI, MACINATO MANZO, ZUCCHINE, MELANZANE', quantity: 1, price: 8},
+                        {name: 'ROASTBEEF, PATATE AL FORNO, FAGIOLINI', quantity: 1, price: 8}
+                    ],
+                    totalAmount: 16,
+                    pickupDate: '2025-06-16',
+                    appliedDiscount: 0,
+                    discountCode: '',
+                    timestamp: {
+                        toDate: () => today
+                    }
+                }
+            ];
+        }
+
+        // REFRESH DATI
+        async function refreshData() {
+            const oldCount = allOrders.length;
+            await loadAllData();
+            
+            if (allOrders.length > oldCount) {
+                console.log(`🔔 ${allOrders.length - oldCount} nuovi ordini!`);
+                showNewOrderNotification(allOrders.length - oldCount);
+            }
+            
+            updateStats();
+            displayOrders();
+            updateTopProducts();
+            updateLastRefresh();
+        }
+
+        function updateLastRefresh() {
+            const now = new Date();
+            document.getElementById('last-refresh').textContent = 
+                `Ultimo aggiornamento: ${now.toLocaleTimeString('it-IT')}`;
+        }
+
+        function showNewOrderNotification(count) {
+            // Crea una notifica semplice
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #38a169;
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                z-index: 1000;
+                animation: slideIn 0.3s ease;
+            `;
+            notification.innerHTML = `🛍️ <strong>${count} nuovo${count > 1 ? 'i' : ''} ordine${count > 1 ? 'i' : ''}!</strong>`;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 4000);
+        }
+
+        // AGGIORNAMENTO STATISTICHE
+        function updateStats() {
+            console.log('📈 Aggiornamento statistiche...');
+            
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            const todayOrders = allOrders.filter(order => {
                 try {
                     const orderDate = order.timestamp && order.timestamp.toDate ? 
                         order.timestamp.toDate() : new Date(order.timestamp);
@@ -1178,10 +556,65 @@ function getFilteredOrders() {
                     return false;
                 }
             });
-        case 'settimana':
-            const weekAgo = new Date(today);
+            
+            // Stats
+            const ordersToday = todayOrders.length;
+            const revenueToday = todayOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
+            const avgOrder = allOrders.length > 0 ? 
+                allOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0) / allOrders.length : 0;
+            const totalOrders = allOrders.length;
+            
+            document.getElementById('orders-today').textContent = ordersToday;
+            document.getElementById('revenue-today').textContent = `${revenueToday.toFixed(2)}€`;
+            document.getElementById('avg-order').textContent = `${avgOrder.toFixed(2)}€`;
+            document.getElementById('total-orders').textContent = totalOrders;
+            
+            updateChangeIndicators(todayOrders);
+            updateQuickStats();
+            
+            console.log(`✅ Statistiche aggiornate: ${ordersToday} ordini oggi, ${revenueToday.toFixed(2)}€ fatturato`);
+        }
+
+        function updateChangeIndicators(todayOrders) {
+            const ordersChange = todayOrders.length > 0 ? '+100' : '0';
+            const revenueChange = todayOrders.length > 0 ? '+100' : '0';
+            
+            document.getElementById('orders-change').innerHTML = 
+                `<span style="color: #38a169;">↗ ${ordersChange}%</span> vs ieri`;
+            document.getElementById('revenue-change').innerHTML = 
+                `<span style="color: #38a169;">↗ ${revenueChange}%</span> vs ieri`;
+            document.getElementById('avg-change').textContent = 'valore medio';
+            document.getElementById('total-change').textContent = 'dal lancio';
+        }
+
+        function updateQuickStats() {
+            // Prodotto più venduto
+            const productSales = {};
+            allOrders.forEach(order => {
+                if (order.items) {
+                    order.items.forEach(item => {
+                        const name = item.name || 'Prodotto';
+                        productSales[name] = (productSales[name] || 0) + (item.quantity || 1);
+                    });
+                }
+            });
+            
+            const topProduct = Object.entries(productSales)
+                .sort(([,a], [,b]) => b - a)[0];
+            
+            document.getElementById('top-product').textContent = 
+                topProduct ? `${topProduct[0].substring(0, 30)}... (${topProduct[1]})` : 'Nessuno';
+            
+            // Giorno migliore (ultimo giorno con ordini)
+            const lastOrderDate = allOrders.length > 0 ? 
+                (allOrders[0].timestamp?.toDate ? allOrders[0].timestamp.toDate() : new Date()).toLocaleDateString('it-IT') : 'Nessuno';
+            
+            document.getElementById('best-day').textContent = lastOrderDate;
+            
+            // Crescita settimanale
+            const weekAgo = new Date();
             weekAgo.setDate(weekAgo.getDate() - 7);
-            return allOrders.filter(order => {
+            const recentOrders = allOrders.filter(order => {
                 try {
                     const orderDate = order.timestamp && order.timestamp.toDate ? 
                         order.timestamp.toDate() : new Date(order.timestamp);
@@ -1190,361 +623,84 @@ function getFilteredOrders() {
                     return false;
                 }
             });
-        case 'mese':
-            const monthAgo = new Date(today);
-            monthAgo.setMonth(monthAgo.getMonth() - 1);
-            return allOrders.filter(order => {
-                try {
-                    const orderDate = order.timestamp && order.timestamp.toDate ? 
-                        order.timestamp.toDate() : new Date(order.timestamp);
-                    return orderDate >= monthAgo;
-                } catch (e) {
-                    return false;
-                }
-            });
-        default:
-            return allOrders;
-    }
-}
-
-// FILTRI ORDINI
-window.filterOrders = function(filter) {
-    currentFilter = filter;
-    
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    
-    const clickedBtn = Array.from(document.querySelectorAll('.filter-btn'))
-        .find(btn => btn.textContent.toLowerCase().includes(filter.toLowerCase()));
-    if (clickedBtn) {
-        clickedBtn.classList.add('active');
-    }
-    
-    displayOrders();
-    console.log(`🔍 Filtro applicato: ${filter}`);
-};
-
-// SELEZIONE ORDINI
-window.toggleOrderSelection = function(orderId) {
-    if (selectedOrders.has(orderId)) {
-        selectedOrders.delete(orderId);
-    } else {
-        selectedOrders.add(orderId);
-    }
-    updateSelectedCount();
-    updateOrderDisplay(orderId);
-};
-
-window.selectAllOrders = function() {
-    const filteredOrders = getFilteredOrders();
-    selectedOrders.clear();
-    filteredOrders.forEach(order => selectedOrders.add(order.id));
-    updateSelectedCount();
-    displayOrders();
-};
-
-window.clearSelection = function() {
-    selectedOrders.clear();
-    updateSelectedCount();
-    displayOrders();
-};
-
-function updateSelectedCount() {
-    const countElement = document.getElementById('selected-count');
-    if (countElement) {
-        countElement.textContent = `${selectedOrders.size} selezionati`;
-    }
-}
-
-function updateOrderDisplay(orderId) {
-    const orderElement = document.querySelector(`[data-order-id="${orderId}"]`);
-    if (orderElement) {
-        if (selectedOrders.has(orderId)) {
-            orderElement.classList.add('selected');
-        } else {
-            orderElement.classList.remove('selected');
-        }
-    }
-}
-
-// TOP PRODUCTS
-function updateTopProducts() {
-    console.log('🏆 Aggiornamento top products...');
-    
-    const productSales = {};
-    
-    allOrders.forEach(order => {
-        if (order.items) {
-            order.items.forEach(item => {
-                const name = item.name || 'Prodotto sconosciuto';
-                if (productSales[name]) {
-                    productSales[name] += item.quantity || 1;
-                } else {
-                    productSales[name] = item.quantity || 1;
-                }
-            });
-        }
-    });
-    
-    const sortedProducts = Object.entries(productSales)
-        .sort(([,a], [,b]) => b - a)
-        .slice(0, 10);
-    
-    const topProductsList = document.getElementById('top-products-list');
-    if (!topProductsList) return;
-    
-    if (sortedProducts.length === 0) {
-        topProductsList.innerHTML = '<div class="loading">Nessun dato disponibile</div>';
-        return;
-    }
-    
-    topProductsList.innerHTML = sortedProducts.map(([name, sales]) => `
-        <div class="product-item">
-            <span class="product-name">${name.length > 40 ? name.substring(0, 40) + '...' : name}</span>
-            <span class="product-sales">${sales} venduti</span>
-        </div>
-    `).join('');
-    
-    console.log(`✅ Top products aggiornati: ${sortedProducts.length} prodotti`);
-}
-
-// EXPORT CSV
-window.exportToCSV = function() {
-    console.log('📥 Export CSV...');
-    
-    const filteredOrders = getFilteredOrders();
-    
-    if (filteredOrders.length === 0) {
-        alert('Nessun ordine da esportare');
-        return;
-    }
-    
-    const headers = ['ID', 'Data/Ora', 'Cliente', 'Telefono', 'Email', 'Ritiro', 'Articoli', 'Totale', 'Sconto', 'Status'];
-    
-    const csvData = filteredOrders.map(order => {
-        const orderDate = order.timestamp && order.timestamp.toDate ? 
-            order.timestamp.toDate().toLocaleString('it-IT') : 'N/A';
-        const items = (order.items || []).map(item => 
-            `${item.name || 'Prodotto'} (x${item.quantity || 1})`
-        ).join('; ');
-        const discount = order.appliedDiscount > 0 ? 
-            `${order.discountCode} -${order.appliedDiscount}%` : 'Nessuno';
-        
-        return [
-            order.id.substring(0, 8),
-            orderDate,
-            order.customerName || 'Cliente',
-            order.customerPhone || 'N/A',
-            order.customerEmail || 'N/A',
-            order.pickupDate || 'N/A',
-            items,
-            `${(order.totalAmount || 0).toFixed(2)}€`,
-            discount,
-            'Nuovo'
-        ].map(field => `"${field}"`).join(',');
-    });
-    
-    const csvContent = [headers.join(','), ...csvData].join('\n');
-    
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `ordini_pasto_sano_${new Date().toISOString().split('T')[0]}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    console.log(`✅ CSV esportato con ${filteredOrders.length} ordini`);
-};
-
-// GENERAZIONE DOCUMENTO PRODUZIONE
-window.generateProductionDoc = function() {
-    if (selectedOrders.size === 0) {
-        alert('Seleziona almeno un ordine per generare il documento di produzione');
-        return;
-    }
-    
-    const selectedOrdersData = allOrders.filter(order => selectedOrders.has(order.id));
-    
-    const productSummary = {};
-    const orderDetails = [];
-    
-    selectedOrdersData.forEach(order => {
-        orderDetails.push({
-            customerName: order.customerName || 'Cliente',
-            pickupDate: order.pickupDate || 'N/A',
-            orderId: order.id.substring(0, 8),
-            items: order.items || []
-        });
-        
-        (order.items || []).forEach(item => {
-            const productName = item.name || 'Prodotto sconosciuto';
-            const quantity = item.quantity || 1;
             
-            if (productSummary[productName]) {
-                productSummary[productName] += quantity;
-            } else {
-                productSummary[productName] = quantity;
+            const growth = allOrders.length > 0 ? 
+                ((recentOrders.length / allOrders.length) * 100) : 0;
+            
+            document.getElementById('weekly-growth').textContent = `+${growth.toFixed(0)}%`;
+        }
+
+        // VISUALIZZAZIONE ORDINI
+        function displayOrders() {
+            console.log('📋 Visualizzazione ordini...');
+            
+            const ordersList = document.getElementById('orders-list');
+            if (!ordersList) return;
+            
+            let filteredOrders = getFilteredOrders();
+            
+            if (filteredOrders.length === 0) {
+                ordersList.innerHTML = '<div class="loading">Nessun ordine trovato per il filtro selezionato</div>';
+                return;
             }
-        });
-    });
-    
-    generateProductionHTML(orderDetails, productSummary);
-};
+            
+            ordersList.innerHTML = filteredOrders.map(order => {
+                const orderDate = order.timestamp && order.timestamp.toDate ? 
+                    order.timestamp.toDate() : new Date();
+                    
+                const formattedDate = orderDate.toLocaleDateString('it-IT', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                const itemsText = (order.items || []).map(item => 
+                    `${item.name || 'Prodotto'} (x${item.quantity || 1})`
+                ).join(', ');
+                
+                const discountText = order.appliedDiscount > 0 ? 
+                    `<br><small style="color: #e53e3e;">Sconto ${order.discountCode}: -${order.appliedDiscount}€</small>` : '';
+                
+                return `
+                    <div class="order-item">
+                        <div class="order-header">
+                            <span class="order-id">#${order.id.toString().substring(0, 8)}</span>
+                            <span class="order-total">${(order.totalAmount || 0).toFixed(2)}€</span>
+                        </div>
+                        <div class="order-details">
+                            <strong>🌐 ${order.customerName || 'Ordine Web'}</strong><br>
+                            📱 ${order.customerPhone || 'N/A'}<br>
+                            📅 Consegna: ${order.pickupDate || 'N/A'}<br>
+                            🍽️ ${itemsText || 'Nessun articolo'}${discountText}
+                        </div>
+                        <div style="margin-top: 8px;">
+                            <span class="order-status status-nuovo">Online</span>
+                            <small style="color: #718096; margin-left: 10px;">${formattedDate}</small>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            console.log(`✅ Visualizzati ${filteredOrders.length} ordini`);
+        }
 
-function generateProductionHTML(orderDetails, productSummary) {
-    const today = new Date();
-    const formattedDate = today.toLocaleDateString('it-IT', {
-        day: '2-digit',
-        month: '2-digit', 
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
-    
-    const productList = Object.entries(productSummary)
-        .sort(([,a], [,b]) => b - a)
-        .map(([name, quantity]) => `
-            <tr>
-                <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">${name}</td>
-                <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: center; font-weight: bold; color: #3f6844;">${quantity}</td>
-            </tr>
-        `).join('');
-    
-    const ordersList = orderDetails.map(order => {
-        const itemsList = order.items.map((item, index) => 
-            `<div style="margin-bottom: 3px;">${index + 1}. ${item.name || 'Prodotto'} (x${item.quantity || 1})</div>`
-        ).join('');
-        
-        return `
-        <div style="margin-bottom: 20px; padding: 15px; border-left: 3px solid #7a9e7e; background: #f8f9fa;">
-            <div style="margin-bottom: 8px;">
-                <strong style="color: #2d3748; font-size: 16px;">${order.customerName}</strong> 
-                <span style="color: #718096; margin-left: 10px;">#${order.orderId}</span>
-            </div>
-            <div style="color: #4a5568; margin-bottom: 8px;">📅 Ritiro: ${order.pickupDate}</div>
-            <div style="color: #4a5568;">
-                <strong>🍽️ ${order.items.length} articoli:</strong>
-                <div style="margin-left: 15px; margin-top: 8px;">
-                    ${itemsList}
-                </div>
-            </div>
-        </div>
-        `;
-    }).join('');
-    
-    const htmlContent = `
-    <!DOCTYPE html>
-    <html lang="it">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Documento Produzione - Pasto Sano</title>
-        <style>
-            body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
-            .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #3f6844; padding-bottom: 20px; }
-            .summary { background: #f0fff4; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
-            table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-            th { background: #3f6844; color: white; padding: 15px; text-align: left; }
-            .orders-detail { margin-top: 30px; }
-            @media print { body { margin: 0; } }
-        </style>
-    </head>
-    <body>
-        <div class="header">
-            <h1 style="color: #3f6844; margin: 0;">🥗 PASTO SANO</h1>
-            <h2 style="color: #7a9e7e; margin: 10px 0;">Documento di Produzione</h2>
-            <p style="color: #718096;">Generato il ${formattedDate}</p>
-        </div>
-        
-        <div class="summary">
-            <h3 style="color: #3f6844; margin-top: 0;">📊 Riepilogo Produzione</h3>
-            <p><strong>Totale Ordini:</strong> ${orderDetails.length}</p>
-            <p><strong>Totale Prodotti:</strong> ${Object.values(productSummary).reduce((sum, qty) => sum + qty, 0)} pezzi</p>
-            <p><strong>Tipologie Diverse:</strong> ${Object.keys(productSummary).length}</p>
-        </div>
-        
-        <h3 style="color: #3f6844;">🍽️ Prodotti da Preparare</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Prodotto</th>
-                    <th style="text-align: center; width: 120px;">Quantità</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${productList}
-            </tbody>
-        </table>
-        
-        <div class="orders-detail">
-            <h3 style="color: #3f6844;">📋 Dettaglio Ordini</h3>
-            ${ordersList}
-        </div>
-        
-        <div style="margin-top: 40px; text-align: center; color: #718096; border-top: 1px solid #e2e8f0; padding-top: 20px;">
-            <p>Documento generato automaticamente dalla Dashboard Pasto Sano</p>
-        </div>
-    </body>
-    </html>`;
-    
-    const newWindow = window.open('', '_blank');
-    newWindow.document.write(htmlContent);
-    newWindow.document.close();
-    
-    setTimeout(() => newWindow.print(), 500);
-    
-    console.log(`✅ Documento produzione generato per ${selectedOrders.size} ordini`);
-}
-
-// GESTIONE ERRORI
-function showError(message) {
-    console.error('❌ Errore dashboard:', message);
-    
-    const errorElement = document.getElementById('error-message');
-    if (errorElement) {
-        errorElement.textContent = message;
-        errorElement.style.display = 'block';
-    }
-    
-    allOrders = getMockOrders();
-    lastOrderCount = allOrders.length;
-    updateStats();
-    displayOrders();
-    updateTopProducts();
-    if (salesChart) updateSalesChart();
-}
-
-// AUTO-REFRESH ogni 30 secondi
-setInterval(async () => {
-    try {
-        console.log('🔄 Auto-refresh dashboard...');
-        await loadAllData();
-        checkNewOrders();
-        updateStats();
-        displayOrders();
-        updateTopProducts();
-        updateSalesChart();
-        console.log('✅ Auto-refresh completato');
-    } catch (error) {
-        console.error('❌ Errore auto-refresh:', error);
-    }
-}, 30000);
-
-console.log('📊 Dashboard.js caricato completamente');
-    </script>
-</body>
-</html>: 3,
-                    fill: true,
-                    tension: 0.4,
-                    yAxisID: 'y'
-                },
-                {
-                    label: 'Fatturato (€)',
-                    data: chartData.revenue,
-                    borderColor: '#7a9e7e',
-                    backgroundColor: 'rgba(122, 158, 126, 0.1)',
-                    borderWidth
+        function getFilteredOrders() {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            switch (currentFilter) {
+                case 'oggi':
+                    return allOrders.filter(order => {
+                        try {
+                            const orderDate = order.timestamp && order.timestamp.toDate ? 
+                                order.timestamp.toDate() : new Date(order.timestamp);
+                            return orderDate >= today;
+                        } catch (e) {
+                            return false;
+                        }
+                    });
+                case 'settimana':
+                    const weekAgo = new Date(today);
+                    weekAgo.setDate(weekAgo.
