@@ -1366,14 +1366,27 @@ function generateProductionHTML(orderDetails, productSummary) {
             </tr>
         `).join('');
     
-    const ordersList = orderDetails.map(order => `
-        <div style="margin-bottom: 15px; padding: 12px; border-left: 3px solid #7a9e7e; background: #f8f9fa;">
-            <strong style="color: #2d3748;">${order.customerName}</strong> 
-            <span style="color: #718096; margin-left: 10px;">#${order.orderId}</span><br>
-            <small style="color: #4a5568;">📅 Ritiro: ${order.pickupDate}</small><br>
-            <small style="color: #4a5568;">🍽️ ${order.items.length} articoli: ${order.items.map(item => `${item.name} (x${item.quantity})`).join(', ')}</small>
+    const ordersList = orderDetails.map(order => {
+        const itemsList = order.items.map((item, index) => 
+            `<div style="margin-bottom: 3px;">${index + 1}. ${item.name || 'Prodotto'} (x${item.quantity || 1})</div>`
+        ).join('');
+        
+        return `
+        <div style="margin-bottom: 20px; padding: 15px; border-left: 3px solid #7a9e7e; background: #f8f9fa;">
+            <div style="margin-bottom: 8px;">
+                <strong style="color: #2d3748; font-size: 16px;">${order.customerName}</strong> 
+                <span style="color: #718096; margin-left: 10px;">#${order.orderId}</span>
+            </div>
+            <div style="color: #4a5568; margin-bottom: 8px;">📅 Ritiro: ${order.pickupDate}</div>
+            <div style="color: #4a5568;">
+                <strong>🍽️ ${order.items.length} articoli:</strong>
+                <div style="margin-left: 15px; margin-top: 8px;">
+                    ${itemsList}
+                </div>
+            </div>
         </div>
-    `).join('');
+        `;
+    }).join('');
     
     const htmlContent = `
     <!DOCTYPE html>
