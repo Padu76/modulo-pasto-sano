@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
-import { Calendar, Users, ShoppingBag, TrendingUp, Clock, CheckCircle, XCircle, Eye, FileText, Printer } from 'lucide-react';
-import jsPDF from 'jspdf';
+import { Calendar, Users, ShoppingBag, TrendingUp, Clock, CheckCircle, XCircle, Eye, FileText } from 'lucide-react';
 
 const PastosanoDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
-  const [selectedOrdersForPdf, setSelectedOrdersForPdf] = useState(new Set());
 
   // Dati mock
   const todayStats = {
@@ -73,63 +71,6 @@ const PastosanoDashboard = () => {
       ]
     }
   ];
-
-  const generateOrdersPDF = () => {
-    if (selectedOrdersForPdf.size === 0) {
-      alert('Seleziona almeno un ordine per creare il PDF');
-      return;
-    }
-
-    const doc = new jsPDF();
-    const selectedOrders = orders.filter(order => selectedOrdersForPdf.has(order.id));
-    
-    // Header
-    doc.setFontSize(20);
-    doc.text('Lista Ordini - Pastosano', 20, 20);
-    
-    doc.setFontSize(12);
-    doc.text(`Data: ${new Date().toLocaleDateString('it-IT')}`, 20, 30);
-    doc.text(`Ordini selezionati: ${selectedOrders.length}`, 20, 40);
-    
-    let yPosition = 60;
-    
-    selectedOrders.forEach((order, index) => {
-      // Nome cliente
-      doc.setFontSize(14);
-      doc.setFont(undefined, 'bold');
-      doc.text(`${order.customer}`, 20, yPosition);
-      
-      // Prodotti
-      doc.setFontSize(10);
-      doc.setFont(undefined, 'normal');
-      yPosition += 10;
-      
-      order.items.forEach((item) => {
-        doc.text(`• ${item.name} x${item.quantity}`, 30, yPosition);
-        yPosition += 8;
-      });
-      
-      yPosition += 5;
-      
-      // Nuova pagina se necessario
-      if (yPosition > 250 && index < selectedOrders.length - 1) {
-        doc.addPage();
-        yPosition = 20;
-      }
-    });
-    
-    doc.save('ordini-selezionati.pdf');
-  };
-
-  const toggleOrderSelection = (orderId) => {
-    const newSelection = new Set(selectedOrdersForPdf);
-    if (newSelection.has(orderId)) {
-      newSelection.delete(orderId);
-    } else {
-      newSelection.add(orderId);
-    }
-    setSelectedOrdersForPdf(newSelection);
-  };
 
   const openOrderModal = (order) => {
     setSelectedOrder(order);
@@ -352,31 +293,14 @@ const PastosanoDashboard = () => {
             <div className="bg-white rounded-lg shadow p-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold text-gray-800">Ordini Recenti</h3>
-                <div className="flex gap-2">
-                  <button
-                    onClick={generateOrdersPDF}
-                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm"
-                  >
-                    <Printer size={16} />
-                    PDF Ordini ({selectedOrdersForPdf.size})
-                  </button>
-                </div>
               </div>
               <div className="space-y-4">
                 {orders.map((order) => (
                   <div key={order.id} className="border border-gray-200 rounded-lg p-4">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <input
-                          type="checkbox"
-                          checked={selectedOrdersForPdf.has(order.id)}
-                          onChange={() => toggleOrderSelection(order.id)}
-                          className="w-4 h-4 text-green-600 rounded"
-                        />
-                        <div>
-                          <h4 className="font-medium text-gray-800">{order.customer}</h4>
-                          <p className="text-sm text-gray-600">{order.time}</p>
-                        </div>
+                      <div>
+                        <h4 className="font-medium text-gray-800">{order.customer}</h4>
+                        <p className="text-sm text-gray-600">{order.time}</p>
                       </div>
                       <div className="flex items-center space-x-4">
                         <div className="flex items-center space-x-2">
