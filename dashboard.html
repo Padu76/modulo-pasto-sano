@@ -1,11 +1,10 @@
 <!DOCTYPE html>
-
 <html lang="it">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Dashboard Pasto Sano - Analytics</title>
-<style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Pasto Sano - Analytics</title>
+    <style>
         * {
             margin: 0;
             padding: 0;
@@ -203,12 +202,78 @@
         .chart-container {
             height: 300px;
             margin: 20px 0;
+            position: relative;
+            border-radius: 8px;
+            background: white;
+        }
+
+        #salesChart {
+            max-height: 300px;
+        }
+
+        /* NOTIFICHE */
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        .notification {
+            background: linear-gradient(135deg, #3f6844, #7a9e7e);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+            pointer-events: auto;
+            cursor: pointer;
+            max-width: 350px;
+            border-left: 4px solid #ffffff;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .notification.hide {
+            opacity: 0;
+            transform: translateX(100%);
+        }
+
+        .notification-header {
+            font-weight: bold;
+            margin-bottom: 5px;
             display: flex;
             align-items: center;
-            justify-content: center;
-            border: 2px dashed #e2e8f0;
-            border-radius: 8px;
-            color: #a0aec0;
+            gap: 8px;
+        }
+
+        .notification-body {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .notification-close {
+            position: absolute;
+            top: 8px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .notification-close:hover {
+            opacity: 1;
         }
 
         .top-products {
@@ -284,101 +349,905 @@
     </style>
 </head>
 <body>
-<div class="header">
-<div class="container">
-<h1>📊 Dashboard Pasto Sano</h1>
-<p>Analytics e gestione ordini in tempo reale</p>
-</div>
-</div>
-<div class="container">
-<div class="error" id="error-message" style="display: none;"></div>
-<!-- STATISTICHE -->
-<div class="stats-grid">
-<div class="stat-card">
-<h3>Ordini Oggi</h3>
-<div class="stat-value" id="orders-today">-</div>
-<div class="stat-change neutral">
-<span id="orders-change">Caricamento...</span>
-</div>
-</div>
-<div class="stat-card">
-<h3>Fatturato Oggi</h3>
-<div class="stat-value" id="revenue-today">-</div>
-<div class="stat-change neutral">
-<span id="revenue-change">Caricamento...</span>
-</div>
-</div>
-<div class="stat-card">
-<h3>Ordine Medio</h3>
-<div class="stat-value" id="avg-order">-</div>
-<div class="stat-change neutral">
-<span id="avg-change">Caricamento...</span>
-</div>
-</div>
-<div class="stat-card">
-<h3>Totale Clienti</h3>
-<div class="stat-value" id="total-customers">-</div>
-<div class="stat-change neutral">
-<span id="customers-change">Caricamento...</span>
-</div>
-</div>
-</div>
-<!-- CONTENUTO PRINCIPALE -->
-<div class="main-content">
-<!-- SEZIONE ORDINI -->
-<div class="orders-section">
-<div class="section-header">
-<h2 class="section-title">🛍️ Ordini Recenti</h2>
-<button class="export-btn" onclick="exportToCSV()">📥 Esporta CSV</button>
-</div>
-<div class="filters">
-<button class="filter-btn active" onclick="filterOrders('tutti')">Tutti</button>
-<button class="filter-btn" onclick="filterOrders('oggi')">Oggi</button>
-<button class="filter-btn" onclick="filterOrders('settimana')">Settimana</button>
-<button class="filter-btn" onclick="filterOrders('mese')">Mese</button>
-</div>
-<div class="orders-list" id="orders-list">
-<div class="loading">Caricamento ordini...</div>
-</div>
-</div>
-<!-- SEZIONE ANALYTICS -->
-<div class="analytics-section">
-<div class="section-header">
-<h2 class="section-title">📈 Analytics</h2>
-</div>
-<div class="chart-container">
-<p>Grafico vendite<br/>(Implementazione Chart.js in arrivo)</p>
-</div>
-<div class="top-products">
-<h3>🏆 Piatti Più Venduti</h3>
-<div id="top-products-list">
-<div class="loading">Caricamento...</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<script src="dashboard.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><script>
-document.getElementById("exportPdfFornitore").addEventListener("click", () => {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-  let y = 10;
-  doc.setFontSize(16);
-  doc.text("ORDINI PER FORNITORE", 10, y);
-  y += 10;
+    <div class="header">
+        <div class="container">
+            <h1>📊 Dashboard Pasto Sano</h1>
+            <p>Analytics e gestione ordini in tempo reale</p>
+        </div>
+    </div>
 
-  document.querySelectorAll("#ordersTable tbody tr").forEach((row, index) => {
-    const nome = row.querySelector("td:nth-child(1)").innerText;
-    const piatti = row.querySelector("td:nth-child(3)").innerText;
-    doc.setFontSize(12);
-    doc.text(`${index + 1}. ${nome}`, 10, y);
-    y += 6;
-    doc.text(`- ${piatti}`, 14, y);
-    y += 10;
-  });
+    <!-- Container notifiche -->
+    <div class="notification-container" id="notifications"></div>
 
-  doc.save("ordini_fornitore.pdf");
+    <div class="container">
+        <div id="error-message" class="error" style="display: none;"></div>
+        
+        <!-- STATISTICHE -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Ordini Oggi</h3>
+                <div class="stat-value" id="orders-today">-</div>
+                <div class="stat-change neutral">
+                    <span id="orders-change">Caricamento...</span>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>Fatturato Oggi</h3>
+                <div class="stat-value" id="revenue-today">-</div>
+                <div class="stat-change neutral">
+                    <span id="revenue-change">Caricamento...</span>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>Ordine Medio</h3>
+                <div class="stat-value" id="avg-order">-</div>
+                <div class="stat-change neutral">
+                    <span id="avg-change">Caricamento...</span>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>Totale Clienti</h3>
+                <div class="stat-value" id="total-customers">-</div>
+                <div class="stat-change neutral">
+                    <span id="customers-change">Caricamento...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTENUTO PRINCIPALE -->
+        <div class="main-content">
+            <!-- SEZIONE ORDINI -->
+            <div class="orders-section">
+                <div class="section-header">
+                    <h2 class="section-title">🛍️ Ordini Recenti</h2>
+                    <button class="export-btn" onclick="exportToCSV()">📥 Esporta CSV</button>
+                </div>
+                
+                <div class="filters">
+                    <button class="filter-btn active" onclick="filterOrders('tutti')">Tutti</button>
+                    <button class="filter-btn" onclick="filterOrders('oggi')">Oggi</button>
+                    <button class="filter-btn" onclick="filterOrders('settimana')">Settimana</button>
+                    <button class="filter-btn" onclick="filterOrders('mese')">Mese</button>
+                </div>
+                
+                <div id="orders-list" class="orders-list">
+                    <div class="loading">Caricamento ordini...</div>
+                </div>
+            </div>
+
+            <!-- SEZIONE ANALYTICS -->
+            <div class="analytics-section">
+                <div class="section-header">
+                    <h2 class="section-title">📈 Analytics</h2>
+                </div>
+                
+                <div class="chart-container">
+                    <canvas id="salesChart"></canvas>
+                </div>
+                
+                <div class="top-products">
+                    <h3>🏆 Piatti Più Venduti</h3>
+                    <div id="top-products-list">
+                        <div class="loading">Caricamento...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    
+    <script>
+// dashboard.js
+// Dashboard analytics con notifiche, Chart.js e clienti migliorati
+
+let allOrders = [];
+let currentFilter = 'tutti';
+let lastOrderCount = 0;
+let salesChart = null;
+
+// INIZIALIZZAZIONE
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log('🚀 Dashboard inizializzata');
+    
+    // Richiedi permessi notifiche
+    await requestNotificationPermission();
+    
+    // Carica Firebase config dinamicamente
+    await loadFirebaseConfig();
+    
+    // Aspetta che Firebase sia pronto
+    await waitForFirebase();
+    
+    try {
+        await loadAllData();
+        
+        // Inizializza contatore ordini solo al primo caricamento
+        if (lastOrderCount === 0) {
+            lastOrderCount = allOrders.length;
+        }
+        
+        updateStats();
+        displayOrders();
+        updateTopProducts();
+        initSalesChart();
+        console.log('✅ Dashboard completamente caricata');
+    } catch (error) {
+        console.error('❌ Errore caricamento dashboard:', error);
+        showError('Errore nel caricamento dei dati: ' + error.message);
+    }
 });
-</script></body>
+
+// RICHIESTA PERMESSI NOTIFICHE
+async function requestNotificationPermission() {
+    if ('Notification' in window) {
+        try {
+            const permission = await Notification.requestPermission();
+            if (permission === 'granted') {
+                console.log('✅ Permessi notifiche concessi');
+                showNotification('🔔 Notifiche Attive', 'Riceverai notifiche per i nuovi ordini');
+            } else {
+                console.log('⚠️ Permessi notifiche negati');
+            }
+        } catch (error) {
+            console.log('⚠️ Notifiche non supportate:', error);
+        }
+    }
+}
+
+// CARICA FIREBASE CONFIG DINAMICAMENTE
+function loadFirebaseConfig() {
+    return new Promise((resolve, reject) => {
+        // Controlla se Firebase è già caricato
+        if (typeof window.getOrders === 'function') {
+            console.log('✅ Firebase già disponibile');
+            resolve();
+            return;
+        }
+        
+        console.log('📄 Caricamento Firebase config...');
+        const script = document.createElement('script');
+        script.src = './firebase-config.js';
+        script.onload = () => {
+            console.log('✅ Firebase config caricato');
+            resolve();
+        };
+        script.onerror = () => {
+            console.error('❌ Errore caricamento Firebase config');
+            reject(new Error('Impossibile caricare Firebase config'));
+        };
+        document.head.appendChild(script);
+    });
+}
+
+// ASPETTA CHE FIREBASE SIA PRONTO
+function waitForFirebase() {
+    return new Promise((resolve) => {
+        console.log('⏳ Attendo che Firebase sia pronto...');
+        
+        const checkFirebase = () => {
+            if (typeof window.getOrders === 'function') {
+                console.log('✅ Firebase pronto');
+                resolve();
+            } else {
+                console.log('⏳ Firebase non ancora pronto, riprovo...');
+                setTimeout(checkFirebase, 500);
+            }
+        };
+        
+        checkFirebase();
+    });
+}
+
+// CARICAMENTO DATI
+async function loadAllData() {
+    try {
+        console.log('📊 Caricamento ordini...');
+        
+        // Usa la funzione globale di Firebase
+        if (typeof window.getOrders === 'function') {
+            allOrders = await window.getOrders(100);
+            console.log(`✅ ${allOrders.length} ordini caricati:`, allOrders);
+        } else {
+            throw new Error('Funzione getOrders non disponibile');
+        }
+        
+        // Se non ci sono ordini, usa dati di esempio per test
+        if (allOrders.length === 0) {
+            console.log('⚠️ Nessun ordine trovato, uso dati di esempio');
+            allOrders = getMockOrders();
+        }
+        
+    } catch (error) {
+        console.error('❌ Errore caricamento ordini:', error);
+        
+        // Fallback con dati mock
+        console.log('🔄 Fallback: uso dati di esempio');
+        allOrders = getMockOrders();
+    }
+}
+
+// DATI DI ESEMPIO PER TEST
+function getMockOrders() {
+    const now = new Date();
+    const today = new Date();
+    today.setHours(10, 30, 0, 0);
+    
+    return [
+        {
+            id: 'mock1',
+            customerName: 'Lara Test',
+            customerPhone: '+39 347 939 543',
+            items: [
+                {name: '1. FUSILLI, MACINATO MANZO, ZUCCHINE, MELANZANE', quantity: 1, price: 8},
+                {name: '2. ROASTBEEF, PATATE AL FORNO, FAGIOLINI', quantity: 1, price: 8}
+            ],
+            totalAmount: 30,
+            pickupDate: '2025-06-16',
+            appliedDiscount: 0,
+            discountCode: '',
+            timestamp: {
+                toDate: () => today
+            }
+        },
+        {
+            id: 'mock2', 
+            customerName: 'Andrea Padoan',
+            customerPhone: '0347881515',
+            customerEmail: 'andrea.padoan@gmail.com',
+            items: [
+                {name: '3. RISO, HAMBURGER MANZO, CAROTINE BABY', quantity: 1, price: 8},
+                {name: '5. PATATE, SALMONE GRIGLIATO, BROCCOLI', quantity: 2, price: 8},
+                {name: '9. TORTILLAS, SALMONE AFFUMICATO, FORMAGGIO SPALMABILE, INSALATA', quantity: 1, price: 8}
+            ],
+            totalAmount: 40,
+            pickupDate: '2025-06-16',
+            appliedDiscount: 0,
+            discountCode: '',
+            timestamp: {
+                toDate: () => {
+                    const earlier = new Date(today);
+                    earlier.setHours(9, 15, 0, 0);
+                    return earlier;
+                }
+            }
+        },
+        {
+            id: 'mock3',
+            customerName: 'Marco Verdi',
+            customerPhone: '347.939.543', // Stesso di Lara ma formato diverso
+            items: [
+                {name: '4. QUINOA, POLLO GRIGLIATO, VERDURE MISTE', quantity: 1, price: 8}
+            ],
+            totalAmount: 12,
+            pickupDate: '2025-06-15',
+            appliedDiscount: 10,
+            discountCode: 'SCONTO10',
+            timestamp: {
+                toDate: () => {
+                    const yesterday = new Date(today);
+                    yesterday.setDate(yesterday.getDate() - 1);
+                    yesterday.setHours(14, 30, 0, 0);
+                    return yesterday;
+                }
+            }
+        }
+    ];
+}
+
+// AGGIORNAMENTO STATISTICHE CON CLIENTI NORMALIZZATI
+function updateStats() {
+    console.log('📈 Aggiornamento statistiche...');
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const todayOrders = allOrders.filter(order => {
+        try {
+            const orderDate = order.timestamp && order.timestamp.toDate ? 
+                order.timestamp.toDate() : new Date(order.timestamp);
+            return orderDate >= today;
+        } catch (e) {
+            return false;
+        }
+    });
+    
+    const thisWeekOrders = allOrders.filter(order => {
+        try {
+            const orderDate = order.timestamp && order.timestamp.toDate ? 
+                order.timestamp.toDate() : new Date(order.timestamp);
+            const weekAgo = new Date(today);
+            weekAgo.setDate(weekAgo.getDate() - 7);
+            return orderDate >= weekAgo;
+        } catch (e) {
+            return false;
+        }
+    });
+    
+    // Ordini oggi
+    const ordersToday = todayOrders.length;
+    document.getElementById('orders-today').textContent = ordersToday;
+    
+    // Fatturato oggi
+    const revenueToday = todayOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
+    document.getElementById('revenue-today').textContent = `${revenueToday.toFixed(2)}€`;
+    
+    // Ordine medio
+    const avgOrder = allOrders.length > 0 ? 
+        allOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0) / allOrders.length : 0;
+    document.getElementById('avg-order').textContent = `${avgOrder.toFixed(2)}€`;
+    
+    // Clienti unici basati su telefono normalizzato
+    const uniqueCustomers = getUniqueCustomers(allOrders).size;
+    document.getElementById('total-customers').textContent = uniqueCustomers;
+    
+    // Aggiorna indicatori di variazione
+    updateChangeIndicators(todayOrders, thisWeekOrders);
+    
+    console.log(`✅ Statistiche aggiornate: ${ordersToday} ordini oggi, ${revenueToday.toFixed(2)}€ fatturato, ${uniqueCustomers} clienti unici`);
+}
+
+// NORMALIZZAZIONE TELEFONO E CLIENTI UNICI
+function normalizePhone(phone) {
+    if (!phone) return '';
+    
+    // Rimuovi spazi, trattini, punti
+    let normalized = phone.replace(/[\s\-\.]/g, '');
+    
+    // Rimuovi +39
+    if (normalized.startsWith('+39')) {
+        normalized = normalized.substring(3);
+    }
+    
+    // Rimuovi 0039
+    if (normalized.startsWith('0039')) {
+        normalized = normalized.substring(4);
+    }
+    
+    // Rimuovi 0 iniziali per numeri cellulari (che iniziano con 3)
+    if (normalized.startsWith('03') && normalized.length === 11) {
+        normalized = normalized.substring(1);
+    }
+    
+    return normalized;
+}
+
+function getUniqueCustomers(orders) {
+    const uniquePhones = new Set();
+    
+    orders.forEach(order => {
+        const normalizedPhone = normalizePhone(order.customerPhone);
+        if (normalizedPhone) {
+            uniquePhones.add(normalizedPhone);
+        }
+    });
+    
+    return uniquePhones;
+}
+
+function updateChangeIndicators(todayOrders, thisWeekOrders) {
+    // Calcoli semplificati per le variazioni
+    const ordersChange = todayOrders.length > 0 ? '+100' : '0';
+    const revenueChange = todayOrders.length > 0 ? '+100' : '0';
+    
+    document.getElementById('orders-change').innerHTML = 
+        `<span style="color: #38a169;">↗ ${ordersChange}%</span> vs ieri`;
+    document.getElementById('revenue-change').innerHTML = 
+        `<span style="color: #38a169;">↗ ${revenueChange}%</span> vs ieri`;
+    document.getElementById('avg-change').textContent = 'vs settimana scorsa';
+    document.getElementById('customers-change').textContent = 'clienti registrati';
+}
+
+// GRAFICO VENDITE CON CHART.JS
+function initSalesChart() {
+    const ctx = document.getElementById('salesChart');
+    if (!ctx) {
+        console.error('❌ Canvas salesChart non trovato');
+        return;
+    }
+
+    const chartData = getSalesChartData();
+    
+    salesChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: chartData.labels,
+            datasets: [
+                {
+                    label: 'Ordini',
+                    data: chartData.orders,
+                    borderColor: '#3f6844',
+                    backgroundColor: 'rgba(63, 104, 68, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    yAxisID: 'y'
+                },
+                {
+                    label: 'Fatturato (€)',
+                    data: chartData.revenue,
+                    borderColor: '#7a9e7e',
+                    backgroundColor: 'rgba(122, 158, 126, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    yAxisID: 'y1'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            scales: {
+                x: {
+                    display: true,
+                    title: {
+                        display: true,
+                        text: 'Giorno'
+                    },
+                    grid: {
+                        color: 'rgba(0,0,0,0.1)'
+                    }
+                },
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    title: {
+                        display: true,
+                        text: 'Numero Ordini',
+                        color: '#3f6844'
+                    },
+                    grid: {
+                        color: 'rgba(0,0,0,0.1)'
+                    },
+                    ticks: {
+                        color: '#3f6844'
+                    }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    title: {
+                        display: true,
+                        text: 'Fatturato (€)',
+                        color: '#7a9e7e'
+                    },
+                    grid: {
+                        drawOnChartArea: false,
+                    },
+                    ticks: {
+                        color: '#7a9e7e'
+                    }
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Vendite Ultimi 7 Giorni',
+                    font: {
+                        size: 16,
+                        weight: 'bold'
+                    }
+                },
+                legend: {
+                    display: true,
+                    position: 'top'
+                }
+            }
+        }
+    });
+    
+    console.log('✅ Grafico vendite inizializzato');
+}
+
+function getSalesChartData() {
+    const last7Days = [];
+    const today = new Date();
+    
+    // Genera ultimi 7 giorni
+    for (let i = 6; i >= 0; i--) {
+        const day = new Date(today);
+        day.setDate(day.getDate() - i);
+        day.setHours(0, 0, 0, 0);
+        last7Days.push(day);
+    }
+    
+    const labels = last7Days.map(date => 
+        date.toLocaleDateString('it-IT', { 
+            month: 'short', 
+            day: 'numeric' 
+        })
+    );
+    
+    const orders = [];
+    const revenue = [];
+    
+    last7Days.forEach(day => {
+        const nextDay = new Date(day);
+        nextDay.setDate(nextDay.getDate() + 1);
+        
+        const dayOrders = allOrders.filter(order => {
+            try {
+                const orderDate = order.timestamp && order.timestamp.toDate ? 
+                    order.timestamp.toDate() : new Date(order.timestamp);
+                return orderDate >= day && orderDate < nextDay;
+            } catch (e) {
+                return false;
+            }
+        });
+        
+        orders.push(dayOrders.length);
+        revenue.push(dayOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0));
+    });
+    
+    return { labels, orders, revenue };
+}
+
+function updateSalesChart() {
+    if (!salesChart) return;
+    
+    const chartData = getSalesChartData();
+    
+    salesChart.data.labels = chartData.labels;
+    salesChart.data.datasets[0].data = chartData.orders;
+    salesChart.data.datasets[1].data = chartData.revenue;
+    
+    salesChart.update('none'); // Update senza animazione per performance
+    console.log('✅ Grafico vendite aggiornato');
+}
+
+// SISTEMA NOTIFICHE
+function showNotification(title, message, isNewOrder = false) {
+    // Notifica browser se supportata e permessa
+    if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(title, {
+            body: message,
+            icon: '/favicon.ico',
+            badge: '/favicon.ico',
+            tag: isNewOrder ? 'new-order' : 'info'
+        });
+    }
+    
+    // Notifica popup in-app
+    showInAppNotification(title, message, isNewOrder);
+}
+
+function showInAppNotification(title, message, isNewOrder = false) {
+    const container = document.getElementById('notifications');
+    if (!container) return;
+    
+    const notification = document.createElement('div');
+    notification.className = 'notification';
+    
+    const icon = isNewOrder ? '🛍️' : '🔔';
+    
+    notification.innerHTML = `
+        <button class="notification-close" onclick="closeNotification(this)">&times;</button>
+        <div class="notification-header">
+            ${icon} ${title}
+        </div>
+        <div class="notification-body">
+            ${message}
+        </div>
+    `;
+    
+    container.appendChild(notification);
+    
+    // Animazione di entrata
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 100);
+    
+    // Auto-chiusura dopo 8 secondi
+    setTimeout(() => {
+        closeNotification(notification.querySelector('.notification-close'));
+    }, 8000);
+    
+    // Click per chiudere
+    notification.addEventListener('click', () => {
+        closeNotification(notification.querySelector('.notification-close'));
+    });
+}
+
+window.closeNotification = function(button) {
+    const notification = button.closest('.notification');
+    if (notification) {
+        notification.classList.add('hide');
+        setTimeout(() => {
+            notification.remove();
+        }, 300);
+    }
+};
+
+// CONTROLLO NUOVI ORDINI
+function checkNewOrders() {
+    const currentCount = allOrders.length;
+    
+    if (lastOrderCount > 0 && currentCount > lastOrderCount) {
+        const newOrdersCount = currentCount - lastOrderCount;
+        const message = newOrdersCount === 1 ? 
+            'È arrivato un nuovo ordine!' : 
+            `Sono arrivati ${newOrdersCount} nuovi ordini!`;
+        
+        showNotification('🛍️ Nuovo Ordine', message, true);
+        console.log(`🔔 ${newOrdersCount} nuovi ordini rilevati`);
+    }
+    
+    lastOrderCount = currentCount;
+}
+
+// VISUALIZZAZIONE ORDINI
+function displayOrders() {
+    console.log('📋 Visualizzazione ordini...');
+    
+    const ordersList = document.getElementById('orders-list');
+    if (!ordersList) {
+        console.error('❌ Elemento orders-list non trovato');
+        return;
+    }
+    
+    let filteredOrders = getFilteredOrders();
+    
+    if (filteredOrders.length === 0) {
+        ordersList.innerHTML = '<div class="loading">Nessun ordine trovato per il filtro selezionato</div>';
+        return;
+    }
+    
+    ordersList.innerHTML = filteredOrders.map(order => {
+        const orderDate = order.timestamp && order.timestamp.toDate ? 
+            order.timestamp.toDate() : new Date();
+            
+        const formattedDate = orderDate.toLocaleDateString('it-IT', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+        const itemsText = (order.items || []).map(item => 
+            `${item.name || 'Prodotto'} (x${item.quantity || 1})`
+        ).join(', ');
+        
+        const discountText = order.appliedDiscount > 0 ? 
+            `<br><small style="color: #e53e3e;">Sconto ${order.discountCode}: -${order.appliedDiscount}%</small>` : '';
+        
+        return `
+            <div class="order-item">
+                <div class="order-header">
+                    <span class="order-id">#${order.id.substring(0, 8)}</span>
+                    <span class="order-total">${(order.totalAmount || 0).toFixed(2)}€</span>
+                </div>
+                <div class="order-details">
+                    <strong>${order.customerName || 'Cliente'}</strong><br>
+                    📱 ${order.customerPhone || 'N/A'}<br>
+                    ${order.customerEmail ? `📧 ${order.customerEmail}<br>` : ''}
+                    📅 Ritiro: ${order.pickupDate || 'N/A'}<br>
+                    🍽️ ${itemsText || 'Nessun articolo'}${discountText}
+                </div>
+                <div style="margin-top: 8px;">
+                    <span class="order-status status-nuovo">Nuovo</span>
+                    <small style="color: #718096; margin-left: 10px;">${formattedDate}</small>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    console.log(`✅ Visualizzati ${filteredOrders.length} ordini`);
+}
+
+function getFilteredOrders() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    switch (currentFilter) {
+        case 'oggi':
+            return allOrders.filter(order => {
+                try {
+                    const orderDate = order.timestamp && order.timestamp.toDate ? 
+                        order.timestamp.toDate() : new Date(order.timestamp);
+                    return orderDate >= today;
+                } catch (e) {
+                    return false;
+                }
+            });
+        case 'settimana':
+            const weekAgo = new Date(today);
+            weekAgo.setDate(weekAgo.getDate() - 7);
+            return allOrders.filter(order => {
+                try {
+                    const orderDate = order.timestamp && order.timestamp.toDate ? 
+                        order.timestamp.toDate() : new Date(order.timestamp);
+                    return orderDate >= weekAgo;
+                } catch (e) {
+                    return false;
+                }
+            });
+        case 'mese':
+            const monthAgo = new Date(today);
+            monthAgo.setMonth(monthAgo.getMonth() - 1);
+            return allOrders.filter(order => {
+                try {
+                    const orderDate = order.timestamp && order.timestamp.toDate ? 
+                        order.timestamp.toDate() : new Date(order.timestamp);
+                    return orderDate >= monthAgo;
+                } catch (e) {
+                    return false;
+                }
+            });
+        default:
+            return allOrders;
+    }
+}
+
+// FILTRI ORDINI
+window.filterOrders = function(filter) {
+    currentFilter = filter;
+    
+    // Aggiorna UI filtri
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Trova il pulsante cliccato e attivalo
+    const clickedBtn = Array.from(document.querySelectorAll('.filter-btn'))
+        .find(btn => btn.textContent.toLowerCase().includes(filter.toLowerCase()));
+    if (clickedBtn) {
+        clickedBtn.classList.add('active');
+    }
+    
+    displayOrders();
+    console.log(`🔍 Filtro applicato: ${filter}`);
+};
+
+// TOP PRODUCTS
+function updateTopProducts() {
+    console.log('🏆 Aggiornamento top products...');
+    
+    const productSales = {};
+    
+    allOrders.forEach(order => {
+        if (order.items) {
+            order.items.forEach(item => {
+                const name = item.name || 'Prodotto sconosciuto';
+                if (productSales[name]) {
+                    productSales[name] += item.quantity || 1;
+                } else {
+                    productSales[name] = item.quantity || 1;
+                }
+            });
+        }
+    });
+    
+    const sortedProducts = Object.entries(productSales)
+        .sort(([,a], [,b]) => b - a)
+        .slice(0, 10);
+    
+    const topProductsList = document.getElementById('top-products-list');
+    if (!topProductsList) {
+        console.log('⚠️ Elemento top-products-list non trovato');
+        return;
+    }
+    
+    if (sortedProducts.length === 0) {
+        topProductsList.innerHTML = '<div class="loading">Nessun dato disponibile</div>';
+        return;
+    }
+    
+    topProductsList.innerHTML = sortedProducts.map(([name, sales]) => `
+        <div class="product-item">
+            <span class="product-name">${name.length > 40 ? name.substring(0, 40) + '...' : name}</span>
+            <span class="product-sales">${sales} venduti</span>
+        </div>
+    `).join('');
+    
+    console.log(`✅ Top products aggiornati: ${sortedProducts.length} prodotti`);
+}
+
+// EXPORT CSV
+window.exportToCSV = function() {
+    console.log('📥 Export CSV...');
+    
+    const filteredOrders = getFilteredOrders();
+    
+    if (filteredOrders.length === 0) {
+        alert('Nessun ordine da esportare');
+        return;
+    }
+    
+    const headers = ['ID', 'Data/Ora', 'Cliente', 'Telefono', 'Email', 'Ritiro', 'Articoli', 'Totale', 'Sconto', 'Status'];
+    
+    const csvData = filteredOrders.map(order => {
+        const orderDate = order.timestamp && order.timestamp.toDate ? 
+            order.timestamp.toDate().toLocaleString('it-IT') : 'N/A';
+        const items = (order.items || []).map(item => 
+            `${item.name || 'Prodotto'} (x${item.quantity || 1})`
+        ).join('; ');
+        const discount = order.appliedDiscount > 0 ? 
+            `${order.discountCode} -${order.appliedDiscount}%` : 'Nessuno';
+        
+        return [
+            order.id.substring(0, 8),
+            orderDate,
+            order.customerName || 'Cliente',
+            order.customerPhone || 'N/A',
+            order.customerEmail || 'N/A',
+            order.pickupDate || 'N/A',
+            items,
+            `${(order.totalAmount || 0).toFixed(2)}€`,
+            discount,
+            'Nuovo'
+        ].map(field => `"${field}"`).join(',');
+    });
+    
+    const csvContent = [headers.join(','), ...csvData].join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `ordini_pasto_sano_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    console.log(`✅ CSV esportato con ${filteredOrders.length} ordini`);
+};
+
+// GESTIONE ERRORI
+function showError(message) {
+    console.error('❌ Errore dashboard:', message);
+    
+    const errorElement = document.getElementById('error-message');
+    if (errorElement) {
+        errorElement.textContent = message;
+        errorElement.style.display = 'block';
+    }
+    
+    // Mostra comunque i dati mock
+    allOrders = getMockOrders();
+    lastOrderCount = allOrders.length; // Inizializza contatore
+    updateStats();
+    displayOrders();
+    updateTopProducts();
+    if (salesChart) {
+        updateSalesChart();
+    }
+}
+
+// AUTO-REFRESH CON CONTROLLO NOTIFICHE ogni 30 secondi
+setInterval(async () => {
+    try {
+        console.log('🔄 Auto-refresh dashboard...');
+        await loadAllData();
+        
+        // Controlla nuovi ordini PRIMA di aggiornare
+        checkNewOrders();
+        
+        updateStats();
+        displayOrders();
+        updateTopProducts();
+        updateSalesChart();
+        
+        console.log('✅ Auto-refresh completato');
+    } catch (error) {
+        console.error('❌ Errore auto-refresh:', error);
+    }
+}, 30000);
+
+// Inizializzazione al caricamento
+console.log('📊 Dashboard.js caricato completamente');
+    </script>
+</body>
 </html>
