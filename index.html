@@ -707,11 +707,11 @@
                 </div>
 
                 <div style="text-align: center; margin-top: 25px;">
-                    <button class="modal-btn btn-confirm" onclick="sendToWhatsApp()" style="width: auto; padding: 12px 30px; margin-right: 10px; background: #25D366;">
+                    <button class="modal-btn btn-confirm" onclick="sendToWhatsAppSimple()" style="width: auto; padding: 12px 30px; margin-right: 10px; background: #25D366;">
                         📱 Invia su WhatsApp
                     </button>
                     <button class="modal-btn btn-confirm" onclick="closeSuccessModal()" style="width: auto; padding: 12px 30px;">
-                        Perfetto!
+                        Chiudi
                     </button>
                 </div>
             </div>
@@ -1055,44 +1055,104 @@
         }
 
         function confirmOrder() {
-            console.log('🔄 Conferma ordine iniziata...');
+            console.log('🔄 INIZIO confirmOrder()');
             
-            const deliveryDate = document.getElementById('delivery-date').value;
-            console.log('Data selezionata:', deliveryDate);
-            
-            if (!deliveryDate) {
-                console.log('❌ Nessuna data selezionata');
-                alert('Seleziona una data di consegna');
-                return;
+            try {
+                const deliveryDate = document.getElementById('delivery-date').value;
+                console.log('📅 Data:', deliveryDate);
+                
+                if (!deliveryDate) {
+                    alert('Seleziona una data di consegna');
+                    return;
+                }
+
+                console.log('✅ Proceeding with order...');
+
+                // FORZA la chiusura del modal di conferma
+                const orderModal = document.getElementById('orderModal');
+                if (orderModal) {
+                    orderModal.style.display = 'none';
+                    console.log('🔒 Modal ordine chiuso forzatamente');
+                }
+
+                // Attendi un momento prima di aprire il modal di successo
+                setTimeout(() => {
+                    try {
+                        showSuccessModalSimple(deliveryDate);
+                    } catch (error) {
+                        console.error('❌ Errore in showSuccessModalSimple:', error);
+                        alert('Ordine ricevuto! Controlla WhatsApp per l\'invio.');
+                    }
+                }, 100);
+
+            } catch (error) {
+                console.error('❌ Errore in confirmOrder:', error);
+                alert('Errore nell\'ordine, riprova');
             }
+        }
+
+        function showSuccessModalSimple(deliveryDate) {
+            console.log('🎉 INIZIO showSuccessModalSimple');
             
-            // Controllo semplice della data senza chiamare validateDeliveryDate
-            const selected = new Date(deliveryDate);
-            const today = new Date();
-            const minDate = new Date(today);
-            minDate.setDate(today.getDate() + 2);
-            
-            selected.setHours(0, 0, 0, 0);
-            minDate.setHours(0, 0, 0, 0);
-            
-            if (selected < minDate) {
-                console.log('❌ Data non valida');
-                alert('La data di consegna deve essere almeno 2 giorni nel futuro');
-                return;
+            try {
+                // Salva l'ordine per la dashboard
+                const orderData = {
+                    id: Date.now().toString(),
+                    orderDateTime: new Date().toISOString(),
+                    deliveryDate: deliveryDate,
+                    items: Object.keys(cart).map(itemId => {
+                        const item = [...menuItems.pastiCompleti, ...menuItems.colazioni].find(i => i.id == itemId);
+                        return {
+                            id: itemId,
+                            name: item.name,
+                            price: item.price,
+                            quantity: cart[itemId],
+                            total: item.price * cart[itemId]
+                        };
+                    }),
+                    totalItems: Object.values(cart).reduce((sum, qty) => sum + qty, 0),
+                    subtotal: Object.keys(cart).reduce((total, itemId) => {
+                        const item = [...menuItems.pastiCompleti, ...menuItems.colazioni].find(i => i.id == itemId);
+                        return total + (item.price * cart[itemId]);
+                    }, 0),
+                    discount: promoDiscount,
+                    discountCode: discountCode,
+                    total: Object.keys(cart).reduce((total, itemId) => {
+                        const item = [...menuItems.pastiCompleti, ...menuItems.colazioni].find(i => i.id == itemId);
+                        return total + (item.price * cart[itemId]);
+                    }, 0) - promoDiscount,
+                    status: 'Confermato'
+                };
+
+                saveOrderToLocalStorage(orderData);
+                console.log('💾 Ordine salvato');
+
+                // Mostra modal di successo semplice
+                const successModal = document.getElementById('successModal');
+                const successDetails = document.getElementById('success-order-details');
+                
+                if (successModal && successDetails) {
+                    successDetails.innerHTML = `
+                        <h3>✅ Ordine Confermato!</h3>
+                        <p><strong>📅 Data consegna:</strong> ${new Date(deliveryDate).toLocaleDateString('it-IT')}</p>
+                        <p><strong>📦 Totale articoli:</strong> ${orderData.totalItems}</p>
+                        <p><strong>💰 Totale:</strong> €${orderData.total.toFixed(2)}</p>
+                        <br>
+                        <p>🎉 <strong>Ordine ricevuto con successo!</strong></p>
+                        <p>📱 Ora puoi inviarlo su WhatsApp</p>
+                    `;
+                    
+                    successModal.style.display = 'block';
+                    console.log('✅ Modal successo mostrato');
+                } else {
+                    console.error('❌ Modal elementi non trovati');
+                    alert('Ordine confermato! Totale: €' + orderData.total.toFixed(2));
+                }
+
+            } catch (error) {
+                console.error('❌ Errore in showSuccessModalSimple:', error);
+                alert('Ordine ricevuto ma errore nella visualizzazione');
             }
-
-            console.log('✅ Validazione superata, procedendo...');
-
-            // Chiudi il modal di conferma
-            closeOrderModal();
-
-            // Mostra il modal di successo
-            showSuccessModal(deliveryDate);
-
-            // Reset del carrello dopo conferma
-            setTimeout(() => {
-                resetCart();
-            }, 1000);
         }
 
         function showSuccessModal(deliveryDate) {
@@ -1247,7 +1307,50 @@
         }
 
         function closeSuccessModal() {
+            console.log('🔒 Chiusura modal successo');
             document.getElementById('successModal').style.display = 'none';
+            
+            // Reset automatico del carrello
+            setTimeout(() => {
+                resetCart();
+                console.log('🧹 Carrello resettato');
+            }, 500);
+        }
+
+        function sendToWhatsAppSimple() {
+            console.log('📱 Invio WhatsApp semplificato');
+            
+            try {
+                const deliveryDate = document.getElementById('delivery-date').value;
+                
+                // Costruisci messaggio semplice
+                let message = "🎉 Nuovo Ordine Pasto Sano!\n\n";
+                
+                Object.keys(cart).forEach(itemId => {
+                    const item = [...menuItems.pastiCompleti, ...menuItems.colazioni].find(i => i.id == itemId);
+                    const quantity = cart[itemId];
+                    message += `• ${item.name} (x${quantity}) - €${(item.price * quantity).toFixed(2)}\n`;
+                });
+                
+                const total = Object.keys(cart).reduce((sum, itemId) => {
+                    const item = [...menuItems.pastiCompleti, ...menuItems.colazioni].find(i => i.id == itemId);
+                    return sum + (item.price * cart[itemId]);
+                }, 0) - promoDiscount;
+                
+                message += `\n💰 Totale: €${total.toFixed(2)}`;
+                message += `\n📅 Consegna: ${new Date(deliveryDate).toLocaleDateString('it-IT')}`;
+                message += "\n\nGrazie!";
+
+                const phoneNumber = "+393478881515";
+                const whatsappLink = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+
+                window.open(whatsappLink, '_blank');
+                console.log('✅ WhatsApp aperto');
+                
+            } catch (error) {
+                console.error('❌ Errore WhatsApp:', error);
+                alert('Errore nell\'invio WhatsApp');
+            }
         }
 
         function sendToWhatsApp() {
