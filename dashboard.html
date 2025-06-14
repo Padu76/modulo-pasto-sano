@@ -1,10 +1,11 @@
 <!DOCTYPE html>
+
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Pasto Sano - Analytics</title>
-    <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dashboard Pasto Sano - Analytics</title>
+<style>
         * {
             margin: 0;
             padding: 0;
@@ -283,92 +284,101 @@
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="container">
-            <h1>📊 Dashboard Pasto Sano</h1>
-            <p>Analytics e gestione ordini in tempo reale</p>
-        </div>
-    </div>
+<div class="header">
+<div class="container">
+<h1>📊 Dashboard Pasto Sano</h1>
+<p>Analytics e gestione ordini in tempo reale</p>
+</div>
+</div>
+<div class="container">
+<div class="error" id="error-message" style="display: none;"></div>
+<!-- STATISTICHE -->
+<div class="stats-grid">
+<div class="stat-card">
+<h3>Ordini Oggi</h3>
+<div class="stat-value" id="orders-today">-</div>
+<div class="stat-change neutral">
+<span id="orders-change">Caricamento...</span>
+</div>
+</div>
+<div class="stat-card">
+<h3>Fatturato Oggi</h3>
+<div class="stat-value" id="revenue-today">-</div>
+<div class="stat-change neutral">
+<span id="revenue-change">Caricamento...</span>
+</div>
+</div>
+<div class="stat-card">
+<h3>Ordine Medio</h3>
+<div class="stat-value" id="avg-order">-</div>
+<div class="stat-change neutral">
+<span id="avg-change">Caricamento...</span>
+</div>
+</div>
+<div class="stat-card">
+<h3>Totale Clienti</h3>
+<div class="stat-value" id="total-customers">-</div>
+<div class="stat-change neutral">
+<span id="customers-change">Caricamento...</span>
+</div>
+</div>
+</div>
+<!-- CONTENUTO PRINCIPALE -->
+<div class="main-content">
+<!-- SEZIONE ORDINI -->
+<div class="orders-section">
+<div class="section-header">
+<h2 class="section-title">🛍️ Ordini Recenti</h2>
+<button class="export-btn" onclick="exportToCSV()">📥 Esporta CSV</button>
+</div>
+<div class="filters">
+<button class="filter-btn active" onclick="filterOrders('tutti')">Tutti</button>
+<button class="filter-btn" onclick="filterOrders('oggi')">Oggi</button>
+<button class="filter-btn" onclick="filterOrders('settimana')">Settimana</button>
+<button class="filter-btn" onclick="filterOrders('mese')">Mese</button>
+</div>
+<div class="orders-list" id="orders-list">
+<div class="loading">Caricamento ordini...</div>
+</div>
+</div>
+<!-- SEZIONE ANALYTICS -->
+<div class="analytics-section">
+<div class="section-header">
+<h2 class="section-title">📈 Analytics</h2>
+</div>
+<div class="chart-container">
+<p>Grafico vendite<br/>(Implementazione Chart.js in arrivo)</p>
+</div>
+<div class="top-products">
+<h3>🏆 Piatti Più Venduti</h3>
+<div id="top-products-list">
+<div class="loading">Caricamento...</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script src="dashboard.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><script>
+document.getElementById("exportPdfFornitore").addEventListener("click", () => {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  let y = 10;
+  doc.setFontSize(16);
+  doc.text("ORDINI PER FORNITORE", 10, y);
+  y += 10;
 
-    <div class="container">
-        <div id="error-message" class="error" style="display: none;"></div>
-        
-        <!-- STATISTICHE -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <h3>Ordini Oggi</h3>
-                <div class="stat-value" id="orders-today">-</div>
-                <div class="stat-change neutral">
-                    <span id="orders-change">Caricamento...</span>
-                </div>
-            </div>
-            
-            <div class="stat-card">
-                <h3>Fatturato Oggi</h3>
-                <div class="stat-value" id="revenue-today">-</div>
-                <div class="stat-change neutral">
-                    <span id="revenue-change">Caricamento...</span>
-                </div>
-            </div>
-            
-            <div class="stat-card">
-                <h3>Ordine Medio</h3>
-                <div class="stat-value" id="avg-order">-</div>
-                <div class="stat-change neutral">
-                    <span id="avg-change">Caricamento...</span>
-                </div>
-            </div>
-            
-            <div class="stat-card">
-                <h3>Totale Clienti</h3>
-                <div class="stat-value" id="total-customers">-</div>
-                <div class="stat-change neutral">
-                    <span id="customers-change">Caricamento...</span>
-                </div>
-            </div>
-        </div>
+  document.querySelectorAll("#ordersTable tbody tr").forEach((row, index) => {
+    const nome = row.querySelector("td:nth-child(1)").innerText;
+    const piatti = row.querySelector("td:nth-child(3)").innerText;
+    doc.setFontSize(12);
+    doc.text(`${index + 1}. ${nome}`, 10, y);
+    y += 6;
+    doc.text(`- ${piatti}`, 14, y);
+    y += 10;
+  });
 
-        <!-- CONTENUTO PRINCIPALE -->
-        <div class="main-content">
-            <!-- SEZIONE ORDINI -->
-            <div class="orders-section">
-                <div class="section-header">
-                    <h2 class="section-title">🛍️ Ordini Recenti</h2>
-                    <button class="export-btn" onclick="exportToCSV()">📥 Esporta CSV</button>
-                </div>
-                
-                <div class="filters">
-                    <button class="filter-btn active" onclick="filterOrders('tutti')">Tutti</button>
-                    <button class="filter-btn" onclick="filterOrders('oggi')">Oggi</button>
-                    <button class="filter-btn" onclick="filterOrders('settimana')">Settimana</button>
-                    <button class="filter-btn" onclick="filterOrders('mese')">Mese</button>
-                </div>
-                
-                <div id="orders-list" class="orders-list">
-                    <div class="loading">Caricamento ordini...</div>
-                </div>
-            </div>
-
-            <!-- SEZIONE ANALYTICS -->
-            <div class="analytics-section">
-                <div class="section-header">
-                    <h2 class="section-title">📈 Analytics</h2>
-                </div>
-                
-                <div class="chart-container">
-                    <p>Grafico vendite<br>(Implementazione Chart.js in arrivo)</p>
-                </div>
-                
-                <div class="top-products">
-                    <h3>🏆 Piatti Più Venduti</h3>
-                    <div id="top-products-list">
-                        <div class="loading">Caricamento...</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script src="dashboard.js"></script>
-</body>
+  doc.save("ordini_fornitore.pdf");
+});
+</script></body>
 </html>
