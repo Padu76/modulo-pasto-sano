@@ -376,6 +376,40 @@
                     doc.text(`${index + 1}. #ORD${id.padStart(6, '0')}`, 20, yPosition);
                     yPosition += 8;
                     
+                    if (yPosition > 250 && index < selectedOrders.length - 1) {
+                        doc.addPage();
+                        yPosition = 20;
+                    }
+                });
+                
+                doc.save('ordini-selezionati.pdf');
+            } catch (error) {
+                console.error('Errore nella generazione del PDF:', error);
+                alert('Errore nella generazione del PDF: ' + error.message);
+            }
+        }
+
+        function showOrderDetails(orderId) {
+            const orders = {
+                1: { customer: 'Mario Rossi', time: '19:45', status: 'preparazione', items: ['Spaghetti Carbonara x2', 'Tiramisu x1', 'Vino Rosso x1'], total: 45.50 },
+                2: { customer: 'Anna Verdi', time: '20:15', status: 'servito', items: ['Pizza Margherita x1', 'Insalata Mista x1', 'Acqua x2', 'Caffe x2'], total: 28.00 },
+                3: { customer: 'Luca Bianchi', time: '20:45', status: 'completato', items: ['Antipasto Misto x1', 'Bistecca alla Griglia x2', 'Contorno di Verdure x2'], total: 65.00 }
+            };
+            
+            const order = orders[orderId];
+            if (order) {
+                alert(`Dettagli Ordine - ${order.customer}\n\nOrario: ${order.time}\nStato: ${order.status}\n\nArticoli:\n${order.items.join('\n')}\n\nTotale: €${order.total.toFixed(2)}`);
+            }
+        }
+
+        // Inizializza i grafici quando la pagina è caricata
+        window.addEventListener('load', function() {
+            createCharts();
+        });
+    </script>
+</body>
+</html>
+                    
                     doc.setFontSize(11);
                     doc.setFont(undefined, 'normal');
                     doc.text(`- ${customer}`, 25, yPosition);
