@@ -944,8 +944,14 @@
             const confirmButton = document.querySelector('#orderModal .btn-confirm');
             const errorDiv = document.getElementById('date-error');
             
+            // Controlli di sicurezza
+            if (!deliveryDateInput) {
+                console.log('❌ Campo data non trovato');
+                return false;
+            }
+            
             if (!confirmButton) {
-                console.log('Pulsante conferma non trovato');
+                console.log('❌ Pulsante conferma non trovato');
                 return false;
             }
             
@@ -954,8 +960,8 @@
             
             if (!selectedDate) {
                 confirmButton.disabled = true;
-                confirmButton.style.opacity = '0.5';
-                errorDiv.style.display = 'none';
+                if (confirmButton.style) confirmButton.style.opacity = '0.5';
+                if (errorDiv && errorDiv.style) errorDiv.style.display = 'none';
                 console.log('Nessuna data selezionata - pulsante disabilitato');
                 return false;
             }
@@ -972,17 +978,19 @@
             
             if (selected < minDate) {
                 confirmButton.disabled = true;
-                confirmButton.style.opacity = '0.5';
-                errorDiv.textContent = '⚠️ La data deve essere almeno 2 giorni nel futuro';
-                errorDiv.style.display = 'block';
+                if (confirmButton.style) confirmButton.style.opacity = '0.5';
+                if (errorDiv) {
+                    errorDiv.textContent = '⚠️ La data deve essere almeno 2 giorni nel futuro';
+                    if (errorDiv.style) errorDiv.style.display = 'block';
+                }
                 console.log('Data troppo vicina - pulsante disabilitato');
                 return false;
             }
             
             // Data valida
             confirmButton.disabled = false;
-            confirmButton.style.opacity = '1';
-            errorDiv.style.display = 'none';
+            if (confirmButton.style) confirmButton.style.opacity = '1';
+            if (errorDiv && errorDiv.style) errorDiv.style.display = 'none';
             console.log('Data valida - pulsante abilitato');
             return true;
         }
@@ -1047,21 +1055,33 @@
         }
 
         function confirmOrder() {
-            const deliveryDate = document.getElementById('delivery-date').value;
+            console.log('🔄 Conferma ordine iniziata...');
             
-            if (!validateDeliveryDate()) {
-                // Evidenzia il campo data con animazione
-                const deliveryDateInput = document.getElementById('delivery-date');
-                deliveryDateInput.style.borderColor = '#e74c3c';
-                deliveryDateInput.style.animation = 'shake 0.5s ease-in-out';
-                
-                setTimeout(() => {
-                    deliveryDateInput.style.animation = '';
-                    deliveryDateInput.style.borderColor = '#e9ecef';
-                }, 500);
-                
+            const deliveryDate = document.getElementById('delivery-date').value;
+            console.log('Data selezionata:', deliveryDate);
+            
+            if (!deliveryDate) {
+                console.log('❌ Nessuna data selezionata');
+                alert('Seleziona una data di consegna');
                 return;
             }
+            
+            // Controllo semplice della data senza chiamare validateDeliveryDate
+            const selected = new Date(deliveryDate);
+            const today = new Date();
+            const minDate = new Date(today);
+            minDate.setDate(today.getDate() + 2);
+            
+            selected.setHours(0, 0, 0, 0);
+            minDate.setHours(0, 0, 0, 0);
+            
+            if (selected < minDate) {
+                console.log('❌ Data non valida');
+                alert('La data di consegna deve essere almeno 2 giorni nel futuro');
+                return;
+            }
+
+            console.log('✅ Validazione superata, procedendo...');
 
             // Chiudi il modal di conferma
             closeOrderModal();
