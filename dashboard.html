@@ -3,61 +3,53 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8" />
-  <title>Dashboard Ordini - Pasto Sano</title>
+  <title>Dashboard Pasto Sano</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    .ordine { margin-bottom: 15px; }
-    .btn { padding: 10px 16px; font-size: 16px; background: green; color: white; border: none; cursor: pointer; }
+    body { font-family: Arial; padding: 20px; }
+    .ordine { border-bottom: 1px solid #ccc; margin-bottom: 15px; padding-bottom: 10px; }
+    .btn { background-color: #d35400; color: #fff; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
   </style>
 </head>
 <body>
-  <h1>Dashboard Pasto Sano</h1>
+  <h1>📊 Dashboard Pasto Sano</h1>
+  <button id="exportPdf" class="btn">📄 Esporta PDF Fornitore</button>
 
   <div id="ordini">
     <div class="ordine" data-nome="Andrea Padoan" data-articoli="1. Fusilli (x3), 2. Roastbeef (x2)">
-      <strong>Andrea Padoan</strong><br />
-      1. Fusilli, Macinato Manzo, Zucchine, Melanzane (x3)<br />
-      2. Roastbeef, Patate al Forno, Fagiolini (x2)<br />
+      <strong>Andrea Padoan</strong><br>
+      1. Fusilli, Macinato Manzo, Zucchine, Melanzane (x3)<br>
+      2. Roastbeef, Patate al Forno, Fagiolini (x2)<br>
       Totale: 40.00€
     </div>
     <div class="ordine" data-nome="Lara" data-articoli="1. Fusilli (x1), 2. Roastbeef (x1), 3. Riso (x1), 12. Pancakes (x1)">
-      <strong>Lara</strong><br />
-      1. Fusilli, Macinato Manzo, Zucchine, Melanzane (x1)<br />
-      2. Roastbeef, Patate al Forno, Fagiolini (x1)<br />
-      3. Riso, Hamburger Manzo, Carotine Baby (x1)<br />
-      12. Pancakes (x1)<br />
+      <strong>Lara</strong><br>
+      1. Fusilli, Macinato Manzo, Zucchine, Melanzane (x1)<br>
+      2. Roastbeef, Patate al Forno, Fagiolini (x1)<br>
+      3. Riso, Hamburger Manzo, Carotine Baby (x1)<br>
+      12. Pancakes (x1)<br>
       Totale: 30.00€
     </div>
   </div>
 
-  <button class="btn" onclick="generaPDF()">📄 Esporta PDF Fornitore</button>
-
   <script>
-    async function generaPDF() {
+    document.getElementById('exportPdf').addEventListener('click', () => {
       const {{ jsPDF }} = window.jspdf;
       const doc = new jsPDF();
       let y = 10;
-
-      doc.setFontSize(14);
-      doc.text("ORDINI PASTO SANO - FORNITORE", 10, y);
+      doc.text("ORDINI PER FORNITORE", 10, y);
       y += 10;
 
-      const ordini = document.querySelectorAll(".ordine");
-      ordini.forEach((ordine, index) => {
-        const nome = ordine.getAttribute("data-nome");
-        const articoli = ordine.getAttribute("data-articoli");
-
-        doc.setFontSize(12);
-        doc.text(`${index + 1}. ${nome}`, 10, y);
-        y += 8;
-        doc.setFontSize(11);
-        doc.text(`- ${articoli}`, 14, y);
-        y += 10;
+      const orders = document.querySelectorAll('.ordine');
+      orders.forEach((order, i) => {
+        const nome = order.getAttribute('data-nome');
+        const articoli = order.getAttribute('data-articoli');
+        doc.text(`${i + 1}. ${nome}`, 10, y); y += 8;
+        doc.text(`- ${articoli}`, 14, y); y += 10;
       });
 
       doc.save("ordini_fornitore.pdf");
-    }
+    });
   </script>
 </body>
 </html>
