@@ -606,6 +606,31 @@ const DASHBOARD_PASSWORD = 'pastosano2025';
 // INIZIALIZZAZIONE
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('🚀 Dashboard inizializzata');
+    
+    // Carica sempre i dati, anche senza auth (per test)
+    try {
+        await loadFirebaseConfig();
+        await waitForFirebase();
+        await loadAllData();
+        
+        if (lastOrderCount === 0) lastOrderCount = allOrders.length;
+        updateStats();
+        displayOrders();
+        updateTopProducts();
+        initSalesChart();
+        console.log('✅ Dashboard caricata con dati');
+    } catch (error) {
+        console.error('❌ Errore caricamento iniziale:', error);
+        // Usa dati mock se Firebase non funziona
+        allOrders = getMockOrders();
+        lastOrderCount = allOrders.length;
+        updateStats();
+        displayOrders();
+        updateTopProducts();
+        initSalesChart();
+    }
+    
+    // Poi mostra auth se necessario
     showAuthModal();
 });
 
@@ -626,8 +651,7 @@ window.checkPassword = function() {
     
     if (password === DASHBOARD_PASSWORD) {
         hideAuthModal();
-        initializeDashboard();
-        console.log('✅ Accesso autorizzato');
+        console.log('✅ Accesso autorizzato - dati già caricati');
     } else {
         errorDiv.textContent = '❌ Password non corretta. Riprova.';
         errorDiv.style.display = 'block';
@@ -644,7 +668,7 @@ window.handlePasswordKeypress = function(event) {
 // SKIP AUTH PER TEST
 window.skipAuth = function() {
     hideAuthModal();
-    initializeDashboard();
+    console.log('🔓 Auth saltata - dati già caricati');
 };
 
 // INIZIALIZZAZIONE DASHBOARD
