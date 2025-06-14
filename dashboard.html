@@ -1,374 +1,55 @@
+
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Pasto Sano - Analytics</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f7fa;
-            color: #2d3748;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #3f6844, #7a9e7e);
-            color: white;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .header h1 {
-            font-size: 28px;
-            margin-bottom: 5px;
-        }
-
-        .header p {
-            opacity: 0.9;
-            font-size: 16px;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-            border-left: 4px solid #7a9e7e;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .stat-card h3 {
-            color: #4a5568;
-            font-size: 14px;
-            font-weight: 600;
-            text-transform: uppercase;
-            margin-bottom: 10px;
-            letter-spacing: 0.5px;
-        }
-
-        .stat-value {
-            font-size: 32px;
-            font-weight: bold;
-            color: #2d3748;
-            margin-bottom: 5px;
-        }
-
-        .stat-change {
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .positive { color: #38a169; }
-        .negative { color: #e53e3e; }
-        .neutral { color: #718096; }
-
-        .main-content {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .orders-section, .analytics-section {
-            background: white;
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        }
-
-        .section-header {
-            display: flex;
-            justify-content: between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #e2e8f0;
-        }
-
-        .section-title {
-            font-size: 20px;
-            font-weight: bold;
-            color: #2d3748;
-        }
-
-        .filters {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .filter-btn {
-            padding: 8px 16px;
-            border: 1px solid #e2e8f0;
-            background: white;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.2s;
-        }
-
-        .filter-btn.active {
-            background: #7a9e7e;
-            color: white;
-            border-color: #7a9e7e;
-        }
-
-        .filter-btn:hover {
-            border-color: #7a9e7e;
-        }
-
-        .orders-list {
-            max-height: 500px;
-            overflow-y: auto;
-        }
-
-        .order-item {
-            padding: 15px;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            transition: all 0.2s;
-        }
-
-        .order-item:hover {
-            border-color: #7a9e7e;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        .order-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-
-        .order-id {
-            font-weight: bold;
-            color: #2d3748;
-        }
-
-        .order-total {
-            font-weight: bold;
-            color: #7a9e7e;
-            font-size: 18px;
-        }
-
-        .order-details {
-            font-size: 14px;
-            color: #4a5568;
-            margin-bottom: 8px;
-        }
-
-        .order-status {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .status-nuovo { background: #fed7d7; color: #c53030; }
-        .status-confermato { background: #bee3f8; color: #2b6cb0; }
-        .status-pronto { background: #c6f6d5; color: #276749; }
-
-        .chart-container {
-            height: 300px;
-            margin: 20px 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px dashed #e2e8f0;
-            border-radius: 8px;
-            color: #a0aec0;
-        }
-
-        .top-products {
-            margin-top: 20px;
-        }
-
-        .product-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        .product-item:last-child {
-            border-bottom: none;
-        }
-
-        .product-name {
-            font-weight: 500;
-            color: #2d3748;
-        }
-
-        .product-sales {
-            font-size: 14px;
-            color: #7a9e7e;
-            font-weight: 600;
-        }
-
-        .export-btn {
-            background: #7a9e7e;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            margin-left: 10px;
-            transition: background 0.2s;
-        }
-
-        .export-btn:hover {
-            background: #678b6b;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #a0aec0;
-        }
-
-        .error {
-            background: #fed7d7;
-            color: #c53030;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-
-        @media (max-width: 768px) {
-            .main-content {
-                grid-template-columns: 1fr;
-            }
-            
-            .filters {
-                justify-content: center;
-            }
-            
-            .stats-grid {
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Dashboard Pasto Sano</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    .ordine { border-bottom: 1px solid #ccc; margin-bottom: 15px; padding-bottom: 10px; }
+    .btn { background-color: #d35400; color: #fff; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+  </style>
 </head>
 <body>
-    <div class="header">
-        <div class="container">
-            <h1>📊 Dashboard Pasto Sano</h1>
-            <p>Analytics e gestione ordini in tempo reale</p>
-        </div>
+  <h1>📊 Dashboard Pasto Sano</h1>
+  <button id="exportPdf" class="btn">📄 Esporta PDF Fornitore</button>
+
+  <div id="ordini">
+    <div class="ordine" data-nome="Andrea Padoan" data-articoli="1. Fusilli (x3), 2. Roastbeef (x2)">
+      <strong>Andrea Padoan</strong><br>
+      1. Fusilli, Macinato Manzo, Zucchine, Melanzane (x3)<br>
+      2. Roastbeef, Patate al Forno, Fagiolini (x2)<br>
+      Totale: 40.00€
     </div>
-
-    <div class="container">
-        <div id="error-message" class="error" style="display: none;"></div>
-        
-        <!-- STATISTICHE -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <h3>Ordini Oggi</h3>
-                <div class="stat-value" id="orders-today">-</div>
-                <div class="stat-change neutral">
-                    <span id="orders-change">Caricamento...</span>
-                </div>
-            </div>
-            
-            <div class="stat-card">
-                <h3>Fatturato Oggi</h3>
-                <div class="stat-value" id="revenue-today">-</div>
-                <div class="stat-change neutral">
-                    <span id="revenue-change">Caricamento...</span>
-                </div>
-            </div>
-            
-            <div class="stat-card">
-                <h3>Ordine Medio</h3>
-                <div class="stat-value" id="avg-order">-</div>
-                <div class="stat-change neutral">
-                    <span id="avg-change">Caricamento...</span>
-                </div>
-            </div>
-            
-            <div class="stat-card">
-                <h3>Totale Clienti</h3>
-                <div class="stat-value" id="total-customers">-</div>
-                <div class="stat-change neutral">
-                    <span id="customers-change">Caricamento...</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- CONTENUTO PRINCIPALE -->
-        <div class="main-content">
-            <!-- SEZIONE ORDINI -->
-            <div class="orders-section">
-                <div class="section-header">
-                    <h2 class="section-title">🛍️ Ordini Recenti</h2>
-                    <button class="export-btn" onclick="exportToCSV()">📥 Esporta CSV</button>
-                </div>
-                
-                <div class="filters">
-                    <button class="filter-btn active" onclick="filterOrders('tutti')">Tutti</button>
-                    <button class="filter-btn" onclick="filterOrders('oggi')">Oggi</button>
-                    <button class="filter-btn" onclick="filterOrders('settimana')">Settimana</button>
-                    <button class="filter-btn" onclick="filterOrders('mese')">Mese</button>
-                </div>
-                
-                <div id="orders-list" class="orders-list">
-                    <div class="loading">Caricamento ordini...</div>
-                </div>
-            </div>
-
-            <!-- SEZIONE ANALYTICS -->
-            <div class="analytics-section">
-                <div class="section-header">
-                    <h2 class="section-title">📈 Analytics</h2>
-                </div>
-                
-                <div class="chart-container">
-                    <p>Grafico vendite<br>(Implementazione Chart.js in arrivo)</p>
-                </div>
-                
-                <div class="top-products">
-                    <h3>🏆 Piatti Più Venduti</h3>
-                    <div id="top-products-list">
-                        <div class="loading">Caricamento...</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="ordine" data-nome="Lara" data-articoli="1. Fusilli (x1), 2. Roastbeef (x1), 3. Riso (x1), 12. Pancakes (x1)">
+      <strong>Lara</strong><br>
+      1. Fusilli, Macinato Manzo, Zucchine, Melanzane (x1)<br>
+      2. Roastbeef, Patate al Forno, Fagiolini (x1)<br>
+      3. Riso, Hamburger Manzo, Carotine Baby (x1)<br>
+      12. Pancakes (x1)<br>
+      Totale: 30.00€
     </div>
+  </div>
 
-    <script src="dashboard.js"></script>
+  <script>
+    document.getElementById('exportPdf').addEventListener('click', () => {
+      const {{ jsPDF }} = window.jspdf;
+      const doc = new jsPDF();
+      let y = 10;
+      doc.text("ORDINI PER FORNITORE", 10, y);
+      y += 10;
+
+      const orders = document.querySelectorAll('.ordine');
+      orders.forEach((order, i) => {
+        const nome = order.getAttribute('data-nome');
+        const articoli = order.getAttribute('data-articoli');
+        doc.text(`${i + 1}. ${nome}`, 10, y); y += 8;
+        doc.text(`- ${articoli}`, 14, y); y += 10;
+      });
+
+      doc.save("ordini_fornitore.pdf");
+    });
+  </script>
 </body>
 </html>

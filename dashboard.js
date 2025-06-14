@@ -83,24 +83,9 @@ const PastosanoDashboard = () => {
     const doc = new jsPDF();
     const selectedOrders = orders.filter(order => selectedOrdersForPdf.has(order.id));
     
-    // Funzione per sostituire caratteri speciali
-    const cleanText = (text) => {
-      return text
-        .replace(/à/g, 'a').replace(/À/g, 'A')
-        .replace(/è/g, 'e').replace(/È/g, 'E') 
-        .replace(/é/g, 'e').replace(/É/g, 'E')
-        .replace(/ì/g, 'i').replace(/Ì/g, 'I')
-        .replace(/ò/g, 'o').replace(/Ò/g, 'O')
-        .replace(/ù/g, 'u').replace(/Ù/g, 'U')
-        .replace(/'/g, "'")
-        .replace(/"/g, '"')
-        .replace(/–/g, '-')
-        .replace(/—/g, '-');
-    };
-    
     // Header
     doc.setFontSize(20);
-    doc.text('ORDINI PASTO SANO - FORNITORE', 20, 20);
+    doc.text('Lista Ordini - Pastosano', 20, 20);
     
     doc.setFontSize(12);
     doc.text(`Data: ${new Date().toLocaleDateString('it-IT')}`, 20, 30);
@@ -109,33 +94,22 @@ const PastosanoDashboard = () => {
     let yPosition = 60;
     
     selectedOrders.forEach((order, index) => {
-      // Numero ordine
-      doc.setFontSize(12);
-      doc.setFont(undefined, 'bold');
-      doc.text(`${index + 1}. #ORD${order.id.toString().padStart(6, '0')}`, 20, yPosition);
-      yPosition += 8;
-      
       // Nome cliente
-      doc.setFontSize(11);
-      doc.setFont(undefined, 'normal');
-      doc.text(`- ${cleanText(order.customer)}`, 25, yPosition);
-      yPosition += 6;
-      
-      // Orario
-      doc.text(`Orario: ${order.time}`, 25, yPosition);
-      yPosition += 6;
+      doc.setFontSize(14);
+      doc.setFont(undefined, 'bold');
+      doc.text(`${order.customer}`, 20, yPosition);
       
       // Prodotti
-      doc.text(`Prodotti:`, 25, yPosition);
-      yPosition += 6;
+      doc.setFontSize(10);
+      doc.setFont(undefined, 'normal');
+      yPosition += 10;
       
       order.items.forEach((item) => {
-        const itemText = `  ${cleanText(item.name)} (x${item.quantity})`;
-        doc.text(itemText, 30, yPosition);
-        yPosition += 5;
+        doc.text(`• ${item.name} x${item.quantity}`, 30, yPosition);
+        yPosition += 8;
       });
       
-      yPosition += 8;
+      yPosition += 5;
       
       // Nuova pagina se necessario
       if (yPosition > 250 && index < selectedOrders.length - 1) {
