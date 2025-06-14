@@ -173,7 +173,7 @@
             <div class="promo-section">
                 <h4>🎁 Hai un codice promozionale?</h4>
                 <div class="promo-input-group">
-                    <input type="text" id="promo-code" placeholder="es. codice sconto">
+                    <input type="text" id="promo-code" placeholder="es. PRIMAVERA10">
                     <button id="apply-promo">Applica</button>
                 </div>
                 <div id="promo-message"></div>
@@ -192,37 +192,6 @@
             <div id="order-message"></div>
         </section>
     </main>
-
-    <!-- POPUP DATI CLIENTE -->
-    <div class="popup-overlay" id="customer-popup">
-        <div class="popup-content">
-            <div class="popup-header">
-                <h3>👤 I tuoi Dati</h3>
-                <button class="popup-close" id="close-customer-popup">&times;</button>
-            </div>
-            <form id="customer-form">
-                <div style="margin-bottom: 15px;">
-                    <label for="customer-name" style="display: block; margin-bottom: 5px; font-weight: bold;">Nome e Cognome *</label>
-                    <input type="text" id="customer-name" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px;">
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <label for="customer-phone" style="display: block; margin-bottom: 5px; font-weight: bold;">Telefono *</label>
-                    <input type="tel" id="customer-phone" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px;" placeholder="es. 347 123 4567">
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <label for="customer-email" style="display: block; margin-bottom: 5px; font-weight: bold;">Email (opzionale)</label>
-                    <input type="email" id="customer-email" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px;" placeholder="es. mario@email.com">
-                </div>
-                <div style="margin-bottom: 20px;">
-                    <label for="order-notes" style="display: block; margin-bottom: 5px; font-weight: bold;">Note aggiuntive</label>
-                    <textarea id="order-notes" rows="3" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; resize: vertical;" placeholder="Allergie, preferenze particolari..."></textarea>
-                </div>
-            </form>
-            <button id="confirm-customer" style="background-color: #25D366; color: white; padding: 15px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; width: 100%;">
-                ✅ Conferma e Procedi
-            </button>
-        </div>
-    </div>
 
     <!-- POPUP RIEPILOGATIVO -->
     <div class="popup-overlay" id="summary-popup">
@@ -244,6 +213,6 @@
         ✅ Ordine inviato con successo!
     </div>
 
-    <script src="script-enhanced.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>

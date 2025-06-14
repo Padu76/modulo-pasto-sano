@@ -1,68 +1,120 @@
 document.addEventListener('DOMContentLoaded', () => {
     const mealItems = document.querySelectorAll('.meal-item');
     const cartItemsList = document.getElementById('cart-items');
-    const cartTotalSpan = document.getElementById('cart-total');
+    const totalPriceSpan = document.getElementById('total-price');
     const totalItemsSpan = document.getElementById('total-items');
-    const checkoutButton = document.getElementById('checkout-button');
+    const submitOrderButton = document.getElementById('submit-order');
     const pickupDateInput = document.getElementById('pickup-date');
     const orderMessage = document.getElementById('order-message');
 
-    let cart = []; // Array per memorizzare gli articoli nel carrello
+    let cart = [];
+    let appliedDiscount = 0;
+    let discountCode = '';
 
-    // Funzione per aggiornare il carrello nell'interfaccia
+    // CODICI PROMOZIONALI
+    const promoCodes = {
+        'PRIMAVERA10': 10,
+        'ESTATE15': 15,
+        'BENVENUTO5': 5,
+        'SCONTO20': 20
+    };
+
     function updateCartDisplay() {
-        cartItemsList.innerHTML = ''; // Pulisce il carrello attuale
-        let total = 0;
+        cartItemsList.innerHTML = '';
+        let subtotal = 0;
         let totalQuantity = 0;
 
         cart.forEach(item => {
-            const li = document.createElement('li');
-            li.innerHTML = `
-                <span>${item.name} (x${item.quantity})</span>
-                <span>${(item.price * item.quantity).toFixed(2)}€</span>
-            `;
-            cartItemsList.appendChild(li);
-            total += item.price * item.quantity;
-            totalQuantity += item.quantity;
+            if (item.quantity > 0) {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span>${item.name} (x${item.quantity})</span>
+                    <span>${(item.price * item.quantity).toFixed(2)}€</span>
+                `;
+                cartItemsList.appendChild(li);
+                subtotal += item.price * item.quantity;
+                totalQuantity += item.quantity;
+            }
         });
 
-        cartTotalSpan.textContent = `${total.toFixed(2)}€`;
+        // Applica sconto
+        const discountAmount = (subtotal * appliedDiscount) / 100;
+        const total = subtotal - discountAmount;
+
+        if (appliedDiscount > 0) {
+            document.getElementById('discount-line').style.display = 'block';
+            document.getElementById('discount-line').textContent = `Sconto ${discountCode} (-${appliedDiscount}%): -${discountAmount.toFixed(2)}€`;
+        } else {
+            document.getElementById('discount-line').style.display = 'none';
+        }
+
+        totalPriceSpan.textContent = `${total.toFixed(2)}€`;
         totalItemsSpan.textContent = totalQuantity;
     }
 
-    // Aggiungi evento ai bottoni "Aggiungi"
+    // GESTIONE PULSANTI +/-
     mealItems.forEach(item => {
+        const minusBtn = item.querySelector('.minus-btn');
+        const plusBtn = item.querySelector('.plus-btn');
+        const quantityDisplay = item.querySelector('.quantity-display');
         const addButton = item.querySelector('.add-to-cart');
-        const quantityInput = item.querySelector('.quantity-input');
+        let quantity = 0;
+
+        minusBtn.addEventListener('click', () => {
+            if (quantity > 0) {
+                quantity--;
+                quantityDisplay.textContent = quantity;
+            }
+        });
+
+        plusBtn.addEventListener('click', () => {
+            quantity++;
+            quantityDisplay.textContent = quantity;
+        });
 
         addButton.addEventListener('click', () => {
-            const id = item.dataset.id;
-            const name = item.querySelector('h3').textContent;
-            const price = parseFloat(item.dataset.price);
-            const quantity = parseInt(quantityInput.value);
-
             if (quantity > 0) {
+                const id = item.dataset.id;
+                const name = item.querySelector('h3').textContent;
+                const price = parseFloat(item.dataset.price);
+
                 const existingItemIndex = cart.findIndex(cartItem => cartItem.id === id);
 
                 if (existingItemIndex > -1) {
-                    // Se l'articolo esiste già, aggiorna la quantità
                     cart[existingItemIndex].quantity += quantity;
                 } else {
-                    // Altrimenti aggiungi un nuovo articolo
                     cart.push({ id, name, price, quantity });
                 }
+                
                 updateCartDisplay();
-                quantityInput.value = 0; // Reset della quantità nell'input
+                quantity = 0;
+                quantityDisplay.textContent = quantity;
             } else {
-                alert('Seleziona una quantità valida per aggiungere al carrello.');
+                alert('Seleziona una quantità prima di aggiungere al carrello.');
             }
         });
     });
 
-    // Imposta la data minima per il ritiro (oggi + 2 giorni)
+    // GESTIONE CODICI PROMOZIONALI
+    document.getElementById('apply-promo').addEventListener('click', () => {
+        const code = document.getElementById('promo-code').value.toUpperCase().trim();
+        const messageDiv = document.getElementById('promo-message');
+        
+        if (promoCodes[code]) {
+            appliedDiscount = promoCodes[code];
+            discountCode = code;
+            messageDiv.innerHTML = `<div class="promo-success">✅ Codice applicato! Sconto del ${appliedDiscount}%</div>`;
+            updateCartDisplay();
+        } else if (code === '') {
+            messageDiv.innerHTML = `<div class="promo-error">Inserisci un codice promozionale</div>`;
+        } else {
+            messageDiv.innerHTML = `<div class="promo-error">❌ Codice non valido</div>`;
+        }
+    });
+
     function setMinPickupDate() {
         const today = new Date();
-        today.setDate(today.getDate() + 2); // Oggi + 2 giorni per la preparazione
+        today.setDate(today.getDate() + 2);
 
         const year = today.getFullYear();
         const month = String(today.getMonth() + 1).padStart(2, '0');
@@ -72,8 +124,110 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     setMinPickupDate();
 
-    // Gestione del checkout
-    checkoutButton.addEventListener('click', () => {
+    // SVUOTA CARRELLO
+    const clearCartButton = document.getElementById('clear-cart');
+    clearCartButton.addEventListener('click', () => {
+        cart = [];
+        appliedDiscount = 0;
+        discountCode = '';
+        document.getElementById('promo-code').value = '';
+        document.getElementById('promo-message').innerHTML = '';
+        updateCartDisplay();
+        pickupDateInput.value = '';
+        orderMessage.style.display = 'none';
+
+        // Reset quantità nei controlli
+        document.querySelectorAll('.quantity-display').forEach(display => display.textContent = '0');
+    });
+
+    // POPUP RIEPILOGATIVO
+    function showSummaryPopup() {
+        const popup = document.getElementById('summary-popup');
+        const popupItems = document.getElementById('popup-items');
+        const popupTotal = document.getElementById('popup-total');
+        
+        popupItems.innerHTML = '';
+        
+        cart.forEach((item, index) => {
+            if (item.quantity > 0) {
+                const popupItem = document.createElement('div');
+                popupItem.className = 'popup-item';
+                popupItem.innerHTML = `
+                    <div class="popup-item-name">${item.name}</div>
+                    <div class="popup-quantity-controls">
+                        <button class="quantity-btn popup-minus" data-index="${index}">-</button>
+                        <span class="quantity-display">${item.quantity}</span>
+                        <button class="quantity-btn popup-plus" data-index="${index}">+</button>
+                    </div>
+                    <div>${(item.price * item.quantity).toFixed(2)}€</div>
+                `;
+                popupItems.appendChild(popupItem);
+            }
+        });
+
+        // Calcola totale con sconto
+        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const discountAmount = (subtotal * appliedDiscount) / 100;
+        const total = subtotal - discountAmount;
+
+        let totalText = `Totale: ${total.toFixed(2)}€`;
+        if (appliedDiscount > 0) {
+            totalText = `Subtotale: ${subtotal.toFixed(2)}€<br>Sconto ${discountCode} (-${appliedDiscount}%): -${discountAmount.toFixed(2)}€<br><strong>Totale: ${total.toFixed(2)}€</strong>`;
+        }
+        popupTotal.innerHTML = totalText;
+
+        popup.style.display = 'block';
+    }
+
+    // GESTIONE POPUP QUANTITÀ
+    document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('popup-minus')) {
+            const index = parseInt(e.target.dataset.index);
+            if (cart[index].quantity > 0) {
+                cart[index].quantity--;
+                updateCartDisplay();
+                showSummaryPopup();
+            }
+        }
+        
+        if (e.target.classList.contains('popup-plus')) {
+            const index = parseInt(e.target.dataset.index);
+            cart[index].quantity++;
+            updateCartDisplay();
+            showSummaryPopup();
+        }
+    });
+
+    // CHIUDI POPUP
+    document.getElementById('close-popup').addEventListener('click', () => {
+        document.getElementById('summary-popup').style.display = 'none';
+    });
+
+    document.getElementById('summary-popup').addEventListener('click', (e) => {
+        if (e.target.id === 'summary-popup') {
+            document.getElementById('summary-popup').style.display = 'none';
+        }
+    });
+
+    // CONFERMA ORDINE DAL POPUP
+    document.getElementById('confirm-order').addEventListener('click', () => {
+        document.getElementById('summary-popup').style.display = 'none';
+        processOrder();
+    });
+
+    // NOTIFICA
+    function showNotification(message) {
+        const notification = document.getElementById('notification');
+        notification.textContent = message;
+        notification.style.display = 'block';
+        
+        setTimeout(() => {
+            notification.style.display = 'none';
+        }, 3000);
+    }
+
+    // PROCESSAMENTO ORDINE
+    function processOrder() {
         const totalQuantity = parseInt(totalItemsSpan.textContent);
         const pickupDate = pickupDateInput.value;
 
@@ -82,7 +236,6 @@ document.addEventListener('DOMContentLoaded', () => {
             orderMessage.style.backgroundColor = '#f8d7da';
             orderMessage.style.color = '#721c24';
             orderMessage.textContent = 'Errore: Il minimo d\'ordine è 4 pezzi a scelta.';
-            // Rimuovi eventuali bottoni WhatsApp precedenti in caso di errore
             const existingWhatsappButton = orderMessage.querySelector('.whatsapp-send-button');
             if (existingWhatsappButton) {
                 existingWhatsappButton.remove();
@@ -95,7 +248,6 @@ document.addEventListener('DOMContentLoaded', () => {
             orderMessage.style.backgroundColor = '#f8d7da';
             orderMessage.style.color = '#721c24';
             orderMessage.textContent = 'Errore: Seleziona una data di ritiro.';
-            // Rimuovi eventuali bottoni WhatsApp precedenti in caso di errore
             const existingWhatsappButton = orderMessage.querySelector('.whatsapp-send-button');
             if (existingWhatsappButton) {
                 existingWhatsappButton.remove();
@@ -103,12 +255,10 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Verifica che la data di ritiro sia valida (minimo oggi + 2 giorni)
         const selectedDate = new Date(pickupDate);
         const minDate = new Date();
-        minDate.setDate(minDate.getDate() + 2); // Data minima consentita per il ritiro
+        minDate.setDate(minDate.getDate() + 2);
 
-        // Per confrontare solo le date, senza l'ora
         selectedDate.setHours(0,0,0,0);
         minDate.setHours(0,0,0,0);
 
@@ -117,7 +267,6 @@ document.addEventListener('DOMContentLoaded', () => {
             orderMessage.style.backgroundColor = '#f8d7da';
             orderMessage.style.color = '#721c24';
             orderMessage.textContent = 'Errore: La data di ritiro deve essere almeno due giorni dopo la data odierna.';
-            // Rimuovi eventuali bottoni WhatsApp precedenti in caso di errore
             const existingWhatsappButton = orderMessage.querySelector('.whatsapp-send-button');
             if (existingWhatsappButton) {
                 existingWhatsappButton.remove();
@@ -125,48 +274,80 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Se tutto è ok, mostra il messaggio di successo e genera il link WhatsApp
         orderMessage.style.display = 'block';
         orderMessage.style.backgroundColor = '#d4edda';
         orderMessage.style.color = '#155724';
         
-        // Costruisci il messaggio dell'ordine per WhatsApp
-        let orderDetails = "🎉 Nuovo Ordine Pasti Sani! 🎉\n\n";
+        // Costruisci messaggio WhatsApp
+        let orderDetails = "🎉 Nuovo Ordine Pasto Sano! 🎉\n\n";
         orderDetails += "Dettagli dell'Ordine:\n";
         orderDetails += "-----------------------------------\n";
+        
+        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        
         cart.forEach(item => {
-            orderDetails += `• ${item.name}\n  Quantità: ${item.quantity}\n  Costo: ${(item.price * item.quantity).toFixed(2)}€\n`;
+            if (item.quantity > 0) {
+                orderDetails += `• ${item.name}\n  Quantità: ${item.quantity}\n  Costo: ${(item.price * item.quantity).toFixed(2)}€\n`;
+            }
         });
+        
         orderDetails += "-----------------------------------\n";
         orderDetails += `📦 Totale Articoli: ${totalQuantity}\n`;
-        orderDetails += `💰 Totale Ordine: ${cartTotalSpan.textContent}\n`;
+        
+        if (appliedDiscount > 0) {
+            const discountAmount = (subtotal * appliedDiscount) / 100;
+            orderDetails += `💰 Subtotale: ${subtotal.toFixed(2)}€\n`;
+            orderDetails += `🎁 Sconto ${discountCode} (-${appliedDiscount}%): -${discountAmount.toFixed(2)}€\n`;
+            orderDetails += `💰 Totale Finale: ${(subtotal - discountAmount).toFixed(2)}€\n`;
+        } else {
+            orderDetails += `💰 Totale Ordine: ${totalPriceSpan.textContent}\n`;
+        }
+        
         orderDetails += `🗓️ Data di Ritiro Prevista: ${pickupDate}\n`;
         orderDetails += "-----------------------------------\n";
         orderDetails += "Si prega di confermare la disponibilità. Grazie!";
 
-        // Codifica l'URI per renderlo sicuro per l'URL
         const encodedMessage = encodeURIComponent(orderDetails);
-
-        // Il tuo numero di telefono con prefisso internazionale: +39 per l'Italia
-        const phoneNumber = "+393478881515"; // NUMERO DI TELEFONO INSERITO QUI!
-
+        const phoneNumber = "+393478881515"; // CAMBIA CON IL TUO NUMERO
         const whatsappLink = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
 
-        // Aggiorna il messaggio di successo e aggiungi il pulsante WhatsApp
-        orderMessage.innerHTML = `Ordine inviato con successo!<br>Totale: ${cartTotalSpan.textContent}<br>Data di ritiro: ${pickupDate}<br><br>`;
+        orderMessage.innerHTML = `Ordine preparato con successo!<br>Totale: ${totalPriceSpan.textContent}<br>Data di ritiro: ${pickupDate}<br><br>`;
         
         const whatsappButton = document.createElement('a');
         whatsappButton.href = whatsappLink;
-        whatsappButton.target = "_blank"; // Apre il link in una nuova scheda
+        whatsappButton.target = "_blank";
         whatsappButton.className = "whatsapp-send-button"; 
-        whatsappButton.textContent = "Invia Ordine su WhatsApp";
+        whatsappButton.textContent = "📱 Invia Ordine su WhatsApp";
         
-        // Aggiungi il bottone al messaggio di ordine
+        // Aggiungi evento click per notifica
+        whatsappButton.addEventListener('click', () => {
+            setTimeout(() => {
+                showNotification('✅ Ordine inviato con successo!');
+            }, 500);
+        });
+        
         orderMessage.appendChild(whatsappButton);
 
-        // Svuota il carrello dopo l'ordine
+        // Svuota carrello dopo l'ordine
         cart = [];
+        appliedDiscount = 0;
+        discountCode = '';
+        document.getElementById('promo-code').value = '';
+        document.getElementById('promo-message').innerHTML = '';
         updateCartDisplay();
-        pickupDateInput.value = ''; // Resetta la data selezionata
+        pickupDateInput.value = '';
+        document.querySelectorAll('.quantity-display').forEach(display => display.textContent = '0');
+    }
+
+    // PULSANTE PROCEDI ALL'ORDINE (mostra popup)
+    submitOrderButton.addEventListener('click', () => {
+        const totalQuantity = parseInt(totalItemsSpan.textContent);
+        
+        if (totalQuantity === 0) {
+            alert('Aggiungi almeno un prodotto al carrello prima di procedere.');
+            return;
+        }
+        
+        showSummaryPopup();
     });
 });
