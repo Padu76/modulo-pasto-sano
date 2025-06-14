@@ -319,6 +319,49 @@
             background: #678b6b;
         }
 
+        .export-btn.secondary {
+            background: #4299e1;
+        }
+
+        .export-btn.secondary:hover {
+            background: #3182ce;
+        }
+
+        /* SELEZIONE ORDINI */
+        .order-checkbox {
+            margin-right: 10px;
+            transform: scale(1.2);
+            cursor: pointer;
+        }
+
+        .order-item.selected {
+            border-color: #3f6844;
+            background-color: #f0fff4;
+            box-shadow: 0 4px 12px rgba(63, 104, 68, 0.15);
+        }
+
+        .selection-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .selected-count {
+            background: #3f6844;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+        }
+
         .loading {
             text-align: center;
             padding: 40px;
@@ -403,7 +446,16 @@
             <div class="orders-section">
                 <div class="section-header">
                     <h2 class="section-title">🛍️ Ordini Recenti</h2>
-                    <button class="export-btn" onclick="exportToCSV()">📥 Esporta CSV</button>
+                    <div class="btn-group">
+                        <button class="export-btn" onclick="exportToCSV()">📥 Esporta CSV</button>
+                        <button class="export-btn secondary" onclick="generateProductionDoc()">📋 Doc Produzione</button>
+                    </div>
+                </div>
+                
+                <div class="selection-controls">
+                    <button class="filter-btn" onclick="selectAllOrders()">✅ Seleziona Tutti</button>
+                    <button class="filter-btn" onclick="clearSelection()">❌ Deseleziona</button>
+                    <span class="selected-count" id="selected-count">0 selezionati</span>
                 </div>
                 
                 <div class="filters">
@@ -449,6 +501,7 @@ let allOrders = [];
 let currentFilter = 'tutti';
 let lastOrderCount = 0;
 let salesChart = null;
+let selectedOrders = new Set();
 
 // INIZIALIZZAZIONE
 document.addEventListener('DOMContentLoaded', async () => {
@@ -1023,9 +1076,14 @@ function displayOrders() {
             `<br><small style="color: #e53e3e;">Sconto ${order.discountCode}: -${order.appliedDiscount}%</small>` : '';
         
         return `
-            <div class="order-item">
+            <div class="order-item ${selectedOrders.has(order.id) ? 'selected' : ''}" data-order-id="${order.id}">
                 <div class="order-header">
-                    <span class="order-id">#${order.id.substring(0, 8)}</span>
+                    <div style="display: flex; align-items: center;">
+                        <input type="checkbox" class="order-checkbox" 
+                               ${selectedOrders.has(order.id) ? 'checked' : ''} 
+                               onchange="toggleOrderSelection('${order.id}')">
+                        <span class="order-id">#${order.id.substring(0, 8)}</span>
+                    </div>
                     <span class="order-total">${(order.totalAmount || 0).toFixed(2)}€</span>
                 </div>
                 <div class="order-details">
@@ -1203,6 +1261,186 @@ window.exportToCSV = function() {
     document.body.removeChild(link);
     
     console.log(`✅ CSV esportato con ${filteredOrders.length} ordini`);
+};
+
+// SELEZIONE ORDINI
+window.toggleOrderSelection = function(orderId) {
+    if (selectedOrders.has(orderId)) {
+        selectedOrders.delete(orderId);
+    } else {
+        selectedOrders.add(orderId);
+    }
+    
+    updateSelectedCount();
+    updateOrderDisplay(orderId);
+};
+
+window.selectAllOrders = function() {
+    const filteredOrders = getFilteredOrders();
+    selectedOrders.clear();
+    filteredOrders.forEach(order => selectedOrders.add(order.id));
+    updateSelectedCount();
+    displayOrders();
+};
+
+window.clearSelection = function() {
+    selectedOrders.clear();
+    updateSelectedCount();
+    displayOrders();
+};
+
+function updateSelectedCount() {
+    const countElement = document.getElementById('selected-count');
+    if (countElement) {
+        countElement.textContent = `${selectedOrders.size} selezionati`;
+    }
+}
+
+function updateOrderDisplay(orderId) {
+    const orderElement = document.querySelector(`[data-order-id="${orderId}"]`);
+    if (orderElement) {
+        if (selectedOrders.has(orderId)) {
+            orderElement.classList.add('selected');
+        } else {
+            orderElement.classList.remove('selected');
+        }
+    }
+}
+
+// GENERAZIONE DOCUMENTO PRODUZIONE
+window.generateProductionDoc = function() {
+    if (selectedOrders.size === 0) {
+        alert('Seleziona almeno un ordine per generare il documento di produzione');
+        return;
+    }
+    
+    const selectedOrdersData = allOrders.filter(order => selectedOrders.has(order.id));
+    
+    // Raggruppa prodotti per quantità totale
+    const productSummary = {};
+    const orderDetails = [];
+    
+    selectedOrdersData.forEach(order => {
+        const orderDate = order.timestamp && order.timestamp.toDate ? 
+            order.timestamp.toDate() : new Date();
+        
+        orderDetails.push({
+            customerName: order.customerName || 'Cliente',
+            pickupDate: order.pickupDate || 'N/A',
+            orderId: order.id.substring(0, 8),
+            items: order.items || []
+        });
+        
+        // Somma quantità prodotti
+        (order.items || []).forEach(item => {
+            const productName = item.name || 'Prodotto sconosciuto';
+            const quantity = item.quantity || 1;
+            
+            if (productSummary[productName]) {
+                productSummary[productName] += quantity;
+            } else {
+                productSummary[productName] = quantity;
+            }
+        });
+    });
+    
+    generateProductionHTML(orderDetails, productSummary);
+};
+
+function generateProductionHTML(orderDetails, productSummary) {
+    const today = new Date();
+    const formattedDate = today.toLocaleDateString('it-IT', {
+        day: '2-digit',
+        month: '2-digit', 
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+    
+    const productList = Object.entries(productSummary)
+        .sort(([,a], [,b]) => b - a)
+        .map(([name, quantity]) => `
+            <tr>
+                <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">${name}</td>
+                <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: center; font-weight: bold; color: #3f6844;">${quantity}</td>
+            </tr>
+        `).join('');
+    
+    const ordersList = orderDetails.map(order => `
+        <div style="margin-bottom: 15px; padding: 12px; border-left: 3px solid #7a9e7e; background: #f8f9fa;">
+            <strong style="color: #2d3748;">${order.customerName}</strong> 
+            <span style="color: #718096; margin-left: 10px;">#${order.orderId}</span><br>
+            <small style="color: #4a5568;">📅 Ritiro: ${order.pickupDate}</small><br>
+            <small style="color: #4a5568;">🍽️ ${order.items.length} articoli: ${order.items.map(item => `${item.name} (x${item.quantity})`).join(', ')}</small>
+        </div>
+    `).join('');
+    
+    const htmlContent = `
+    <!DOCTYPE html>
+    <html lang="it">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Documento Produzione - Pasto Sano</title>
+        <style>
+            body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+            .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #3f6844; padding-bottom: 20px; }
+            .summary { background: #f0fff4; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+            th { background: #3f6844; color: white; padding: 15px; text-align: left; }
+            .orders-detail { margin-top: 30px; }
+            @media print { body { margin: 0; } }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1 style="color: #3f6844; margin: 0;">🥗 PASTO SANO</h1>
+            <h2 style="color: #7a9e7e; margin: 10px 0;">Documento di Produzione</h2>
+            <p style="color: #718096;">Generato il ${formattedDate}</p>
+        </div>
+        
+        <div class="summary">
+            <h3 style="color: #3f6844; margin-top: 0;">📊 Riepilogo Produzione</h3>
+            <p><strong>Totale Ordini:</strong> ${orderDetails.length}</p>
+            <p><strong>Totale Prodotti:</strong> ${Object.values(productSummary).reduce((sum, qty) => sum + qty, 0)} pezzi</p>
+            <p><strong>Tipologie Diverse:</strong> ${Object.keys(productSummary).length}</p>
+        </div>
+        
+        <h3 style="color: #3f6844;">🍽️ Prodotti da Preparare</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Prodotto</th>
+                    <th style="text-align: center; width: 120px;">Quantità</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${productList}
+            </tbody>
+        </table>
+        
+        <div class="orders-detail">
+            <h3 style="color: #3f6844;">📋 Dettaglio Ordini</h3>
+            ${ordersList}
+        </div>
+        
+        <div style="margin-top: 40px; text-align: center; color: #718096; border-top: 1px solid #e2e8f0; padding-top: 20px;">
+            <p>Documento generato automaticamente dalla Dashboard Pasto Sano</p>
+        </div>
+    </body>
+    </html>`;
+    
+    // Apri in nuova finestra per stampa/salvataggio
+    const newWindow = window.open('', '_blank');
+    newWindow.document.write(htmlContent);
+    newWindow.document.close();
+    
+    // Auto-stampa dopo mezzo secondo
+    setTimeout(() => {
+        newWindow.print();
+    }, 500);
+    
+    console.log(`✅ Documento produzione generato per ${selectedOrders.size} ordini`);
 };
 
 // GESTIONE ERRORI
