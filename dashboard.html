@@ -278,6 +278,29 @@
             text-align: center;
         }
 
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #38a169;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+
         @media (max-width: 768px) {
             .main-content {
                 grid-template-columns: 1fr;
@@ -304,6 +327,10 @@
             
             .stats-grid {
                 grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+            
+            .container {
+                padding: 15px;
             }
         }
     </style>
@@ -517,18 +544,7 @@
         function showNewOrderNotification(count) {
             // Crea una notifica semplice
             const notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: #38a169;
-                color: white;
-                padding: 15px 20px;
-                border-radius: 8px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-                z-index: 1000;
-                animation: slideIn 0.3s ease;
-            `;
+            notification.className = 'notification';
             notification.innerHTML = `🛍️ <strong>${count} nuovo${count > 1 ? 'i' : ''} ordine${count > 1 ? 'i' : ''}!</strong>`;
             
             document.body.appendChild(notification);
@@ -849,21 +865,8 @@
             }
         }
 
-        // Aggiungi stili per le animazioni
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes slideIn {
-                from { transform: translateX(100%); opacity: 0; }
-                to { transform: translateX(0); opacity: 1; }
-            }
-            @keyframes slideOut {
-                from { transform: translateX(0); opacity: 1; }
-                to { transform: translateX(100%); opacity: 0; }
-            }
-        `;
-        document.head.appendChild(style);
-
         console.log('📊 Dashboard localStorage completamente caricata');
     </script>
 </body>
 </html>
+                    

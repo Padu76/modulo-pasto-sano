@@ -315,10 +315,12 @@
             margin: 5% auto;
             padding: 0;
             border-radius: 20px;
-            width: 90%;
+            width: 95%;
             max-width: 500px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             animation: modalSlideIn 0.3s ease;
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         @keyframes modalSlideIn {
@@ -357,16 +359,29 @@
 
         .calendar-input {
             width: 100%;
-            padding: 12px;
+            padding: 15px;
             border: 2px solid #e9ecef;
             border-radius: 8px;
-            font-size: 1rem;
+            font-size: 18px;
             transition: border-color 0.3s ease;
+            -webkit-appearance: none;
+            -moz-appearance: textfield;
+            background: white;
+            color: #2c5530;
+            font-weight: 500;
         }
 
         .calendar-input:focus {
             outline: none;
             border-color: #4a7c4c;
+            box-shadow: 0 0 0 3px rgba(74, 124, 76, 0.1);
+        }
+
+        .calendar-input::-webkit-calendar-picker-indicator {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="%234a7c4c" viewBox="0 0 16 16"><path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/></svg>');
+            background-size: 20px;
+            cursor: pointer;
+            padding: 10px;
         }
 
         .axc-notice {
@@ -418,13 +433,16 @@
 
         .modal-btn {
             flex: 1;
-            padding: 12px;
+            padding: 15px;
             border: none;
             border-radius: 8px;
-            font-size: 1rem;
+            font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
+            min-height: 50px;
+            -webkit-appearance: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .btn-cancel {
@@ -432,8 +450,9 @@
             color: white;
         }
 
-        .btn-cancel:hover {
+        .btn-cancel:hover, .btn-cancel:active {
             background: #545b62;
+            transform: translateY(-1px);
         }
 
         .btn-confirm {
@@ -441,8 +460,15 @@
             color: white;
         }
 
-        .btn-confirm:hover {
+        .btn-confirm:hover, .btn-confirm:active {
             background: #c0392b;
+            transform: translateY(-1px);
+        }
+
+        .btn-confirm:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
         }
 
         .success-modal .modal-content {
@@ -487,14 +513,16 @@
             margin-bottom: 10px;
         }
 
-        .add-animation {
-            animation: addToCart 0.6s ease;
-        }
-
         @keyframes addToCart {
             0% { transform: scale(1); }
             50% { transform: scale(1.1); background-color: #27ae60; }
             100% { transform: scale(1); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
         }
 
         @media (max-width: 768px) {
@@ -523,6 +551,32 @@
             .container {
                 margin: 10px;
                 border-radius: 15px;
+            }
+            
+            .modal-content {
+                width: 98%;
+                margin: 2% auto;
+                max-height: 95vh;
+            }
+            
+            .modal-body {
+                padding: 20px;
+            }
+            
+            .calendar-input {
+                font-size: 16px;
+                padding: 18px;
+            }
+            
+            .modal-btn {
+                font-size: 18px;
+                padding: 18px;
+                min-height: 55px;
+            }
+            
+            .cart-sidebar {
+                position: relative;
+                top: auto;
             }
         }
     </style>
@@ -628,7 +682,7 @@
                     <button class="modal-btn btn-cancel" onclick="closeOrderModal()">
                         Annulla
                     </button>
-                    <button class="modal-btn btn-confirm" onclick="confirmOrder()">
+                    <button class="modal-btn btn-confirm" onclick="confirmOrder()" disabled>
                         Conferma Ordine
                     </button>
                 </div>
@@ -868,6 +922,8 @@
             
             const deliveryDateInput = document.getElementById('delivery-date');
             deliveryDateInput.min = minDate.toISOString().split('T')[0];
+            
+            // Preimposta la data minima come suggerimento
             deliveryDateInput.value = minDate.toISOString().split('T')[0];
 
             // Genera il riepilogo ordine nel modal
@@ -875,6 +931,43 @@
 
             // Mostra il modal
             document.getElementById('orderModal').style.display = 'block';
+            
+            // Focus automatico sul campo data per mobile
+            setTimeout(() => {
+                deliveryDateInput.focus();
+            }, 300);
+        }
+
+        function validateDeliveryDate() {
+            const deliveryDateInput = document.getElementById('delivery-date');
+            const confirmButton = document.querySelector('#orderModal .btn-confirm');
+            const errorDiv = document.getElementById('date-error');
+            
+            const selectedDate = deliveryDateInput.value;
+            
+            if (!selectedDate) {
+                confirmButton.disabled = true;
+                errorDiv.style.display = 'none';
+                return false;
+            }
+            
+            // Verifica che la data sia almeno 2 giorni nel futuro
+            const selected = new Date(selectedDate);
+            const today = new Date();
+            const minDate = new Date(today);
+            minDate.setDate(today.getDate() + 2);
+            
+            if (selected < minDate) {
+                confirmButton.disabled = true;
+                errorDiv.textContent = '⚠️ La data deve essere almeno 2 giorni nel futuro';
+                errorDiv.style.display = 'block';
+                return false;
+            }
+            
+            // Data valida
+            confirmButton.disabled = false;
+            errorDiv.style.display = 'none';
+            return true;
         }
 
         function closeOrderModal() {
@@ -939,19 +1032,17 @@
         function confirmOrder() {
             const deliveryDate = document.getElementById('delivery-date').value;
             
-            if (!deliveryDate) {
-                alert('Seleziona una data di consegna');
-                return;
-            }
-
-            // Verifica che la data sia almeno 2 giorni nel futuro
-            const selectedDate = new Date(deliveryDate);
-            const today = new Date();
-            const minDate = new Date(today);
-            minDate.setDate(today.getDate() + 2);
-
-            if (selectedDate < minDate) {
-                alert('La data di consegna deve essere almeno 2 giorni nel futuro (AxC)');
+            if (!validateDeliveryDate()) {
+                // Evidenzia il campo data con animazione
+                const deliveryDateInput = document.getElementById('delivery-date');
+                deliveryDateInput.style.borderColor = '#e74c3c';
+                deliveryDateInput.style.animation = 'shake 0.5s ease-in-out';
+                
+                setTimeout(() => {
+                    deliveryDateInput.style.animation = '';
+                    deliveryDateInput.style.borderColor = '#e9ecef';
+                }, 500);
+                
                 return;
             }
 
