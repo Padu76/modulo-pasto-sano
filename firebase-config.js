@@ -1,11 +1,14 @@
-// Firebase v8 compatibile (non modular)
-var firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+
+// Configurazione compatibile Firebase v9 compat
+const firebaseConfig = {
+  apiKey: "AIzaSyAWrw1vDEKOJnEbTMv4bF10vYeZnOI7DpY",
+  authDomain: "pasto-sano.firebaseapp.com",
+  projectId: "pasto-sano",
+  storageBucket: "pasto-sano.appspot.com",
+  messagingSenderId: "109720925931",
+  appId: "1:109720925931:web:6450822431711297d730ae",
+  measurementId: "G-5XMDRQL46Z"
 };
 
 firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
