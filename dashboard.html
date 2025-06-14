@@ -606,13 +606,14 @@ let selectedOrders = new Set();
 
 // CONFIGURAZIONE SICUREZZA
 const DASHBOARD_PASSWORD = 'pastosano2025'; // Cambia questa password!
-const AUTH_SESSION_KEY = 'pasto_sano_auth';
+let isAuthenticated = false;
+let authTimestamp = null;
 
 // CONTROLLO AUTENTICAZIONE AL CARICAMENTO
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('🚀 Dashboard inizializzata');
     
-    // Controlla se già autenticato
+    // Controlla se già autenticato in questa sessione
     if (checkAuthSession()) {
         initializeDashboard();
     } else {
@@ -622,21 +623,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // GESTIONE AUTENTICAZIONE
 function checkAuthSession() {
-    const authTime = localStorage.getItem(AUTH_SESSION_KEY);
-    if (!authTime) return false;
-    
-    // Sessione valida per 8 ore
-    const eightHours = 8 * 60 * 60 * 1000;
-    const now = new Date().getTime();
-    
-    if (now - parseInt(authTime) < eightHours) {
-        console.log('✅ Sessione valida trovata');
-        return true;
-    } else {
-        localStorage.removeItem(AUTH_SESSION_KEY);
-        console.log('⚠️ Sessione scaduta');
-        return false;
+    // Per ora, una volta autenticato in questa sessione, resta autenticato
+    // fino a chiusura tab/browser
+    if (isAuthenticated && authTimestamp) {
+        const now = new Date().getTime();
+        const eightHours = 8 * 60 * 60 * 1000;
+        
+        if (now - authTimestamp < eightHours) {
+            console.log('✅ Sessione valida trovata');
+            return true;
+        } else {
+            isAuthenticated = false;
+            authTimestamp = null;
+            console.log('⚠️ Sessione scaduta');
+            return false;
+        }
     }
+    
+    return false;
 }
 
 function showAuthModal() {
@@ -655,7 +659,8 @@ window.checkPassword = function() {
     
     if (password === DASHBOARD_PASSWORD) {
         // Password corretta
-        localStorage.setItem(AUTH_SESSION_KEY, new Date().getTime().toString());
+        isAuthenticated = true;
+        authTimestamp = new Date().getTime();
         hideAuthModal();
         initializeDashboard();
         console.log('✅ Accesso autorizzato');
@@ -681,7 +686,8 @@ window.handlePasswordKeypress = function(event) {
 
 // LOGOUT (per debug/sicurezza)
 window.logout = function() {
-    localStorage.removeItem(AUTH_SESSION_KEY);
+    isAuthenticated = false;
+    authTimestamp = null;
     location.reload();
 };
 
@@ -983,6 +989,12 @@ function initSalesChart() {
         return;
     }
 
+    // Distruggi grafico esistente se presente
+    if (salesChart) {
+        salesChart.destroy();
+        salesChart = null;
+    }
+
     const chartData = getSalesChartData();
     
     salesChart = new Chart(ctx, {
@@ -1127,7 +1139,11 @@ function getSalesChartData() {
 }
 
 function updateSalesChart() {
-    if (!salesChart) return;
+    if (!salesChart) {
+        // Se il grafico non esiste, ricrealo
+        initSalesChart();
+        return;
+    }
     
     const chartData = getSalesChartData();
     
