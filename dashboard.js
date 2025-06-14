@@ -464,3 +464,22 @@ setInterval(async () => {
 
 // Inizializzazione al caricamento
 console.log('📊 Dashboard.js caricato completamente');
+
+// Funzione per generare il PDF per il fornitore
+function generaPDF() {
+    const ordersContainer = document.getElementById("orders-list");
+    const ordini = allOrders.map((ordine, index) => {
+        const articoli = ordine.articoli.map(a => `- ${a.nome} (x${a.quantita})`).join("\n");
+        return `${index + 1}. ${ordine.id}\n👤 ${ordine.nome}\n📅 Ritiro: ${ordine.ritiro}\n${articoli}\n`;
+    }).join("\n\n");
+
+    const pdfContent = `ORDINI PASTO SANO - FORNITORE\n\n${ordini}`;
+
+    const blob = new Blob([pdfContent], { type: "application/pdf" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `ordini_fornitore_${new Date().toISOString().split("T")[0]}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
