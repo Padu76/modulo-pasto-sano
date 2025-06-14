@@ -530,7 +530,9 @@
 <body>
     <div class="container">
         <div class="header">
-            <img src="pasto-sano-logo.png" alt="Logo Pasto Sano" class="header-logo">
+            <img src="logo pasto sano.png" alt="Logo Pasto Sano" class="header-logo" 
+                 onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='block';">
+            <div id="logo-fallback" style="display: none; width: 80px; height: 80px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem;">🥗</div>
             <div class="header-text">
                 <h1>🥗 Pasto Sano</h1>
                 <p>I tuoi pasti sani, preparati con cura</p>
