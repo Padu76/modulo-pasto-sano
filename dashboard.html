@@ -606,14 +606,12 @@ let selectedOrders = new Set();
 
 // CONFIGURAZIONE SICUREZZA
 const DASHBOARD_PASSWORD = 'pastosano2025'; // Cambia questa password!
-let isAuthenticated = false;
-let authTimestamp = null;
 
 // CONTROLLO AUTENTICAZIONE AL CARICAMENTO
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('🚀 Dashboard inizializzata');
     
-    // Controlla se già autenticato in questa sessione
+    // Controlla se già autenticato (usando sessionStorage che persiste ai refresh)
     if (checkAuthSession()) {
         initializeDashboard();
     } else {
@@ -623,24 +621,26 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // GESTIONE AUTENTICAZIONE
 function checkAuthSession() {
-    // Per ora, una volta autenticato in questa sessione, resta autenticato
-    // fino a chiusura tab/browser
-    if (isAuthenticated && authTimestamp) {
+    try {
+        const authData = sessionStorage.getItem('pasto_sano_auth');
+        if (!authData) return false;
+        
+        const { timestamp } = JSON.parse(authData);
         const now = new Date().getTime();
         const eightHours = 8 * 60 * 60 * 1000;
         
-        if (now - authTimestamp < eightHours) {
+        if (now - timestamp < eightHours) {
             console.log('✅ Sessione valida trovata');
             return true;
         } else {
-            isAuthenticated = false;
-            authTimestamp = null;
+            sessionStorage.removeItem('pasto_sano_auth');
             console.log('⚠️ Sessione scaduta');
             return false;
         }
+    } catch (e) {
+        // Se sessionStorage non funziona, fallback
+        return false;
     }
-    
-    return false;
 }
 
 function showAuthModal() {
@@ -658,9 +658,15 @@ window.checkPassword = function() {
     const errorDiv = document.getElementById('authError');
     
     if (password === DASHBOARD_PASSWORD) {
-        // Password corretta
-        isAuthenticated = true;
-        authTimestamp = new Date().getTime();
+        // Password corretta - salva in sessionStorage
+        try {
+            sessionStorage.setItem('pasto_sano_auth', JSON.stringify({
+                timestamp: new Date().getTime()
+            }));
+        } catch (e) {
+            console.log('⚠️ SessionStorage non disponibile');
+        }
+        
         hideAuthModal();
         initializeDashboard();
         console.log('✅ Accesso autorizzato');
@@ -686,8 +692,11 @@ window.handlePasswordKeypress = function(event) {
 
 // LOGOUT (per debug/sicurezza)
 window.logout = function() {
-    isAuthenticated = false;
-    authTimestamp = null;
+    try {
+        sessionStorage.removeItem('pasto_sano_auth');
+    } catch (e) {
+        console.log('⚠️ SessionStorage non disponibile per logout');
+    }
     location.reload();
 };
 
