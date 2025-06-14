@@ -32,15 +32,28 @@
             color: white;
             padding: 30px;
             text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
         }
 
-        .header h1 {
+        .header-logo {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            background: white;
+            border-radius: 50%;
+            padding: 10px;
+        }
+
+        .header-text h1 {
             font-size: 2.5rem;
             margin-bottom: 10px;
             font-weight: 700;
         }
 
-        .header p {
+        .header-text p {
             font-size: 1.1rem;
             opacity: 0.9;
         }
@@ -284,6 +297,175 @@
             transform: none;
         }
 
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from { opacity: 0; transform: translateY(-50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #2c5530 0%, #4a7c4c 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 20px 20px 0 0;
+            text-align: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .calendar-section {
+            margin-bottom: 25px;
+        }
+
+        .calendar-section label {
+            display: block;
+            font-weight: 600;
+            color: #2c5530;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .calendar-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .calendar-input:focus {
+            outline: none;
+            border-color: #4a7c4c;
+        }
+
+        .axc-notice {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            color: #856404;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        .order-summary {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .order-summary h3 {
+            color: #2c5530;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding: 5px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .summary-total {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #2c5530;
+            border-top: 2px solid #4a7c4c;
+            padding-top: 10px;
+            margin-top: 10px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-cancel {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-cancel:hover {
+            background: #545b62;
+        }
+
+        .btn-confirm {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-confirm:hover {
+            background: #c0392b;
+        }
+
+        .success-modal .modal-content {
+            max-width: 600px;
+        }
+
+        .success-header {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        }
+
+        .success-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .order-details {
+            background: white;
+            border: 2px solid #27ae60;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
         .notice {
             background: #fff3cd;
             border: 1px solid #ffeaa7;
@@ -324,8 +506,18 @@
                 grid-template-columns: 1fr;
             }
             
-            .header h1 {
+            .header-text h1 {
                 font-size: 2rem;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .header-logo {
+                width: 60px;
+                height: 60px;
             }
             
             .container {
@@ -338,8 +530,11 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🥗 Pasto Sano</h1>
-            <p>I tuoi pasti sani, preparati con cura</p>
+            <img src="pasto-sano-logo.png" alt="Logo Pasto Sano" class="header-logo">
+            <div class="header-text">
+                <h1>🥗 Pasto Sano</h1>
+                <p>I tuoi pasti sani, preparati con cura</p>
+            </div>
         </div>
 
         <div class="main-content">
@@ -397,12 +592,68 @@
                     </div>
                 </div>
 
-                <button class="checkout-btn" id="checkout-btn" onclick="checkout()" disabled>
+                <button class="checkout-btn" id="checkout-btn" onclick="openOrderModal()" disabled>
                     Ordina Ora
                 </button>
 
                 <div class="notice">
                     ⏰ L'ordine deve essere effettuato con 2 giorni di anticipo (AxC)
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal per Conferma Ordine -->
+    <div id="orderModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📅 Conferma il tuo Ordine</h2>
+            </div>
+            <div class="modal-body">
+                <div class="calendar-section">
+                    <label for="delivery-date">📆 Seleziona la data di consegna:</label>
+                    <input type="date" id="delivery-date" class="calendar-input" min="">
+                    <div class="axc-notice">
+                        ⏰ <strong>Ricorda:</strong> L'ordine deve essere effettuato con 2 giorni di anticipo (AxC)
+                    </div>
+                </div>
+
+                <div class="order-summary" id="modal-order-summary">
+                    <!-- Il riepilogo verrà inserito qui -->
+                </div>
+
+                <div class="modal-buttons">
+                    <button class="modal-btn btn-cancel" onclick="closeOrderModal()">
+                        Annulla
+                    </button>
+                    <button class="modal-btn btn-confirm" onclick="confirmOrder()">
+                        Conferma Ordine
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal per Conferma Successo -->
+    <div id="successModal" class="modal success-modal">
+        <div class="modal-content">
+            <div class="modal-header success-header">
+                <div class="success-icon">✅</div>
+                <h2>Ordine Inviato con Successo!</h2>
+            </div>
+            <div class="modal-body">
+                <p style="text-align: center; font-size: 1.1rem; margin-bottom: 20px;">
+                    Grazie per il tuo ordine! Riceverai una conferma via email.
+                </p>
+                
+                <div class="order-details" id="success-order-details">
+                    <!-- I dettagli dell'ordine verranno inseriti qui -->
+                </div>
+
+                <div style="text-align: center; margin-top: 25px;">
+                    <button class="modal-btn btn-confirm" onclick="closeSuccessModal()" style="width: auto; padding: 12px 30px;">
+                        Perfetto!
+                    </button>
                 </div>
             </div>
         </div>
@@ -596,20 +847,202 @@
         }
 
         function checkout() {
+            // Questa funzione ora è sostituita da openOrderModal()
+        }
+
+        function openOrderModal() {
             if (Object.keys(cart).length === 0) {
                 alert('Il carrello è vuoto!');
                 return;
             }
 
-            const totalItems = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
-            const finalTotal = Object.keys(cart).reduce((total, itemId) => {
-                const item = [...menuItems.pastiCompleti, ...menuItems.colazioni].find(i => i.id == itemId);
-                return total + (item.price * cart[itemId]);
-            }, 0) - promoDiscount;
-
-            alert(`Grazie per il tuo ordine!\n\nRiepilogo:\n- ${totalItems} articoli\n- Totale: €${finalTotal.toFixed(2)}\n\nRicorda: l'ordine deve essere effettuato con 2 giorni di anticipo.\n\nRiceverai conferma via email.`);
+            // Imposta la data minima (oggi + 2 giorni per AXC)
+            const today = new Date();
+            const minDate = new Date(today);
+            minDate.setDate(today.getDate() + 2);
             
-            // Reset del carrello
+            const deliveryDateInput = document.getElementById('delivery-date');
+            deliveryDateInput.min = minDate.toISOString().split('T')[0];
+            deliveryDateInput.value = minDate.toISOString().split('T')[0];
+
+            // Genera il riepilogo ordine nel modal
+            generateModalOrderSummary();
+
+            // Mostra il modal
+            document.getElementById('orderModal').style.display = 'block';
+        }
+
+        function closeOrderModal() {
+            document.getElementById('orderModal').style.display = 'none';
+        }
+
+        function generateModalOrderSummary() {
+            const summaryContainer = document.getElementById('modal-order-summary');
+            
+            let html = '<h3>🛒 Riepilogo Ordine</h3>';
+            let totalItems = 0;
+            let subtotal = 0;
+
+            Object.keys(cart).forEach(itemId => {
+                const item = [...menuItems.pastiCompleti, ...menuItems.colazioni].find(i => i.id == itemId);
+                const quantity = cart[itemId];
+                const itemTotal = item.price * quantity;
+
+                html += `
+                    <div class="summary-item">
+                        <span>${item.name.substring(0, 40)}${item.name.length > 40 ? '...' : ''}</span>
+                        <span>${quantity}x €${item.price.toFixed(2)} = €${itemTotal.toFixed(2)}</span>
+                    </div>
+                `;
+
+                totalItems += quantity;
+                subtotal += itemTotal;
+            });
+
+            // Aggiungi totali
+            html += `
+                <div class="summary-item">
+                    <span><strong>Totale Articoli:</strong></span>
+                    <span><strong>${totalItems}</strong></span>
+                </div>
+                <div class="summary-item">
+                    <span><strong>Subtotale:</strong></span>
+                    <span><strong>€${subtotal.toFixed(2)}</strong></span>
+                </div>
+            `;
+
+            if (promoDiscount > 0) {
+                html += `
+                    <div class="summary-item">
+                        <span><strong>Sconto Applicato:</strong></span>
+                        <span><strong>-€${promoDiscount.toFixed(2)}</strong></span>
+                    </div>
+                `;
+            }
+
+            const finalTotal = subtotal - promoDiscount;
+            html += `
+                <div class="summary-item summary-total">
+                    <span>TOTALE FINALE:</span>
+                    <span>€${finalTotal.toFixed(2)}</span>
+                </div>
+            `;
+
+            summaryContainer.innerHTML = html;
+        }
+
+        function confirmOrder() {
+            const deliveryDate = document.getElementById('delivery-date').value;
+            
+            if (!deliveryDate) {
+                alert('Seleziona una data di consegna');
+                return;
+            }
+
+            // Verifica che la data sia almeno 2 giorni nel futuro
+            const selectedDate = new Date(deliveryDate);
+            const today = new Date();
+            const minDate = new Date(today);
+            minDate.setDate(today.getDate() + 2);
+
+            if (selectedDate < minDate) {
+                alert('La data di consegna deve essere almeno 2 giorni nel futuro (AxC)');
+                return;
+            }
+
+            // Chiudi il modal di conferma
+            closeOrderModal();
+
+            // Mostra il modal di successo
+            showSuccessModal(deliveryDate);
+
+            // Reset del carrello dopo conferma
+            setTimeout(() => {
+                resetCart();
+            }, 1000);
+        }
+
+        function showSuccessModal(deliveryDate) {
+            const successDetails = document.getElementById('success-order-details');
+            
+            let html = '<h3>📋 Dettagli Ordine</h3>';
+            
+            // Data e ora ordine
+            const now = new Date();
+            const orderDate = now.toLocaleDateString('it-IT');
+            const orderTime = now.toLocaleTimeString('it-IT');
+            
+            html += `
+                <div class="summary-item">
+                    <span><strong>📅 Data Ordine:</strong></span>
+                    <span>${orderDate} alle ${orderTime}</span>
+                </div>
+                <div class="summary-item">
+                    <span><strong>🚚 Data Consegna:</strong></span>
+                    <span>${new Date(deliveryDate).toLocaleDateString('it-IT')}</span>
+                </div>
+                <div class="summary-item">
+                    <span><strong>📦 Modalità:</strong></span>
+                    <span>Ritiro in sede</span>
+                </div>
+                <br>
+            `;
+
+            // Prodotti ordinati
+            let totalItems = 0;
+            let subtotal = 0;
+
+            Object.keys(cart).forEach(itemId => {
+                const item = [...menuItems.pastiCompleti, ...menuItems.colazioni].find(i => i.id == itemId);
+                const quantity = cart[itemId];
+                const itemTotal = item.price * quantity;
+
+                html += `
+                    <div class="summary-item">
+                        <span>${item.name.substring(0, 35)}${item.name.length > 35 ? '...' : ''}</span>
+                        <span>${quantity}x €${itemTotal.toFixed(2)}</span>
+                    </div>
+                `;
+
+                totalItems += quantity;
+                subtotal += itemTotal;
+            });
+
+            if (promoDiscount > 0) {
+                html += `
+                    <div class="summary-item">
+                        <span><strong>💰 Sconto:</strong></span>
+                        <span><strong>-€${promoDiscount.toFixed(2)}</strong></span>
+                    </div>
+                `;
+            }
+
+            const finalTotal = subtotal - promoDiscount;
+            html += `
+                <div class="summary-item summary-total">
+                    <span>💳 TOTALE PAGATO:</span>
+                    <span>€${finalTotal.toFixed(2)}</span>
+                </div>
+            `;
+
+            html += `
+                <div style="margin-top: 20px; padding: 15px; background: #e8f5e8; border-radius: 8px; text-align: center;">
+                    <p><strong>📧 Riceverai una email di conferma con tutti i dettagli</strong></p>
+                    <p style="margin-top: 5px; font-size: 0.9rem; color: #2c5530;">
+                        Grazie per aver scelto Pasto Sano! 🥗
+                    </p>
+                </div>
+            `;
+
+            successDetails.innerHTML = html;
+            document.getElementById('successModal').style.display = 'block';
+        }
+
+        function closeSuccessModal() {
+            document.getElementById('successModal').style.display = 'none';
+        }
+
+        function resetCart() {
             cart = {};
             promoApplied = false;
             promoDiscount = 0;
@@ -625,6 +1058,19 @@
             });
             
             updateCart();
+        }
+
+        // Chiudi modal cliccando fuori
+        window.onclick = function(event) {
+            const orderModal = document.getElementById('orderModal');
+            const successModal = document.getElementById('successModal');
+            
+            if (event.target === orderModal) {
+                closeOrderModal();
+            }
+            if (event.target === successModal) {
+                closeSuccessModal();
+            }
         }
 
         // Inizializza la pagina
