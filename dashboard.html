@@ -22,26 +22,14 @@
             color: white;
             padding: 20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            display: flex;
-            align-items: center;
-            gap: 20px;
         }
 
-        .header-logo {
-            width: 60px;
-            height: 60px;
-            object-fit: contain;
-            background: white;
-            border-radius: 50%;
-            padding: 8px;
-        }
-
-        .header-text h1 {
+        .header h1 {
             font-size: 28px;
             margin-bottom: 5px;
         }
 
-        .header-text p {
+        .header p {
             opacity: 0.9;
             font-size: 16px;
         }
@@ -116,7 +104,7 @@
 
         .section-header {
             display: flex;
-            justify-content: space-between;
+            justify-content: between;
             align-items: center;
             margin-bottom: 20px;
             padding-bottom: 15px;
@@ -209,35 +197,17 @@
 
         .status-nuovo { background: #fed7d7; color: #c53030; }
         .status-confermato { background: #bee3f8; color: #2b6cb0; }
+        .status-pronto { background: #c6f6d5; color: #276749; }
 
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #a0aec0;
-        }
-
-        .error {
-            background: #fed7d7;
-            color: #c53030;
-            padding: 15px;
+        .chart-container {
+            height: 300px;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed #e2e8f0;
             border-radius: 8px;
-            margin-bottom: 20px;
-        }
-
-        .export-btn {
-            background: #7a9e7e;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            margin-left: 10px;
-            transition: background 0.2s;
-        }
-
-        .export-btn:hover {
-            background: #678b6b;
+            color: #a0aec0;
         }
 
         .top-products {
@@ -267,58 +237,39 @@
             font-weight: 600;
         }
 
-        .refresh-info {
-            background: #e6fffa;
-            border: 1px solid #81e6d9;
-            color: #234e52;
-            padding: 12px;
+        .export-btn {
+            background: #7a9e7e;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 10px;
+            transition: background 0.2s;
+        }
+
+        .export-btn:hover {
+            background: #678b6b;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #a0aec0;
+        }
+
+        .error {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 15px;
             border-radius: 8px;
             margin-bottom: 20px;
-            font-size: 14px;
-            text-align: center;
-        }
-
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #38a169;
-            color: white;
-            padding: 15px 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            z-index: 1000;
-            animation: slideIn 0.3s ease;
-        }
-
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        @keyframes slideOut {
-            from { transform: translateX(0); opacity: 1; }
-            to { transform: translateX(100%); opacity: 0; }
         }
 
         @media (max-width: 768px) {
             .main-content {
                 grid-template-columns: 1fr;
-            }
-            
-            .header {
-                flex-direction: column;
-                text-align: center;
-                gap: 10px;
-            }
-            
-            .header-logo {
-                width: 50px;
-                height: 50px;
-            }
-            
-            .header-text h1 {
-                font-size: 24px;
             }
             
             .filters {
@@ -328,30 +279,19 @@
             .stats-grid {
                 grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             }
-            
-            .container {
-                padding: 15px;
-            }
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <img src="logo.png" alt="Logo Pasto Sano" class="header-logo" 
-             onerror="this.style.display='none';">
-        <div class="header-text">
-            <h1>Dashboard Pasto Sano</h1>
+        <div class="container">
+            <h1>📊 Dashboard Pasto Sano</h1>
             <p>Analytics e gestione ordini in tempo reale</p>
         </div>
     </div>
 
     <div class="container">
         <div id="error-message" class="error" style="display: none;"></div>
-        
-        <div class="refresh-info">
-            ℹ️ <strong>Dashboard collegata agli ordini online!</strong> I nuovi ordini dal sito appariranno automaticamente qui. 
-            <span id="last-refresh">Ultimo aggiornamento: mai</span>
-        </div>
         
         <!-- STATISTICHE -->
         <div class="stats-grid">
@@ -380,10 +320,10 @@
             </div>
             
             <div class="stat-card">
-                <h3>Totale Ordini</h3>
-                <div class="stat-value" id="total-orders">-</div>
+                <h3>Totale Clienti</h3>
+                <div class="stat-value" id="total-customers">-</div>
                 <div class="stat-change neutral">
-                    <span id="total-change">dal lancio</span>
+                    <span id="customers-change">Caricamento...</span>
                 </div>
             </div>
         </div>
@@ -394,9 +334,7 @@
             <div class="orders-section">
                 <div class="section-header">
                     <h2 class="section-title">🛍️ Ordini Recenti</h2>
-                    <div>
-                        <button class="export-btn" onclick="exportToCSV()">📥 Esporta CSV</button>
-                    </div>
+                    <button class="export-btn" onclick="exportToCSV()">📥 Esporta CSV</button>
                 </div>
                 
                 <div class="filters">
@@ -417,456 +355,20 @@
                     <h2 class="section-title">📈 Analytics</h2>
                 </div>
                 
+                <div class="chart-container">
+                    <p>Grafico vendite<br>(Implementazione Chart.js in arrivo)</p>
+                </div>
+                
                 <div class="top-products">
                     <h3>🏆 Piatti Più Venduti</h3>
                     <div id="top-products-list">
                         <div class="loading">Caricamento...</div>
                     </div>
                 </div>
-
-                <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
-                    <h4 style="margin-bottom: 15px; color: #2d3748;">📊 Statistiche Rapide</h4>
-                    <div style="margin-bottom: 10px;">
-                        <strong>Prodotto più venduto:</strong>
-                        <span id="top-product">-</span>
-                    </div>
-                    <div style="margin-bottom: 10px;">
-                        <strong>Giorno migliore:</strong>
-                        <span id="best-day">-</span>
-                    </div>
-                    <div>
-                        <strong>Crescita settimanale:</strong>
-                        <span id="weekly-growth" class="positive">+0%</span>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
 
-    <script>
-        // Dashboard Pasto Sano - Versione localStorage
-        let allOrders = [];
-        let currentFilter = 'tutti';
-        let lastOrderCount = 0;
-
-        // INIZIALIZZAZIONE
-        document.addEventListener('DOMContentLoaded', async () => {
-            console.log('🚀 Dashboard inizializzata');
-            
-            try {
-                await loadAllData();
-                updateStats();
-                displayOrders();
-                updateTopProducts();
-                updateLastRefresh();
-                console.log('✅ Dashboard completamente caricata');
-                
-                // Auto-refresh ogni 10 secondi
-                setInterval(refreshData, 10000);
-                
-            } catch (error) {
-                console.error('❌ Errore caricamento dashboard:', error);
-                showError('Errore nel caricamento dei dati: ' + error.message);
-            }
-        });
-
-        // CARICAMENTO DATI DA LOCALSTORAGE
-        async function loadAllData() {
-            try {
-                console.log('📊 Caricamento ordini da localStorage...');
-                
-                const ordersData = localStorage.getItem('pastosano_orders');
-                
-                if (ordersData) {
-                    allOrders = JSON.parse(ordersData);
-                    console.log(`✅ ${allOrders.length} ordini caricati da localStorage`);
-                } else {
-                    console.log('⚠️ Nessun ordine in localStorage, uso dati di esempio');
-                    allOrders = getMockOrders();
-                    // Salva i dati di esempio
-                    localStorage.setItem('pastosano_orders', JSON.stringify(allOrders));
-                }
-                
-            } catch (error) {
-                console.error('❌ Errore caricamento ordini:', error);
-                allOrders = getMockOrders();
-            }
-        }
-
-        // DATI DI ESEMPIO
-        function getMockOrders() {
-            const today = new Date();
-            today.setHours(10, 30, 0, 0);
-            
-            return [
-                {
-                    id: 'demo1' + Date.now(),
-                    customerName: 'Demo Cliente',
-                    customerPhone: '+393478881515',
-                    customerEmail: 'demo@pastosano.com',
-                    items: [
-                        {name: 'FUSILLI, MACINATO MANZO, ZUCCHINE, MELANZANE', quantity: 1, price: 8},
-                        {name: 'ROASTBEEF, PATATE AL FORNO, FAGIOLINI', quantity: 1, price: 8}
-                    ],
-                    totalAmount: 16,
-                    pickupDate: '2025-06-16',
-                    appliedDiscount: 0,
-                    discountCode: '',
-                    timestamp: {
-                        toDate: () => today
-                    }
-                }
-            ];
-        }
-
-        // REFRESH DATI
-        async function refreshData() {
-            const oldCount = allOrders.length;
-            await loadAllData();
-            
-            if (allOrders.length > oldCount) {
-                console.log(`🔔 ${allOrders.length - oldCount} nuovi ordini!`);
-                showNewOrderNotification(allOrders.length - oldCount);
-            }
-            
-            updateStats();
-            displayOrders();
-            updateTopProducts();
-            updateLastRefresh();
-        }
-
-        function updateLastRefresh() {
-            const now = new Date();
-            document.getElementById('last-refresh').textContent = 
-                `Ultimo aggiornamento: ${now.toLocaleTimeString('it-IT')}`;
-        }
-
-        function showNewOrderNotification(count) {
-            // Crea una notifica semplice
-            const notification = document.createElement('div');
-            notification.className = 'notification';
-            notification.innerHTML = `🛍️ <strong>${count} nuovo${count > 1 ? 'i' : ''} ordine${count > 1 ? 'i' : ''}!</strong>`;
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.style.animation = 'slideOut 0.3s ease';
-                setTimeout(() => notification.remove(), 300);
-            }, 4000);
-        }
-
-        // AGGIORNAMENTO STATISTICHE
-        function updateStats() {
-            console.log('📈 Aggiornamento statistiche...');
-            
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            
-            const todayOrders = allOrders.filter(order => {
-                try {
-                    const orderDate = order.timestamp && order.timestamp.toDate ? 
-                        order.timestamp.toDate() : new Date(order.timestamp);
-                    return orderDate >= today;
-                } catch (e) {
-                    return false;
-                }
-            });
-            
-            // Stats
-            const ordersToday = todayOrders.length;
-            const revenueToday = todayOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
-            const avgOrder = allOrders.length > 0 ? 
-                allOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0) / allOrders.length : 0;
-            const totalOrders = allOrders.length;
-            
-            document.getElementById('orders-today').textContent = ordersToday;
-            document.getElementById('revenue-today').textContent = `${revenueToday.toFixed(2)}€`;
-            document.getElementById('avg-order').textContent = `${avgOrder.toFixed(2)}€`;
-            document.getElementById('total-orders').textContent = totalOrders;
-            
-            updateChangeIndicators(todayOrders);
-            updateQuickStats();
-            
-            console.log(`✅ Statistiche aggiornate: ${ordersToday} ordini oggi, ${revenueToday.toFixed(2)}€ fatturato`);
-        }
-
-        function updateChangeIndicators(todayOrders) {
-            const ordersChange = todayOrders.length > 0 ? '+100' : '0';
-            const revenueChange = todayOrders.length > 0 ? '+100' : '0';
-            
-            document.getElementById('orders-change').innerHTML = 
-                `<span style="color: #38a169;">↗ ${ordersChange}%</span> vs ieri`;
-            document.getElementById('revenue-change').innerHTML = 
-                `<span style="color: #38a169;">↗ ${revenueChange}%</span> vs ieri`;
-            document.getElementById('avg-change').textContent = 'valore medio';
-            document.getElementById('total-change').textContent = 'dal lancio';
-        }
-
-        function updateQuickStats() {
-            // Prodotto più venduto
-            const productSales = {};
-            allOrders.forEach(order => {
-                if (order.items) {
-                    order.items.forEach(item => {
-                        const name = item.name || 'Prodotto';
-                        productSales[name] = (productSales[name] || 0) + (item.quantity || 1);
-                    });
-                }
-            });
-            
-            const topProduct = Object.entries(productSales)
-                .sort(([,a], [,b]) => b - a)[0];
-            
-            document.getElementById('top-product').textContent = 
-                topProduct ? `${topProduct[0].substring(0, 30)}... (${topProduct[1]})` : 'Nessuno';
-            
-            // Giorno migliore (ultimo giorno con ordini)
-            const lastOrderDate = allOrders.length > 0 ? 
-                (allOrders[0].timestamp?.toDate ? allOrders[0].timestamp.toDate() : new Date()).toLocaleDateString('it-IT') : 'Nessuno';
-            
-            document.getElementById('best-day').textContent = lastOrderDate;
-            
-            // Crescita settimanale
-            const weekAgo = new Date();
-            weekAgo.setDate(weekAgo.getDate() - 7);
-            const recentOrders = allOrders.filter(order => {
-                try {
-                    const orderDate = order.timestamp && order.timestamp.toDate ? 
-                        order.timestamp.toDate() : new Date(order.timestamp);
-                    return orderDate >= weekAgo;
-                } catch (e) {
-                    return false;
-                }
-            });
-            
-            const growth = allOrders.length > 0 ? 
-                ((recentOrders.length / allOrders.length) * 100) : 0;
-            
-            document.getElementById('weekly-growth').textContent = `+${growth.toFixed(0)}%`;
-        }
-
-        // VISUALIZZAZIONE ORDINI
-        function displayOrders() {
-            console.log('📋 Visualizzazione ordini...');
-            
-            const ordersList = document.getElementById('orders-list');
-            if (!ordersList) return;
-            
-            let filteredOrders = getFilteredOrders();
-            
-            if (filteredOrders.length === 0) {
-                ordersList.innerHTML = '<div class="loading">Nessun ordine trovato per il filtro selezionato</div>';
-                return;
-            }
-            
-            ordersList.innerHTML = filteredOrders.map(order => {
-                const orderDate = order.timestamp && order.timestamp.toDate ? 
-                    order.timestamp.toDate() : new Date();
-                    
-                const formattedDate = orderDate.toLocaleDateString('it-IT', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-                
-                const itemsText = (order.items || []).map(item => 
-                    `${item.name || 'Prodotto'} (x${item.quantity || 1})`
-                ).join(', ');
-                
-                const discountText = order.appliedDiscount > 0 ? 
-                    `<br><small style="color: #e53e3e;">Sconto ${order.discountCode}: -${order.appliedDiscount}€</small>` : '';
-                
-                return `
-                    <div class="order-item">
-                        <div class="order-header">
-                            <span class="order-id">#${order.id.toString().substring(0, 8)}</span>
-                            <span class="order-total">${(order.totalAmount || 0).toFixed(2)}€</span>
-                        </div>
-                        <div class="order-details">
-                            <strong>🌐 ${order.customerName || 'Ordine Web'}</strong><br>
-                            📱 ${order.customerPhone || 'N/A'}<br>
-                            📅 Consegna: ${order.pickupDate || 'N/A'}<br>
-                            🍽️ ${itemsText || 'Nessun articolo'}${discountText}
-                        </div>
-                        <div style="margin-top: 8px;">
-                            <span class="order-status status-nuovo">Online</span>
-                            <small style="color: #718096; margin-left: 10px;">${formattedDate}</small>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-            
-            console.log(`✅ Visualizzati ${filteredOrders.length} ordini`);
-        }
-
-        function getFilteredOrders() {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            
-            switch (currentFilter) {
-                case 'oggi':
-                    return allOrders.filter(order => {
-                        try {
-                            const orderDate = order.timestamp && order.timestamp.toDate ? 
-                                order.timestamp.toDate() : new Date(order.timestamp);
-                            return orderDate >= today;
-                        } catch (e) {
-                            return false;
-                        }
-                    });
-                case 'settimana':
-                    const weekAgo = new Date(today);
-                    weekAgo.setDate(weekAgo.getDate() - 7);
-                    return allOrders.filter(order => {
-                        try {
-                            const orderDate = order.timestamp && order.timestamp.toDate ? 
-                                order.timestamp.toDate() : new Date(order.timestamp);
-                            return orderDate >= weekAgo;
-                        } catch (e) {
-                            return false;
-                        }
-                    });
-                case 'mese':
-                    const monthAgo = new Date(today);
-                    monthAgo.setMonth(monthAgo.getMonth() - 1);
-                    return allOrders.filter(order => {
-                        try {
-                            const orderDate = order.timestamp && order.timestamp.toDate ? 
-                                order.timestamp.toDate() : new Date(order.timestamp);
-                            return orderDate >= monthAgo;
-                        } catch (e) {
-                            return false;
-                        }
-                    });
-                default:
-                    return allOrders;
-            }
-        }
-
-        // FILTRI ORDINI
-        window.filterOrders = function(filter) {
-            currentFilter = filter;
-            
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            const clickedBtn = Array.from(document.querySelectorAll('.filter-btn'))
-                .find(btn => btn.textContent.toLowerCase().includes(filter.toLowerCase()));
-            if (clickedBtn) {
-                clickedBtn.classList.add('active');
-            }
-            
-            displayOrders();
-            console.log(`🔍 Filtro applicato: ${filter}`);
-        };
-
-        // TOP PRODUCTS
-        function updateTopProducts() {
-            console.log('🏆 Aggiornamento top products...');
-            
-            const productSales = {};
-            
-            allOrders.forEach(order => {
-                if (order.items) {
-                    order.items.forEach(item => {
-                        const name = item.name || 'Prodotto sconosciuto';
-                        if (productSales[name]) {
-                            productSales[name] += item.quantity || 1;
-                        } else {
-                            productSales[name] = item.quantity || 1;
-                        }
-                    });
-                }
-            });
-            
-            const sortedProducts = Object.entries(productSales)
-                .sort(([,a], [,b]) => b - a)
-                .slice(0, 5);
-            
-            const topProductsList = document.getElementById('top-products-list');
-            if (!topProductsList) return;
-            
-            if (sortedProducts.length === 0) {
-                topProductsList.innerHTML = '<div class="loading">Nessun dato disponibile</div>';
-                return;
-            }
-            
-            topProductsList.innerHTML = sortedProducts.map(([name, sales]) => `
-                <div class="product-item">
-                    <span class="product-name">${name.length > 35 ? name.substring(0, 35) + '...' : name}</span>
-                    <span class="product-sales">${sales} venduti</span>
-                </div>
-            `).join('');
-            
-            console.log(`✅ Top products aggiornati: ${sortedProducts.length} prodotti`);
-        }
-
-        // EXPORT CSV
-        window.exportToCSV = function() {
-            console.log('📥 Export CSV...');
-            
-            const filteredOrders = getFilteredOrders();
-            
-            if (filteredOrders.length === 0) {
-                alert('Nessun ordine da esportare');
-                return;
-            }
-            
-            const headers = ['ID', 'Data/Ora', 'Cliente', 'Telefono', 'Email', 'Consegna', 'Articoli', 'Totale', 'Sconto'];
-            
-            const csvData = filteredOrders.map(order => {
-                const orderDate = order.timestamp && order.timestamp.toDate ? 
-                    order.timestamp.toDate().toLocaleString('it-IT') : 'N/A';
-                const items = (order.items || []).map(item => 
-                    `${item.name || 'Prodotto'} (x${item.quantity || 1})`
-                ).join('; ');
-                const discount = order.appliedDiscount > 0 ? 
-                    `${order.discountCode} -${order.appliedDiscount}€` : 'Nessuno';
-                
-                return [
-                    order.id.toString().substring(0, 8),
-                    orderDate,
-                    order.customerName || 'Ordine Web',
-                    order.customerPhone || 'N/A',
-                    order.customerEmail || 'N/A',
-                    order.pickupDate || 'N/A',
-                    items,
-                    `${(order.totalAmount || 0).toFixed(2)}€`,
-                    discount
-                ].map(field => `"${field}"`).join(',');
-            });
-            
-            const csvContent = [headers.join(','), ...csvData].join('\n');
-            
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            link.setAttribute('href', url);
-            link.setAttribute('download', `ordini_pasto_sano_${new Date().toISOString().split('T')[0]}.csv`);
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            console.log(`✅ CSV esportato con ${filteredOrders.length} ordini`);
-        };
-
-        // GESTIONE ERRORI
-        function showError(message) {
-            console.error('❌ Errore dashboard:', message);
-            
-            const errorElement = document.getElementById('error-message');
-            if (errorElement) {
-                errorElement.textContent = message;
-                errorElement.style.display = 'block';
-            }
-        }
-
-        console.log('📊 Dashboard localStorage completamente caricata');
-    </script>
+    <script src="dashboard.js"></script>
 </body>
 </html>
-                    

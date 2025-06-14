@@ -1,8 +1,9 @@
-// script-enhanced.js
-// Importa Firebase functions
-import { saveOrder } from './firebase-config.js';
-
-document.addEventListener('DOMContentLoaded', () => {
+        // SALVATAGGIO IN FIREBASE
+        try {
+            // Preparazione dati ordine per Firebase
+            const orderData = {
+                customerName: 'Cliente', // Temporaneo - aggiungeremo form
+                customerPhone: 'N/A', //document.addEventListener('DOMContentLoaded', () => {
     const mealItems = document.querySelectorAll('.meal-item');
     const cartItemsList = document.getElementById('cart-items');
     const totalPriceSpan = document.getElementById('total-price');
@@ -144,12 +145,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.quantity-display').forEach(display => display.textContent = '0');
     });
 
-    // POPUP DATI CLIENTE
-    function showCustomerForm() {
-        const popup = document.getElementById('customer-popup');
-        popup.style.display = 'block';
-    }
-
     // POPUP RIEPILOGATIVO
     function showSummaryPopup() {
         const popup = document.getElementById('summary-popup');
@@ -213,42 +208,16 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('summary-popup').style.display = 'none';
     });
 
-    document.getElementById('close-customer-popup').addEventListener('click', () => {
-        document.getElementById('customer-popup').style.display = 'none';
-    });
-
     document.getElementById('summary-popup').addEventListener('click', (e) => {
         if (e.target.id === 'summary-popup') {
             document.getElementById('summary-popup').style.display = 'none';
         }
     });
 
-    document.getElementById('customer-popup').addEventListener('click', (e) => {
-        if (e.target.id === 'customer-popup') {
-            document.getElementById('customer-popup').style.display = 'none';
-        }
-    });
-
     // CONFERMA ORDINE DAL POPUP
     document.getElementById('confirm-order').addEventListener('click', () => {
         document.getElementById('summary-popup').style.display = 'none';
-        showCustomerForm();
-    });
-
-    // CONFERMA DATI CLIENTE
-    document.getElementById('confirm-customer').addEventListener('click', async () => {
-        const customerName = document.getElementById('customer-name').value.trim();
-        const customerPhone = document.getElementById('customer-phone').value.trim();
-        const customerEmail = document.getElementById('customer-email').value.trim();
-        const orderNotes = document.getElementById('order-notes').value.trim();
-
-        if (!customerName || !customerPhone) {
-            alert('Nome e telefono sono obbligatori');
-            return;
-        }
-
-        document.getElementById('customer-popup').style.display = 'none';
-        await processOrderWithCustomerData(customerName, customerPhone, customerEmail, orderNotes);
+        processOrder();
     });
 
     // NOTIFICA
@@ -262,8 +231,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 3000);
     }
 
-    // PROCESSAMENTO ORDINE CON DATI CLIENTE
-    async function processOrderWithCustomerData(customerName, customerPhone, customerEmail, orderNotes) {
+    // PROCESSAMENTO ORDINE CON FIREBASE
+    async function processOrder() {
         const totalQuantity = parseInt(totalItemsSpan.textContent);
         const pickupDate = pickupDateInput.value;
 
@@ -272,6 +241,10 @@ document.addEventListener('DOMContentLoaded', () => {
             orderMessage.style.backgroundColor = '#f8d7da';
             orderMessage.style.color = '#721c24';
             orderMessage.textContent = 'Errore: Il minimo d\'ordine è 4 pezzi a scelta.';
+            const existingWhatsappButton = orderMessage.querySelector('.whatsapp-send-button');
+            if (existingWhatsappButton) {
+                existingWhatsappButton.remove();
+            }
             return;
         }
 
@@ -280,6 +253,10 @@ document.addEventListener('DOMContentLoaded', () => {
             orderMessage.style.backgroundColor = '#f8d7da';
             orderMessage.style.color = '#721c24';
             orderMessage.textContent = 'Errore: Seleziona una data di ritiro.';
+            const existingWhatsappButton = orderMessage.querySelector('.whatsapp-send-button');
+            if (existingWhatsappButton) {
+                existingWhatsappButton.remove();
+            }
             return;
         }
 
@@ -295,6 +272,10 @@ document.addEventListener('DOMContentLoaded', () => {
             orderMessage.style.backgroundColor = '#f8d7da';
             orderMessage.style.color = '#721c24';
             orderMessage.textContent = 'Errore: La data di ritiro deve essere almeno due giorni dopo la data odierna.';
+            const existingWhatsappButton = orderMessage.querySelector('.whatsapp-send-button');
+            if (existingWhatsappButton) {
+                existingWhatsappButton.remove();
+            }
             return;
         }
 
@@ -302,43 +283,12 @@ document.addEventListener('DOMContentLoaded', () => {
         orderMessage.style.backgroundColor = '#d4edda';
         orderMessage.style.color = '#155724';
         
-        // Calcola totali
-        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        const discountAmount = (subtotal * appliedDiscount) / 100;
-        const total = subtotal - discountAmount;
-
-        // SALVATAGGIO IN FIREBASE
-        try {
-            const orderData = {
-                customerName: customerName,
-                customerPhone: customerPhone,
-                customerEmail: customerEmail,
-                items: cart.filter(item => item.quantity > 0),
-                totalItems: totalQuantity,
-                subtotal: subtotal,
-                appliedDiscount: appliedDiscount,
-                discountCode: discountCode,
-                totalAmount: total,
-                pickupDate: pickupDate,
-                orderNotes: orderNotes
-            };
-
-            const orderId = await saveOrder(orderData);
-            console.log('✅ Ordine salvato in Firebase:', orderId);
-            
-        } catch (error) {
-            console.error('❌ Errore salvataggio Firebase:', error);
-            // Continua comunque con WhatsApp
-        }
-        
         // Costruisci messaggio WhatsApp
         let orderDetails = "🎉 Nuovo Ordine Pasto Sano! 🎉\n\n";
-        orderDetails += "👤 DATI CLIENTE:\n";
-        orderDetails += `Nome: ${customerName}\n`;
-        orderDetails += `Telefono: ${customerPhone}\n`;
-        if (customerEmail) orderDetails += `Email: ${customerEmail}\n`;
-        orderDetails += "\n📦 DETTAGLI ORDINE:\n";
+        orderDetails += "Dettagli dell'Ordine:\n";
         orderDetails += "-----------------------------------\n";
+        
+        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         
         cart.forEach(item => {
             if (item.quantity > 0) {
@@ -350,19 +300,15 @@ document.addEventListener('DOMContentLoaded', () => {
         orderDetails += `📦 Totale Articoli: ${totalQuantity}\n`;
         
         if (appliedDiscount > 0) {
+            const discountAmount = (subtotal * appliedDiscount) / 100;
             orderDetails += `💰 Subtotale: ${subtotal.toFixed(2)}€\n`;
             orderDetails += `🎁 Sconto ${discountCode} (-${appliedDiscount}%): -${discountAmount.toFixed(2)}€\n`;
-            orderDetails += `💰 Totale Finale: ${total.toFixed(2)}€\n`;
+            orderDetails += `💰 Totale Finale: ${(subtotal - discountAmount).toFixed(2)}€\n`;
         } else {
-            orderDetails += `💰 Totale Ordine: ${total.toFixed(2)}€\n`;
+            orderDetails += `💰 Totale Ordine: ${totalPriceSpan.textContent}\n`;
         }
         
-        orderDetails += `🗓️ Data di Ritiro: ${pickupDate}\n`;
-        
-        if (orderNotes) {
-            orderDetails += `📝 Note: ${orderNotes}\n`;
-        }
-        
+        orderDetails += `🗓️ Data di Ritiro Prevista: ${pickupDate}\n`;
         orderDetails += "-----------------------------------\n";
         orderDetails += "Si prega di confermare la disponibilità. Grazie!";
 
@@ -370,7 +316,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const phoneNumber = "+393478881515"; // CAMBIA CON IL TUO NUMERO
         const whatsappLink = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
 
-        orderMessage.innerHTML = `Ordine preparato con successo!<br><strong>${customerName}</strong><br>Totale: ${total.toFixed(2)}€<br>Data di ritiro: ${pickupDate}<br><br>`;
+        orderMessage.innerHTML = `Ordine preparato con successo!<br>Totale: ${totalPriceSpan.textContent}<br>Data di ritiro: ${pickupDate}<br><br>`;
         
         const whatsappButton = document.createElement('a');
         whatsappButton.href = whatsappLink;
@@ -381,22 +327,18 @@ document.addEventListener('DOMContentLoaded', () => {
         // Aggiungi evento click per notifica
         whatsappButton.addEventListener('click', () => {
             setTimeout(() => {
-                showNotification('✅ Ordine inviato con successo! Salvato in database.');
+                showNotification('✅ Ordine inviato con successo!');
             }, 500);
         });
         
         orderMessage.appendChild(whatsappButton);
 
-        // Svuota carrello e form dopo l'ordine
+        // Svuota carrello dopo l'ordine
         cart = [];
         appliedDiscount = 0;
         discountCode = '';
         document.getElementById('promo-code').value = '';
         document.getElementById('promo-message').innerHTML = '';
-        document.getElementById('customer-name').value = '';
-        document.getElementById('customer-phone').value = '';
-        document.getElementById('customer-email').value = '';
-        document.getElementById('order-notes').value = '';
         updateCartDisplay();
         pickupDateInput.value = '';
         document.querySelectorAll('.quantity-display').forEach(display => display.textContent = '0');

@@ -3,1474 +3,247 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pasto Sano - I Tuoi Pasti Sani</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #2c5530 0%, #4a7c4c 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 20px;
-        }
-
-        .header-logo {
-            width: 80px;
-            height: 80px;
-            object-fit: contain;
-            background: white;
-            border-radius: 50%;
-            padding: 10px;
-        }
-
-        .header-text h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            font-weight: 700;
-        }
-
-        .header-text p {
-            font-size: 1.1rem;
-            opacity: 0.9;
-        }
-
-        .main-content {
-            display: grid;
-            grid-template-columns: 1fr 350px;
-            gap: 0;
-            min-height: 70vh;
-        }
-
-        .menu-section {
-            padding: 30px;
-        }
-
-        .section-title {
-            font-size: 1.8rem;
-            color: #2c5530;
-            margin-bottom: 25px;
-            padding-bottom: 10px;
-            border-bottom: 3px solid #4a7c4c;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .menu-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 40px;
-        }
-
-        .menu-item {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-            overflow: hidden;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-        }
-
-        .menu-item:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 35px rgba(0,0,0,0.15);
-            border-color: #4a7c4c;
-        }
-
-        .menu-item img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            transition: transform 0.3s ease;
-        }
-
-        .menu-item:hover img {
-            transform: scale(1.05);
-        }
-
-        .item-content {
-            padding: 20px;
-        }
-
-        .item-title {
-            font-size: 1rem;
-            font-weight: 600;
-            color: #2c5530;
-            margin-bottom: 15px;
-            line-height: 1.4;
-        }
-
-        .item-price {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #e74c3c;
-            margin-bottom: 15px;
-        }
-
-        .quantity-controls {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .quantity-btn {
-            background: #4a7c4c;
-            color: white;
-            border: none;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            font-size: 1.2rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .quantity-btn:hover {
-            background: #2c5530;
-            transform: scale(1.1);
-        }
-
-        .quantity-btn:disabled {
-            background: #bdc3c7;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .quantity-display {
-            background: #f8f9fa;
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
-            padding: 8px 16px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #2c5530;
-            min-width: 60px;
-            text-align: center;
-        }
-
-        .cart-sidebar {
-            background: #f8f9fa;
-            padding: 30px;
-            border-left: 1px solid #dee2e6;
-            position: sticky;
-            top: 0;
-            height: fit-content;
-        }
-
-        .cart-title {
-            font-size: 1.5rem;
-            color: #2c5530;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .cart-item {
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        .cart-item-name {
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: #2c5530;
-            margin-bottom: 5px;
-        }
-
-        .cart-item-details {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.9rem;
-            color: #6c757d;
-        }
-
-        .promo-section {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
-            border: 2px dashed #4a7c4c;
-        }
-
-        .promo-input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            font-size: 1rem;
-            margin-bottom: 10px;
-        }
-
-        .promo-btn {
-            width: 100%;
-            background: #4a7c4c;
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
-
-        .promo-btn:hover {
-            background: #2c5530;
-        }
-
-        .cart-total {
-            background: #2c5530;
-            color: white;
-            padding: 20px;
-            border-radius: 15px;
-            margin-top: 20px;
-        }
-
-        .total-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-
-        .total-final {
-            font-size: 1.3rem;
-            font-weight: 700;
-            border-top: 2px solid rgba(255,255,255,0.3);
-            padding-top: 10px;
-        }
-
-        .checkout-btn {
-            width: 100%;
-            background: #e74c3c;
-            color: white;
-            border: none;
-            padding: 15px;
-            border-radius: 10px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 20px;
-            transition: all 0.3s ease;
-        }
-
-        .checkout-btn:hover {
-            background: #c0392b;
-            transform: translateY(-2px);
-        }
-
-        .checkout-btn:disabled {
-            background: #bdc3c7;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        /* Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            backdrop-filter: blur(5px);
-        }
-
-        .modal-content {
-            background-color: white;
-            margin: 5% auto;
-            padding: 0;
-            border-radius: 20px;
-            width: 95%;
-            max-width: 500px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            animation: modalSlideIn 0.3s ease;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        @keyframes modalSlideIn {
-            from { opacity: 0; transform: translateY(-50px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .modal-header {
-            background: linear-gradient(135deg, #2c5530 0%, #4a7c4c 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 20px 20px 0 0;
-            text-align: center;
-        }
-
-        .modal-header h2 {
-            margin: 0;
-            font-size: 1.5rem;
-        }
-
-        .modal-body {
-            padding: 30px;
-        }
-
-        .calendar-section {
-            margin-bottom: 25px;
-        }
-
-        .calendar-section label {
-            display: block;
-            font-weight: 600;
-            color: #2c5530;
-            margin-bottom: 10px;
-            font-size: 1.1rem;
-        }
-
-        .calendar-input {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            font-size: 18px;
-            transition: border-color 0.3s ease;
-            -webkit-appearance: none;
-            -moz-appearance: textfield;
-            background: white;
-            color: #2c5530;
-            font-weight: 500;
-        }
-
-        .calendar-input:focus {
-            outline: none;
-            border-color: #4a7c4c;
-            box-shadow: 0 0 0 3px rgba(74, 124, 76, 0.1);
-        }
-
-        .calendar-input::-webkit-calendar-picker-indicator {
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="%234a7c4c" viewBox="0 0 16 16"><path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/></svg>');
-            background-size: 20px;
-            cursor: pointer;
-            padding: 10px;
-        }
-
-        .axc-notice {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            border-radius: 8px;
-            padding: 15px;
-            margin: 15px 0;
-            color: #856404;
-            font-size: 0.9rem;
-            text-align: center;
-        }
-
-        .order-summary {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 20px;
-            margin: 20px 0;
-        }
-
-        .order-summary h3 {
-            color: #2c5530;
-            margin-bottom: 15px;
-            font-size: 1.2rem;
-        }
-
-        .summary-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            padding: 5px 0;
-            border-bottom: 1px solid #e9ecef;
-        }
-
-        .summary-total {
-            font-weight: 700;
-            font-size: 1.1rem;
-            color: #2c5530;
-            border-top: 2px solid #4a7c4c;
-            padding-top: 10px;
-            margin-top: 10px;
-        }
-
-        .modal-buttons {
-            display: flex;
-            gap: 15px;
-            margin-top: 25px;
-        }
-
-        .modal-btn {
-            flex: 1;
-            padding: 15px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            min-height: 50px;
-            -webkit-appearance: none;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .btn-cancel {
-            background: #6c757d;
-            color: white;
-        }
-
-        .btn-cancel:hover, .btn-cancel:active {
-            background: #545b62;
-            transform: translateY(-1px);
-        }
-
-        .btn-confirm {
-            background: #e74c3c;
-            color: white;
-        }
-
-        .btn-confirm:hover, .btn-confirm:active {
-            background: #c0392b;
-            transform: translateY(-1px);
-        }
-
-        .btn-confirm:disabled {
-            background: #bdc3c7;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .success-modal .modal-content {
-            max-width: 600px;
-        }
-
-        .success-header {
-            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
-        }
-
-        .success-icon {
-            font-size: 3rem;
-            margin-bottom: 15px;
-        }
-
-        .order-details {
-            background: white;
-            border: 2px solid #27ae60;
-            border-radius: 10px;
-            padding: 20px;
-            margin: 20px 0;
-        }
-
-        .notice {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 20px;
-            color: #856404;
-            font-size: 0.9rem;
-        }
-
-        .empty-cart {
-            text-align: center;
-            color: #6c757d;
-            padding: 40px 20px;
-        }
-
-        .empty-cart-icon {
-            font-size: 3rem;
-            margin-bottom: 10px;
-        }
-
-        @keyframes addToCart {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); background-color: #27ae60; }
-            100% { transform: scale(1); }
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-        }
-
-        @media (max-width: 768px) {
-            .main-content {
-                grid-template-columns: 1fr;
-            }
-            
-            .menu-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .header-text h1 {
-                font-size: 2rem;
-            }
-            
-            .header {
-                flex-direction: column;
-                gap: 15px;
-            }
-            
-            .header-logo {
-                width: 60px;
-                height: 60px;
-            }
-            
-            .container {
-                margin: 10px;
-                border-radius: 15px;
-            }
-            
-            .modal-content {
-                width: 98%;
-                margin: 2% auto;
-                max-height: 95vh;
-            }
-            
-            .modal-body {
-                padding: 20px;
-            }
-            
-            .calendar-input {
-                font-size: 16px;
-                padding: 18px;
-            }
-            
-            .modal-btn {
-                font-size: 18px;
-                padding: 18px;
-                min-height: 55px;
-            }
-            
-            .cart-sidebar {
-                position: relative;
-                top: auto;
-            }
-        }
-    </style>
+    <title>Pasto Sano - Ordina i tuoi pasti</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <img src="logo.png" alt="Logo Pasto Sano" class="header-logo" 
-                 onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='block';">
-            <div id="logo-fallback" style="display: none; width: 80px; height: 80px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem;">🥗</div>
-            <div class="header-text">
-                <h1>Pasto Sano</h1>
-                <p>I tuoi pasti sani, preparati con cura</p>
-            </div>
-        </div>
+    <header>
+        <h1><img src="logo.png" alt="Logo Pasto Sano" style="width:80px; vertical-align:middle; margin-right:10px;" onerror="this.style.display='none'">Pasto Sano</h1>
+    </header>
+    
+    <main>
+       <section id="menu">
+            <h2>Pasti Completi</h2>
+            <div class="meal-list">
 
-        <div class="main-content">
-            <div class="menu-section">
-                <div class="section-title">
-                    🍽️ Pasti Completi
-                </div>
-                <div class="menu-grid" id="pasti-completi">
-                    <!-- I pasti completi verranno inseriti qui via JavaScript -->
-                </div>
-
-                <div class="section-title">
-                    🥞 Colazioni
-                </div>
-                <div class="menu-grid" id="colazioni">
-                    <!-- Le colazioni verranno inserite qui via JavaScript -->
-                </div>
-            </div>
-
-            <div class="cart-sidebar">
-                <div class="cart-title">
-                    🛒 Il tuo Ordine
-                </div>
-                
-                <div id="cart-items">
-                    <div class="empty-cart">
-                        <div class="empty-cart-icon">🛒</div>
-                        <p>Il tuo carrello è vuoto</p>
-                        <p>Aggiungi alcuni deliziosi pasti!</p>
-                    </div>
-                </div>
-
-                <div class="promo-section">
-                    <p style="margin-bottom: 10px; font-weight: 600; color: #2c5530;">🎁 Hai un codice promozionale?</p>
-                    <input type="text" class="promo-input" placeholder="Inserisci il codice" id="promo-code">
-                    <button class="promo-btn" onclick="applyPromo()">Applica</button>
-                </div>
-
-                <div class="cart-total" id="cart-total" style="display: none;">
-                    <div class="total-row">
-                        <span>Articoli:</span>
-                        <span id="total-items">0</span>
-                    </div>
-                    <div class="total-row">
-                        <span>Subtotale:</span>
-                        <span id="subtotal">€0.00</span>
-                    </div>
-                    <div class="total-row" id="discount-row" style="display: none;">
-                        <span>Sconto:</span>
-                        <span id="discount">-€0.00</span>
-                    </div>
-                    <div class="total-row total-final">
-                        <span>Totale:</span>
-                        <span id="total">€0.00</span>
-                    </div>
-                </div>
-
-                <button class="checkout-btn" id="checkout-btn" onclick="openOrderModal()" disabled>
-                    Ordina Ora
-                </button>
-
-                <div class="notice">
-                    ⏰ L'ordine deve essere effettuato con 2 giorni di anticipo (AxC)
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal per Conferma Ordine -->
-    <div id="orderModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>📅 Conferma il tuo Ordine</h2>
-            </div>
-            <div class="modal-body">
-                <div class="calendar-section">
-                    <label for="delivery-date">📆 Seleziona la data di consegna:</label>
-                    <input type="date" id="delivery-date" class="calendar-input" min="">
-                    <div class="axc-notice">
-                        ⏰ <strong>Ricorda:</strong> L'ordine deve essere effettuato con 2 giorni di anticipo (AxC)
-                    </div>
-                </div>
-
-                <div class="order-summary" id="modal-order-summary">
-                    <!-- Il riepilogo verrà inserito qui -->
-                </div>
-
-                <div class="modal-buttons">
-                    <button class="modal-btn btn-cancel" onclick="closeOrderModal()">
-                        Annulla
-                    </button>
-                    <button class="modal-btn btn-confirm" onclick="confirmOrder()" disabled>
-                        Conferma Ordine
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal per Conferma Successo -->
-    <div id="successModal" class="modal success-modal">
-        <div class="modal-content">
-            <div class="modal-header success-header">
-                <div class="success-icon">✅</div>
-                <h2>Ordine Inviato con Successo!</h2>
-            </div>
-            <div class="modal-body">
-                <p style="text-align: center; font-size: 1.1rem; margin-bottom: 20px;">
-                    Grazie per il tuo ordine! Riceverai una conferma via email.
-                </p>
-                
-                <div class="order-details" id="success-order-details">
-                    <!-- I dettagli dell'ordine verranno inseriti qui -->
-                </div>
-
-                <div style="text-align: center; margin-top: 25px;">
-                    <button class="modal-btn btn-confirm" onclick="sendToWhatsAppSimple()" style="width: auto; padding: 12px 30px; margin-right: 10px; background: #25D366;">
-                        📱 Invia su WhatsApp
-                    </button>
-                    <button class="modal-btn btn-confirm" onclick="closeSuccessModal()" style="width: auto; padding: 12px 30px;">
-                        Chiudi
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        const menuItems = {
-            pastiCompleti: [
-                { id: 1, name: "FUSILLI, MACINATO MANZO, ZUCCHINE, MELANZANE", price: 8, image: "fusilli-macinato-zucchine-melanzane.jpg" },
-                { id: 2, name: "ROASTBEEF, PATATE AL FORNO, FAGIOLINI", price: 8, image: "roastbeef-patatealforno-fagiolini.jpg" },
-                { id: 3, name: "RISO, HAMBURGER MANZO, CAROTINE BABY", price: 8, image: "risobasmati-hamburgermanzo-carotine.jpg" },
-                { id: 4, name: "RISO NERO, GAMBERI, TONNO, PISELLI", price: 8, image: "riso nero-gamberi-tonno-piselli.jpg" },
-                { id: 5, name: "PATATE, SALMONE GRIGLIATO, BROCCOLI", price: 8, image: "salmonegrigliato-patatealforno-broccoli.jpg" },
-                { id: 6, name: "POLLO GRIGLIATO, PATATE AL FORNO, ZUCCHINE", price: 8, image: "pollogrigliato-patatealforno-zucchine.jpg" },
-                { id: 7, name: "ORZO, CECI, FETA, POMODORINI, BASILICO", price: 8, image: "orzo-ceci-feta-pomodorini-basilico.jpg" },
-                { id: 8, name: "TORTILLAS, TACCHINO AFFUMICATO, HUMMUS CECI, INSALATA", price: 8, image: "tortillas-tacchinoaffumicato-hummusceci-insalata.jpg" },
-                { id: 9, name: "TORTILLAS, SALMONE AFFUMICATO, FORMAGGIO SPALMABILE, INSALATA", price: 8, image: "tortillas-salmoneaffumicato-formaggiospalmabile-insalata.jpg" },
-                { id: 10, name: "RISO, POLLO AL CURRY, ZUCCHINE", price: 8, image: "risobasmati-polloalcurry-zucchine.jpg" }
-            ],
-            colazioni: [
-                { id: 11, name: "UOVA STRAPAZZATE, BACON, FRUTTI DI BOSCO", price: 6, image: "uovastrapazzate-bacon-fruttidibosco.jpg" },
-                { id: 12, name: "PANCAKES", price: 6, image: "pancakes.jpg" }
-            ]
-        };
-
-        let cart = {};
-        let promoApplied = false;
-        let promoDiscount = 0;
-
-        function renderMenuItems() {
-            const pastiCompleti = document.getElementById('pasti-completi');
-            const colazioni = document.getElementById('colazioni');
-
-            // Render pasti completi
-            menuItems.pastiCompleti.forEach(item => {
-                pastiCompleti.appendChild(createMenuItemElement(item));
-            });
-
-            // Render colazioni
-            menuItems.colazioni.forEach(item => {
-                colazioni.appendChild(createMenuItemElement(item));
-            });
-        }
-
-        function createMenuItemElement(item) {
-            const div = document.createElement('div');
-            div.className = 'menu-item';
-            div.innerHTML = `
-                <img src="${item.image}" alt="${item.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjhmOWZhIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzZjNzU3ZCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltbWFnaW5lIG5vbiBkaXNwb25pYmlsZTwvdGV4dD48L3N2Zz4='">
-                <div class="item-content">
-                    <div class="item-title">${item.name}</div>
-                    <div class="item-price">€${item.price.toFixed(2)}</div>
+                <div class="meal-item" data-id="1" data-price="8">
+                    <h3>1. FUSILLI, MACINATO MANZO, ZUCCHINE, MELANZANE</h3>
+                    <img src="fusilli-macinato-zucchine-melanzane.jpg" alt="FUSILLI, MACINATO MANZO, ZUCCHINE, MELANZANE" class="meal-img">
+                    <!-- Manteniamo input nascosto per compatibilità -->
+                    <input type="number" value="0" min="0" class="quantity-input" style="display: none;">
                     <div class="quantity-controls">
-                        <button class="quantity-btn" onclick="decreaseQuantity(${item.id})">−</button>
-                        <div class="quantity-display" id="qty-${item.id}">0</div>
-                        <button class="quantity-btn" onclick="increaseQuantity(${item.id})">+</button>
+                        <button class="quantity-btn minus-btn">-</button>
+                        <span class="quantity-display">0</span>
+                        <button class="quantity-btn plus-btn">+</button>
                     </div>
+                    <button class="add-to-cart">Aggiungi</button>
                 </div>
-            `;
-            return div;
-        }
-
-        function increaseQuantity(itemId) {
-            if (!cart[itemId]) {
-                cart[itemId] = 0;
-            }
-            cart[itemId]++;
-            updateQuantityDisplay(itemId);
-            updateCart();
-            
-            // Animazione feedback
-            const btn = event.target;
-            btn.classList.add('add-animation');
-            setTimeout(() => btn.classList.remove('add-animation'), 600);
-        }
-
-        function decreaseQuantity(itemId) {
-            if (cart[itemId] && cart[itemId] > 0) {
-                cart[itemId]--;
-                if (cart[itemId] === 0) {
-                    delete cart[itemId];
-                }
-                updateQuantityDisplay(itemId);
-                updateCart();
-            }
-        }
-
-        function updateQuantityDisplay(itemId) {
-            const display = document.getElementById(`qty-${itemId}`);
-            display.textContent = cart[itemId] || 0;
-        }
-
-        function updateCart() {
-            const cartItemsContainer = document.getElementById('cart-items');
-            const cartTotal = document.getElementById('cart-total');
-            const checkoutBtn = document.getElementById('checkout-btn');
-
-            if (Object.keys(cart).length === 0) {
-                cartItemsContainer.innerHTML = `
-                    <div class="empty-cart">
-                        <div class="empty-cart-icon">🛒</div>
-                        <p>Il tuo carrello è vuoto</p>
-                        <p>Aggiungi alcuni deliziosi pasti!</p>
+    
+                <div class="meal-item" data-id="2" data-price="8">
+                    <h3>2. ROASTBEEF, PATATE AL FORNO, FAGIOLINI</h3>
+                    <img src="roastbeef-patatealforno-fagiolini.jpg" alt="ROASTBEEF, PATATE AL FORNO, FAGIOLINI" class="meal-img">
+                    <input type="number" value="0" min="0" class="quantity-input" style="display: none;">
+                    <div class="quantity-controls">
+                        <button class="quantity-btn minus-btn">-</button>
+                        <span class="quantity-display">0</span>
+                        <button class="quantity-btn plus-btn">+</button>
                     </div>
-                `;
-                cartTotal.style.display = 'none';
-                checkoutBtn.disabled = true;
-                return;
-            }
-
-            let html = '';
-            let totalItems = 0;
-            let subtotal = 0;
-
-            Object.keys(cart).forEach(itemId => {
-                const item = [...menuItems.pastiCompleti, ...menuItems.colazioni].find(i => i.id == itemId);
-                const quantity = cart[itemId];
-                const itemTotal = item.price * quantity;
-
-                html += `
-                    <div class="cart-item">
-                        <div class="cart-item-name">${item.name}</div>
-                        <div class="cart-item-details">
-                            <span>€${item.price.toFixed(2)} x ${quantity}</span>
-                            <span>€${itemTotal.toFixed(2)}</span>
-                        </div>
+                    <button class="add-to-cart">Aggiungi</button>
+                </div>
+    
+                <div class="meal-item" data-id="3" data-price="8">
+                    <h3>3. RISO, HAMBURGER MANZO, CAROTINE BABY</h3>
+                    <img src="risobasmati-hamburgermanzo-carotine.jpg" alt="RISO, HAMBURGER MANZO, CAROTINE BABY" class="meal-img">
+                    <input type="number" value="0" min="0" class="quantity-input" style="display: none;">
+                    <div class="quantity-controls">
+                        <button class="quantity-btn minus-btn">-</button>
+                        <span class="quantity-display">0</span>
+                        <button class="quantity-btn plus-btn">+</button>
                     </div>
-                `;
-
-                totalItems += quantity;
-                subtotal += itemTotal;
-            });
-
-            cartItemsContainer.innerHTML = html;
-
-            // Calcola il totale finale
-            const finalTotal = subtotal - promoDiscount;
-
-            document.getElementById('total-items').textContent = totalItems;
-            document.getElementById('subtotal').textContent = `€${subtotal.toFixed(2)}`;
-            document.getElementById('total').textContent = `€${finalTotal.toFixed(2)}`;
-
-            if (promoDiscount > 0) {
-                document.getElementById('discount-row').style.display = 'flex';
-                document.getElementById('discount').textContent = `-€${promoDiscount.toFixed(2)}`;
-            }
-
-            cartTotal.style.display = 'block';
-            checkoutBtn.disabled = false;
-        }
-
-        function applyPromo() {
-            const promoCode = document.getElementById('promo-code').value.trim().toLowerCase();
-            
-            if (promoApplied) {
-                alert('Hai già applicato un codice promozionale!');
-                return;
-            }
-
-            // Codici promo di esempio
-            const promoCodes = {
-                'benvenuto10': 10, // 10% di sconto
-                'estate5': 5,      // €5 di sconto
-                'primo20': 20      // 20% di sconto
-            };
-
-            if (promoCodes[promoCode]) {
-                const subtotal = Object.keys(cart).reduce((total, itemId) => {
-                    const item = [...menuItems.pastiCompleti, ...menuItems.colazioni].find(i => i.id == itemId);
-                    return total + (item.price * cart[itemId]);
-                }, 0);
-
-                if (promoCode.includes('10') || promoCode.includes('20')) {
-                    // Sconto percentuale
-                    promoDiscount = subtotal * (promoCodes[promoCode] / 100);
-                } else {
-                    // Sconto fisso
-                    promoDiscount = Math.min(promoCodes[promoCode], subtotal);
-                }
-
-                promoApplied = true;
-                document.getElementById('promo-code').disabled = true;
-                document.querySelector('.promo-btn').textContent = 'Applicato ✓';
-                document.querySelector('.promo-btn').disabled = true;
-                
-                updateCart();
-                alert(`Codice promozionale applicato! Hai risparmiato €${promoDiscount.toFixed(2)}`);
-            } else {
-                alert('Codice promozionale non valido');
-            }
-        }
-
-        function checkout() {
-            // Questa funzione ora è sostituita da openOrderModal()
-        }
-
-        function openOrderModal() {
-            if (Object.keys(cart).length === 0) {
-                alert('Il carrello è vuoto!');
-                return;
-            }
-
-            // Imposta la data minima (oggi + 2 giorni per AXC)
-            const today = new Date();
-            const minDate = new Date(today);
-            minDate.setDate(today.getDate() + 2);
-            
-            const deliveryDateInput = document.getElementById('delivery-date');
-            deliveryDateInput.min = minDate.toISOString().split('T')[0];
-            
-            // Preimposta la data minima come suggerimento
-            deliveryDateInput.value = minDate.toISOString().split('T')[0];
-
-            // Genera il riepilogo ordine nel modal
-            generateModalOrderSummary();
-
-            // Mostra il modal
-            document.getElementById('orderModal').style.display = 'block';
-            
-            // Valida subito la data preimpostata
-            setTimeout(() => {
-                validateDeliveryDate();
-                deliveryDateInput.focus();
-            }, 300);
-        }
-
-        function validateDeliveryDate() {
-            const deliveryDateInput = document.getElementById('delivery-date');
-            const confirmButton = document.querySelector('#orderModal .btn-confirm');
-            const errorDiv = document.getElementById('date-error');
-            
-            // Controlli di sicurezza
-            if (!deliveryDateInput) {
-                console.log('❌ Campo data non trovato');
-                return false;
-            }
-            
-            if (!confirmButton) {
-                console.log('❌ Pulsante conferma non trovato');
-                return false;
-            }
-            
-            const selectedDate = deliveryDateInput.value;
-            console.log('Data selezionata:', selectedDate);
-            
-            if (!selectedDate) {
-                confirmButton.disabled = true;
-                if (confirmButton.style) confirmButton.style.opacity = '0.5';
-                if (errorDiv && errorDiv.style) errorDiv.style.display = 'none';
-                console.log('Nessuna data selezionata - pulsante disabilitato');
-                return false;
-            }
-            
-            // Verifica che la data sia almeno 2 giorni nel futuro
-            const selected = new Date(selectedDate);
-            const today = new Date();
-            const minDate = new Date(today);
-            minDate.setDate(today.getDate() + 2);
-            
-            // Reset ore per confronto corretto
-            selected.setHours(0, 0, 0, 0);
-            minDate.setHours(0, 0, 0, 0);
-            
-            if (selected < minDate) {
-                confirmButton.disabled = true;
-                if (confirmButton.style) confirmButton.style.opacity = '0.5';
-                if (errorDiv) {
-                    errorDiv.textContent = '⚠️ La data deve essere almeno 2 giorni nel futuro';
-                    if (errorDiv.style) errorDiv.style.display = 'block';
-                }
-                console.log('Data troppo vicina - pulsante disabilitato');
-                return false;
-            }
-            
-            // Data valida
-            confirmButton.disabled = false;
-            if (confirmButton.style) confirmButton.style.opacity = '1';
-            if (errorDiv && errorDiv.style) errorDiv.style.display = 'none';
-            console.log('Data valida - pulsante abilitato');
-            return true;
-        }
-
-        function closeOrderModal() {
-            document.getElementById('orderModal').style.display = 'none';
-        }
-
-        function generateModalOrderSummary() {
-            const summaryContainer = document.getElementById('modal-order-summary');
-            
-            let html = '<h3>🛒 Riepilogo Ordine</h3>';
-            let totalItems = 0;
-            let subtotal = 0;
-
-            Object.keys(cart).forEach(itemId => {
-                const item = [...menuItems.pastiCompleti, ...menuItems.colazioni].find(i => i.id == itemId);
-                const quantity = cart[itemId];
-                const itemTotal = item.price * quantity;
-
-                html += `
-                    <div class="summary-item">
-                        <span>${item.name.substring(0, 40)}${item.name.length > 40 ? '...' : ''}</span>
-                        <span>${quantity}x €${item.price.toFixed(2)} = €${itemTotal.toFixed(2)}</span>
+                    <button class="add-to-cart">Aggiungi</button>
+                </div>
+    
+                <div class="meal-item" data-id="4" data-price="8">
+                    <h3>4. RISO NERO, GAMBERI, TONNO, PISELLI</h3>
+                    <img src="riso nero-gamberi-tonno-piselli.jpg" alt="RISO NERO, GAMBERI, TONNO, PISELLI" class="meal-img">
+                    <input type="number" value="0" min="0" class="quantity-input" style="display: none;">
+                    <div class="quantity-controls">
+                        <button class="quantity-btn minus-btn">-</button>
+                        <span class="quantity-display">0</span>
+                        <button class="quantity-btn plus-btn">+</button>
                     </div>
-                `;
-
-                totalItems += quantity;
-                subtotal += itemTotal;
-            });
-
-            // Aggiungi totali
-            html += `
-                <div class="summary-item">
-                    <span><strong>Totale Articoli:</strong></span>
-                    <span><strong>${totalItems}</strong></span>
+                    <button class="add-to-cart">Aggiungi</button>
                 </div>
-                <div class="summary-item">
-                    <span><strong>Subtotale:</strong></span>
-                    <span><strong>€${subtotal.toFixed(2)}</strong></span>
-                </div>
-            `;
-
-            if (promoDiscount > 0) {
-                html += `
-                    <div class="summary-item">
-                        <span><strong>Sconto Applicato:</strong></span>
-                        <span><strong>-€${promoDiscount.toFixed(2)}</strong></span>
+    
+                <div class="meal-item" data-id="5" data-price="8">
+                    <h3>5. PATATE, SALMONE GRIGLIATO, BROCCOLI</h3>
+                    <img src="salmonegrigliato-patatealforno-broccoli.jpg" alt="PATATE, SALMONE GRIGLIATO, BROCCOLI" class="meal-img">
+                    <input type="number" value="0" min="0" class="quantity-input" style="display: none;">
+                    <div class="quantity-controls">
+                        <button class="quantity-btn minus-btn">-</button>
+                        <span class="quantity-display">0</span>
+                        <button class="quantity-btn plus-btn">+</button>
                     </div>
-                `;
-            }
-
-            const finalTotal = subtotal - promoDiscount;
-            html += `
-                <div class="summary-item summary-total">
-                    <span>TOTALE FINALE:</span>
-                    <span>€${finalTotal.toFixed(2)}</span>
+                    <button class="add-to-cart">Aggiungi</button>
                 </div>
-            `;
-
-            summaryContainer.innerHTML = html;
-        }
-
-        function confirmOrder() {
-            console.log('🔄 INIZIO confirmOrder()');
-            
-            try {
-                const deliveryDate = document.getElementById('delivery-date').value;
-                console.log('📅 Data:', deliveryDate);
-                
-                if (!deliveryDate) {
-                    alert('Seleziona una data di consegna');
-                    return;
-                }
-
-                console.log('✅ Proceeding with order...');
-
-                // FORZA la chiusura del modal di conferma
-                const orderModal = document.getElementById('orderModal');
-                if (orderModal) {
-                    orderModal.style.display = 'none';
-                    console.log('🔒 Modal ordine chiuso forzatamente');
-                }
-
-                // Attendi un momento prima di aprire il modal di successo
-                setTimeout(() => {
-                    try {
-                        showSuccessModalSimple(deliveryDate);
-                    } catch (error) {
-                        console.error('❌ Errore in showSuccessModalSimple:', error);
-                        alert('Ordine ricevuto! Controlla WhatsApp per l\'invio.');
-                    }
-                }, 100);
-
-            } catch (error) {
-                console.error('❌ Errore in confirmOrder:', error);
-                alert('Errore nell\'ordine, riprova');
-            }
-        }
-
-        function showSuccessModalSimple(deliveryDate) {
-            console.log('🎉 INIZIO showSuccessModalSimple');
-            
-            try {
-                // Salva l'ordine per la dashboard
-                const orderData = {
-                    id: Date.now().toString(),
-                    orderDateTime: new Date().toISOString(),
-                    deliveryDate: deliveryDate,
-                    items: Object.keys(cart).map(itemId => {
-                        const item = [...menuItems.pastiCompleti, ...menuItems.colazioni].find(i => i.id == itemId);
-                        return {
-                            id: itemId,
-                            name: item.name,
-                            price: item.price,
-                            quantity: cart[itemId],
-                            total: item.price * cart[itemId]
-                        };
-                    }),
-                    totalItems: Object.values(cart).reduce((sum, qty) => sum + qty, 0),
-                    subtotal: Object.keys(cart).reduce((total, itemId) => {
-                        const item = [...menuItems.pastiCompleti, ...menuItems.colazioni].find(i => i.id == itemId);
-                        return total + (item.price * cart[itemId]);
-                    }, 0),
-                    discount: promoDiscount,
-                    discountCode: discountCode,
-                    total: Object.keys(cart).reduce((total, itemId) => {
-                        const item = [...menuItems.pastiCompleti, ...menuItems.colazioni].find(i => i.id == itemId);
-                        return total + (item.price * cart[itemId]);
-                    }, 0) - promoDiscount,
-                    status: 'Confermato'
-                };
-
-                saveOrderToLocalStorage(orderData);
-                console.log('💾 Ordine salvato');
-
-                // Mostra modal di successo semplice
-                const successModal = document.getElementById('successModal');
-                const successDetails = document.getElementById('success-order-details');
-                
-                if (successModal && successDetails) {
-                    successDetails.innerHTML = `
-                        <h3>✅ Ordine Confermato!</h3>
-                        <p><strong>📅 Data consegna:</strong> ${new Date(deliveryDate).toLocaleDateString('it-IT')}</p>
-                        <p><strong>📦 Totale articoli:</strong> ${orderData.totalItems}</p>
-                        <p><strong>💰 Totale:</strong> €${orderData.total.toFixed(2)}</p>
-                        <br>
-                        <p>🎉 <strong>Ordine ricevuto con successo!</strong></p>
-                        <p>📱 Ora puoi inviarlo su WhatsApp</p>
-                    `;
-                    
-                    successModal.style.display = 'block';
-                    console.log('✅ Modal successo mostrato');
-                } else {
-                    console.error('❌ Modal elementi non trovati');
-                    alert('Ordine confermato! Totale: €' + orderData.total.toFixed(2));
-                }
-
-            } catch (error) {
-                console.error('❌ Errore in showSuccessModalSimple:', error);
-                alert('Ordine ricevuto ma errore nella visualizzazione');
-            }
-        }
-
-        function showSuccessModal(deliveryDate) {
-            const successDetails = document.getElementById('success-order-details');
-            
-            let html = '<h3>📋 Dettagli Ordine</h3>';
-            
-            // Data e ora ordine
-            const now = new Date();
-            const orderDate = now.toLocaleDateString('it-IT');
-            const orderTime = now.toLocaleTimeString('it-IT');
-            const orderDateTime = now.toISOString();
-            
-            html += `
-                <div class="summary-item">
-                    <span><strong>📅 Data Ordine:</strong></span>
-                    <span>${orderDate} alle ${orderTime}</span>
-                </div>
-                <div class="summary-item">
-                    <span><strong>🚚 Data Consegna:</strong></span>
-                    <span>${new Date(deliveryDate).toLocaleDateString('it-IT')}</span>
-                </div>
-                <div class="summary-item">
-                    <span><strong>📦 Modalità:</strong></span>
-                    <span>Ritiro in sede</span>
-                </div>
-                <br>
-            `;
-
-            // Prodotti ordinati
-            let totalItems = 0;
-            let subtotal = 0;
-            let orderItems = [];
-
-            Object.keys(cart).forEach(itemId => {
-                const item = [...menuItems.pastiCompleti, ...menuItems.colazioni].find(i => i.id == itemId);
-                const quantity = cart[itemId];
-                const itemTotal = item.price * quantity;
-
-                orderItems.push({
-                    id: itemId,
-                    name: item.name,
-                    price: item.price,
-                    quantity: quantity,
-                    total: itemTotal
-                });
-
-                html += `
-                    <div class="summary-item">
-                        <span>${item.name.substring(0, 35)}${item.name.length > 35 ? '...' : ''}</span>
-                        <span>${quantity}x €${itemTotal.toFixed(2)}</span>
+    
+                <div class="meal-item" data-id="6" data-price="8">
+                    <h3>6. POLLO GRIGLIATO, PATATE AL FORNO, ZUCCHINE</h3>
+                    <img src="pollogrigliato-patatealforno-zucchine.jpg" alt="POLLO GRIGLIATO, PATATE AL FORNO, ZUCCHINE" class="meal-img">
+                    <input type="number" value="0" min="0" class="quantity-input" style="display: none;">
+                    <div class="quantity-controls">
+                        <button class="quantity-btn minus-btn">-</button>
+                        <span class="quantity-display">0</span>
+                        <button class="quantity-btn plus-btn">+</button>
                     </div>
-                `;
-
-                totalItems += quantity;
-                subtotal += itemTotal;
-            });
-
-            if (promoDiscount > 0) {
-                html += `
-                    <div class="summary-item">
-                        <span><strong>💰 Sconto:</strong></span>
-                        <span><strong>-€${promoDiscount.toFixed(2)}</strong></span>
+                    <button class="add-to-cart">Aggiungi</button>
+                </div>
+    
+                <div class="meal-item" data-id="7" data-price="8">
+                    <h3>7. ORZO, CECI, FETA, POMODORINI, BASILICO</h3>
+                    <img src="orzo-ceci-feta-pomodorini-basilico.jpg" alt="ORZO, CECI, FETA, POMODORINI, BASILICO" class="meal-img">
+                    <input type="number" value="0" min="0" class="quantity-input" style="display: none;">
+                    <div class="quantity-controls">
+                        <button class="quantity-btn minus-btn">-</button>
+                        <span class="quantity-display">0</span>
+                        <button class="quantity-btn plus-btn">+</button>
                     </div>
-                `;
-            }
-
-            const finalTotal = subtotal - promoDiscount;
-            html += `
-                <div class="summary-item summary-total">
-                    <span>💳 TOTALE PAGATO:</span>
-                    <span>€${finalTotal.toFixed(2)}</span>
+                    <button class="add-to-cart">Aggiungi</button>
                 </div>
-            `;
-
-            html += `
-                <div style="margin-top: 20px; padding: 15px; background: #e8f5e8; border-radius: 8px; text-align: center;">
-                    <p><strong>📧 Riceverai una email di conferma con tutti i dettagli</strong></p>
-                    <p style="margin-top: 5px; font-size: 0.9rem; color: #2c5530;">
-                        Grazie per aver scelto Pasto Sano! 🥗
-                    </p>
+    
+                <div class="meal-item" data-id="8" data-price="8">
+                    <h3>8. TORTILLAS, TACCHINO AFFUMICATO, HUMMUS CECI, INSALATA</h3>
+                    <img src="tortillas-tacchinoaffumicato-hummusceci-insalata.jpg" alt="TORTILLAS, TACCHINO AFFUMICATO, HUMMUS CECI, INSALATA" class="meal-img">
+                    <input type="number" value="0" min="0" class="quantity-input" style="display: none;">
+                    <div class="quantity-controls">
+                        <button class="quantity-btn minus-btn">-</button>
+                        <span class="quantity-display">0</span>
+                        <button class="quantity-btn plus-btn">+</button>
+                    </div>
+                    <button class="add-to-cart">Aggiungi</button>
                 </div>
-            `;
+    
+                <div class="meal-item" data-id="9" data-price="8">
+                    <h3>9. TORTILLAS, SALMONE AFFUMICATO, FORMAGGIO SPALMABILE, INSALATA</h3>
+                    <img src="tortillas-salmoneaffumicato-formaggiospalmabile-insalata.jpg" alt="TORTILLAS, SALMONE AFFUMICATO, FORMAGGIO SPALMABILE, INSALATA" class="meal-img">
+                    <input type="number" value="0" min="0" class="quantity-input" style="display: none;">
+                    <div class="quantity-controls">
+                        <button class="quantity-btn minus-btn">-</button>
+                        <span class="quantity-display">0</span>
+                        <button class="quantity-btn plus-btn">+</button>
+                    </div>
+                    <button class="add-to-cart">Aggiungi</button>
+                </div>
+    
+                <div class="meal-item" data-id="10" data-price="8">
+                    <h3>10. RISO, POLLO AL CURRY, ZUCCHINE</h3>
+                    <img src="risobasmati-polloalcurry-zucchine.jpg" alt="RISO, POLLO AL CURRY, ZUCCHINE" class="meal-img">
+                    <input type="number" value="0" min="0" class="quantity-input" style="display: none;">
+                    <div class="quantity-controls">
+                        <button class="quantity-btn minus-btn">-</button>
+                        <span class="quantity-display">0</span>
+                        <button class="quantity-btn plus-btn">+</button>
+                    </div>
+                    <button class="add-to-cart">Aggiungi</button>
+                </div>
+    
+                <div class="meal-item" data-id="11" data-price="6">
+                    <h3>11. UOVA STRAPAZZATE, BACON, FRUTTI DI BOSCO</h3>
+                    <img src="uovastrapazzate-bacon-fruttidibosco.jpg" alt="UOVA STRAPAZZATE, BACON, FRUTTI DI BOSCO" class="meal-img">
+                    <input type="number" value="0" min="0" class="quantity-input" style="display: none;">
+                    <div class="quantity-controls">
+                        <button class="quantity-btn minus-btn">-</button>
+                        <span class="quantity-display">0</span>
+                        <button class="quantity-btn plus-btn">+</button>
+                    </div>
+                    <button class="add-to-cart">Aggiungi</button>
+                </div>
+    
+                <div class="meal-item" data-id="12" data-price="6">
+                    <h3>12. PANCAKES</h3>
+                    <img src="pancakes.jpg" alt="PANCAKES" class="meal-img">
+                    <input type="number" value="0" min="0" class="quantity-input" style="display: none;">
+                    <div class="quantity-controls">
+                        <button class="quantity-btn minus-btn">-</button>
+                        <span class="quantity-display">0</span>
+                        <button class="quantity-btn plus-btn">+</button>
+                    </div>
+                    <button class="add-to-cart">Aggiungi</button>
+                </div>
 
-            successDetails.innerHTML = html;
-
-            // SALVA L'ORDINE IN LOCALSTORAGE PER LA DASHBOARD
-            saveOrderToLocalStorage({
-                id: Date.now().toString(),
-                orderDateTime: orderDateTime,
-                deliveryDate: deliveryDate,
-                items: orderItems,
-                totalItems: totalItems,
-                subtotal: subtotal,
-                discount: promoDiscount,
-                discountCode: discountCode,
-                total: finalTotal,
-                status: 'Confermato',
-                paymentMethod: 'Alla consegna'
-            });
-
-            // Mostra il modal di successo
-            const successModal = document.getElementById('successModal');
-            if (successModal) {
-                successModal.style.display = 'block';
-                console.log('✅ Modal successo mostrato');
-            } else {
-                console.error('❌ Modal successo non trovato');
-            }
-        }
-
-        function saveOrderToLocalStorage(order) {
-            try {
-                // Recupera ordini esistenti
-                let orders = JSON.parse(localStorage.getItem('pastosano_orders') || '[]');
-                
-                // Converte l'ordine nel formato che si aspetta la dashboard
-                const dashboardOrder = {
-                    id: order.id,
-                    customerName: 'Cliente Web', // Nome generico per ordini web
-                    customerPhone: '+393478881515', // Numero di default
-                    customerEmail: 'ordine@pastosano.com',
-                    items: order.items.map(item => ({
-                        name: item.name,
-                        quantity: item.quantity,
-                        price: item.price
-                    })),
-                    totalAmount: order.total,
-                    pickupDate: order.deliveryDate,
-                    appliedDiscount: order.discount,
-                    discountCode: order.discountCode || '',
-                    timestamp: {
-                        toDate: () => new Date(order.orderDateTime)
-                    }
-                };
-                
-                // Aggiungi il nuovo ordine
-                orders.unshift(dashboardOrder); // unshift per mettere il più recente in cima
-                
-                // Mantieni solo gli ultimi 50 ordini per non appesantire
-                if (orders.length > 50) {
-                    orders = orders.slice(0, 50);
-                }
-                
-                // Salva nel localStorage
-                localStorage.setItem('pastosano_orders', JSON.stringify(orders));
-                
-                console.log('Ordine salvato con successo:', dashboardOrder);
-            } catch (error) {
-                console.error('Errore nel salvare l\'ordine:', error);
-            }
-        }
-
-        function closeSuccessModal() {
-            console.log('🔒 Chiusura modal successo');
-            document.getElementById('successModal').style.display = 'none';
+            </div>
+        </section>        
+        
+        <section id="order-summary">
+            <h2>Il tuo Ordine</h2>
+            <ul id="cart-items"></ul>
+            <p>Totale Articoli: <span id="total-items">0</span></p>
             
-            // Reset automatico del carrello
-            setTimeout(() => {
-                resetCart();
-                console.log('🧹 Carrello resettato');
-            }, 500);
-        }
+            <!-- SEZIONE CODICE PROMOZIONALE -->
+            <div class="promo-section">
+                <h4>🎁 Hai un codice promozionale?</h4>
+                <div class="promo-input-group">
+                    <input type="text" id="promo-code" placeholder="es. codice sconto">
+                    <button id="apply-promo">Applica</button>
+                </div>
+                <div id="promo-message"></div>
+            </div>
+            
+            <p id="discount-line" style="display: none; color: #d63031; font-weight: bold;"></p>
+            <p>Totale: <span id="total-price">0.00€</span></p>
+            
+            <label for="pickup-date">Seleziona il Giorno di Ritiro</label>
+            <input type="date" id="pickup-date" name="pickup-date">
+            <p class="note">L'ordine deve essere effettuato con 2 giorni di anticipo (AxC).</p>
+            
+            <button id="submit-order">Procedi all'Ordine</button>
+            <button id="clear-cart" style="background-color: #d9d3cb; color: white; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 1em; margin-top: 10px; width: 100%; box-sizing: border-box;">Svuota Carrello</button>
 
-        function sendToWhatsAppSimple() {
-            console.log('📱 Invio WhatsApp semplificato');
-            
-            try {
-                const deliveryDate = document.getElementById('delivery-date').value;
-                
-                // Costruisci messaggio semplice
-                let message = "🎉 Nuovo Ordine Pasto Sano!\n\n";
-                
-                Object.keys(cart).forEach(itemId => {
-                    const item = [...menuItems.pastiCompleti, ...menuItems.colazioni].find(i => i.id == itemId);
-                    const quantity = cart[itemId];
-                    message += `• ${item.name} (x${quantity}) - €${(item.price * quantity).toFixed(2)}\n`;
-                });
-                
-                const total = Object.keys(cart).reduce((sum, itemId) => {
-                    const item = [...menuItems.pastiCompleti, ...menuItems.colazioni].find(i => i.id == itemId);
-                    return sum + (item.price * cart[itemId]);
-                }, 0) - promoDiscount;
-                
-                message += `\n💰 Totale: €${total.toFixed(2)}`;
-                message += `\n📅 Consegna: ${new Date(deliveryDate).toLocaleDateString('it-IT')}`;
-                message += "\n\nGrazie!";
+            <div id="order-message"></div>
+        </section>
+    </main>
 
-                const phoneNumber = "+393478881515";
-                const whatsappLink = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    <!-- POPUP DATI CLIENTE -->
+    <div class="popup-overlay" id="customer-popup">
+        <div class="popup-content">
+            <div class="popup-header">
+                <h3>👤 I tuoi Dati</h3>
+                <button class="popup-close" id="close-customer-popup">&times;</button>
+            </div>
+            <form id="customer-form">
+                <div style="margin-bottom: 15px;">
+                    <label for="customer-name" style="display: block; margin-bottom: 5px; font-weight: bold;">Nome e Cognome *</label>
+                    <input type="text" id="customer-name" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label for="customer-phone" style="display: block; margin-bottom: 5px; font-weight: bold;">Telefono *</label>
+                    <input type="tel" id="customer-phone" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px;" placeholder="es. 347 123 4567">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label for="customer-email" style="display: block; margin-bottom: 5px; font-weight: bold;">Email (opzionale)</label>
+                    <input type="email" id="customer-email" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px;" placeholder="es. mario@email.com">
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <label for="order-notes" style="display: block; margin-bottom: 5px; font-weight: bold;">Note aggiuntive</label>
+                    <textarea id="order-notes" rows="3" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; resize: vertical;" placeholder="Allergie, preferenze particolari..."></textarea>
+                </div>
+            </form>
+            <button id="confirm-customer" style="background-color: #25D366; color: white; padding: 15px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; width: 100%;">
+                ✅ Conferma e Procedi
+            </button>
+        </div>
+    </div>
 
-                window.open(whatsappLink, '_blank');
-                console.log('✅ WhatsApp aperto');
-                
-            } catch (error) {
-                console.error('❌ Errore WhatsApp:', error);
-                alert('Errore nell\'invio WhatsApp');
-            }
-        }
+    <!-- POPUP RIEPILOGATIVO -->
+    <div class="popup-overlay" id="summary-popup">
+        <div class="popup-content">
+            <div class="popup-header">
+                <h3>Riepilogo Ordine</h3>
+                <button class="popup-close" id="close-popup">&times;</button>
+            </div>
+            <div id="popup-items"></div>
+            <div class="popup-total" id="popup-total"></div>
+            <button id="confirm-order" style="background-color: #25D366; color: white; padding: 15px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; width: 100%;">
+                📱 Conferma e Invia su WhatsApp
+            </button>
+        </div>
+    </div>
 
-        function sendToWhatsApp() {
-            const deliveryDate = document.getElementById('delivery-date').value;
-            
-            // Costruisci messaggio WhatsApp usando la stessa logica del vecchio sistema
-            let orderDetails = "🎉 Nuovo Ordine Pasto Sano! 🎉\n\n";
-            orderDetails += "Dettagli dell'Ordine:\n";
-            orderDetails += "-----------------------------------\n";
-            
-            const subtotal = Object.keys(cart).reduce((sum, itemId) => {
-                const item = [...menuItems.pastiCompleti, ...menuItems.colazioni].find(i => i.id == itemId);
-                return sum + (item.price * cart[itemId]);
-            }, 0);
-            
-            const totalQuantity = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
-            
-            Object.keys(cart).forEach(itemId => {
-                const item = [...menuItems.pastiCompleti, ...menuItems.colazioni].find(i => i.id == itemId);
-                const quantity = cart[itemId];
-                const itemTotal = item.price * quantity;
-                
-                if (quantity > 0) {
-                    orderDetails += `• ${item.name}\n  Quantità: ${quantity}\n  Costo: ${itemTotal.toFixed(2)}€\n`;
-                }
-            });
-            
-            orderDetails += "-----------------------------------\n";
-            orderDetails += `📦 Totale Articoli: ${totalQuantity}\n`;
-            
-            if (promoDiscount > 0) {
-                orderDetails += `💰 Subtotale: ${subtotal.toFixed(2)}€\n`;
-                orderDetails += `🎁 Sconto ${discountCode} (-${((promoDiscount/subtotal)*100).toFixed(0)}%): -${promoDiscount.toFixed(2)}€\n`;
-                orderDetails += `💰 Totale Finale: ${(subtotal - promoDiscount).toFixed(2)}€\n`;
-            } else {
-                orderDetails += `💰 Totale Ordine: ${subtotal.toFixed(2)}€\n`;
-            }
-            
-            orderDetails += `🗓️ Data di Ritiro Prevista: ${new Date(deliveryDate).toLocaleDateString('it-IT')}\n`;
-            orderDetails += "-----------------------------------\n";
-            orderDetails += "Si prega di confermare la disponibilità. Grazie!";
+    <!-- NOTIFICA CONFERMA -->
+    <div class="notification" id="notification">
+        ✅ Ordine inviato con successo!
+    </div>
 
-            const encodedMessage = encodeURIComponent(orderDetails);
-            const phoneNumber = "+393478881515"; // CAMBIA CON IL TUO NUMERO
-            const whatsappLink = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
-
-            // Apri WhatsApp
-            window.open(whatsappLink, '_blank');
-            
-            // Chiudi il modal dopo un breve delay
-            setTimeout(() => {
-                closeSuccessModal();
-            }, 1000);
-        }
-
-        function resetCart() {
-            cart = {};
-            promoApplied = false;
-            promoDiscount = 0;
-            document.getElementById('promo-code').value = '';
-            document.getElementById('promo-code').disabled = false;
-            document.querySelector('.promo-btn').textContent = 'Applica';
-            document.querySelector('.promo-btn').disabled = false;
-            document.getElementById('discount-row').style.display = 'none';
-            
-            // Reset delle quantità visualizzate
-            [...menuItems.pastiCompleti, ...menuItems.colazioni].forEach(item => {
-                updateQuantityDisplay(item.id);
-            });
-            
-            updateCart();
-        }
-
-        // Chiudi modal cliccando fuori
-        window.onclick = function(event) {
-            const orderModal = document.getElementById('orderModal');
-            const successModal = document.getElementById('successModal');
-            
-            if (event.target === orderModal) {
-                closeOrderModal();
-            }
-            if (event.target === successModal) {
-                closeSuccessModal();
-            }
-        }
-
-        // Aggiunge listener aggiuntivi quando il DOM è caricato
-        document.addEventListener('DOMContentLoaded', function() {
-            // Listener aggiuntivo per il campo data
-            document.addEventListener('change', function(e) {
-                if (e.target && e.target.id === 'delivery-date') {
-                    console.log('Change event su data:', e.target.value);
-                    validateDeliveryDate();
-                }
-            });
-            
-            // Listener per click sul pulsante conferma
-            document.addEventListener('click', function(e) {
-                if (e.target && e.target.classList.contains('btn-confirm') && e.target.onclick && e.target.onclick.toString().includes('confirmOrder')) {
-                    if (e.target.disabled) {
-                        e.preventDefault();
-                        console.log('Pulsante disabilitato - click bloccato');
-                        // Evidenzia il campo data
-                        const dateInput = document.getElementById('delivery-date');
-                        if (dateInput) {
-                            dateInput.style.borderColor = '#e74c3c';
-                            dateInput.focus();
-                            setTimeout(() => {
-                                dateInput.style.borderColor = '#e9ecef';
-                            }, 2000);
-                        }
-                    }
-                }
-            });
-        });
-
-        // Inizializza la pagina
-        document.addEventListener('DOMContentLoaded', function() {
-            renderMenuItems();
-        });
-    </script>
+    <script src="script-enhanced.js"></script>
 </body>
 </html>
