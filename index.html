@@ -1194,7 +1194,14 @@
                 paymentMethod: 'Alla consegna'
             });
 
-            document.getElementById('successModal').style.display = 'block';
+            // Mostra il modal di successo
+            const successModal = document.getElementById('successModal');
+            if (successModal) {
+                successModal.style.display = 'block';
+                console.log('✅ Modal successo mostrato');
+            } else {
+                console.error('❌ Modal successo non trovato');
+            }
         }
 
         function saveOrderToLocalStorage(order) {
