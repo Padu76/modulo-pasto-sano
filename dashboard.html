@@ -311,10 +311,9 @@
 <body>
     <div class="header">
         <img src="logo.png" alt="Logo Pasto Sano" class="header-logo" 
-             onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='block';">
-        <div id="logo-fallback" style="display: none; width: 60px; height: 60px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">🥗</div>
+             onerror="this.style.display='none';">
         <div class="header-text">
-            <h1>📊 Dashboard Pasto Sano</h1>
+            <h1>Dashboard Pasto Sano</h1>
             <p>Analytics e gestione ordini in tempo reale</p>
         </div>
     </div>
@@ -703,4 +702,168 @@
                     });
                 case 'settimana':
                     const weekAgo = new Date(today);
-                    weekAgo.setDate(weekAgo.
+                    weekAgo.setDate(weekAgo.getDate() - 7);
+                    return allOrders.filter(order => {
+                        try {
+                            const orderDate = order.timestamp && order.timestamp.toDate ? 
+                                order.timestamp.toDate() : new Date(order.timestamp);
+                            return orderDate >= weekAgo;
+                        } catch (e) {
+                            return false;
+                        }
+                    });
+                case 'mese':
+                    const monthAgo = new Date(today);
+                    monthAgo.setMonth(monthAgo.getMonth() - 1);
+                    return allOrders.filter(order => {
+                        try {
+                            const orderDate = order.timestamp && order.timestamp.toDate ? 
+                                order.timestamp.toDate() : new Date(order.timestamp);
+                            return orderDate >= monthAgo;
+                        } catch (e) {
+                            return false;
+                        }
+                    });
+                default:
+                    return allOrders;
+            }
+        }
+
+        // FILTRI ORDINI
+        window.filterOrders = function(filter) {
+            currentFilter = filter;
+            
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            const clickedBtn = Array.from(document.querySelectorAll('.filter-btn'))
+                .find(btn => btn.textContent.toLowerCase().includes(filter.toLowerCase()));
+            if (clickedBtn) {
+                clickedBtn.classList.add('active');
+            }
+            
+            displayOrders();
+            console.log(`🔍 Filtro applicato: ${filter}`);
+        };
+
+        // TOP PRODUCTS
+        function updateTopProducts() {
+            console.log('🏆 Aggiornamento top products...');
+            
+            const productSales = {};
+            
+            allOrders.forEach(order => {
+                if (order.items) {
+                    order.items.forEach(item => {
+                        const name = item.name || 'Prodotto sconosciuto';
+                        if (productSales[name]) {
+                            productSales[name] += item.quantity || 1;
+                        } else {
+                            productSales[name] = item.quantity || 1;
+                        }
+                    });
+                }
+            });
+            
+            const sortedProducts = Object.entries(productSales)
+                .sort(([,a], [,b]) => b - a)
+                .slice(0, 5);
+            
+            const topProductsList = document.getElementById('top-products-list');
+            if (!topProductsList) return;
+            
+            if (sortedProducts.length === 0) {
+                topProductsList.innerHTML = '<div class="loading">Nessun dato disponibile</div>';
+                return;
+            }
+            
+            topProductsList.innerHTML = sortedProducts.map(([name, sales]) => `
+                <div class="product-item">
+                    <span class="product-name">${name.length > 35 ? name.substring(0, 35) + '...' : name}</span>
+                    <span class="product-sales">${sales} venduti</span>
+                </div>
+            `).join('');
+            
+            console.log(`✅ Top products aggiornati: ${sortedProducts.length} prodotti`);
+        }
+
+        // EXPORT CSV
+        window.exportToCSV = function() {
+            console.log('📥 Export CSV...');
+            
+            const filteredOrders = getFilteredOrders();
+            
+            if (filteredOrders.length === 0) {
+                alert('Nessun ordine da esportare');
+                return;
+            }
+            
+            const headers = ['ID', 'Data/Ora', 'Cliente', 'Telefono', 'Email', 'Consegna', 'Articoli', 'Totale', 'Sconto'];
+            
+            const csvData = filteredOrders.map(order => {
+                const orderDate = order.timestamp && order.timestamp.toDate ? 
+                    order.timestamp.toDate().toLocaleString('it-IT') : 'N/A';
+                const items = (order.items || []).map(item => 
+                    `${item.name || 'Prodotto'} (x${item.quantity || 1})`
+                ).join('; ');
+                const discount = order.appliedDiscount > 0 ? 
+                    `${order.discountCode} -${order.appliedDiscount}€` : 'Nessuno';
+                
+                return [
+                    order.id.toString().substring(0, 8),
+                    orderDate,
+                    order.customerName || 'Ordine Web',
+                    order.customerPhone || 'N/A',
+                    order.customerEmail || 'N/A',
+                    order.pickupDate || 'N/A',
+                    items,
+                    `${(order.totalAmount || 0).toFixed(2)}€`,
+                    discount
+                ].map(field => `"${field}"`).join(',');
+            });
+            
+            const csvContent = [headers.join(','), ...csvData].join('\n');
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `ordini_pasto_sano_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            console.log(`✅ CSV esportato con ${filteredOrders.length} ordini`);
+        };
+
+        // GESTIONE ERRORI
+        function showError(message) {
+            console.error('❌ Errore dashboard:', message);
+            
+            const errorElement = document.getElementById('error-message');
+            if (errorElement) {
+                errorElement.textContent = message;
+                errorElement.style.display = 'block';
+            }
+        }
+
+        // Aggiungi stili per le animazioni
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        console.log('📊 Dashboard localStorage completamente caricata');
+    </script>
+</body>
+</html>
