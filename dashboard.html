@@ -3,27 +3,35 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8" />
-  <title>Dashboard Pasto Sano</title>
+  <title>Dashboard Ordini - Pasto Sano</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
-    body { font-family: sans-serif; padding: 20px; }
-    button { margin-top: 10px; padding: 10px; font-size: 16px; }
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    .ordine { margin-bottom: 15px; }
+    .btn { padding: 10px 16px; font-size: 16px; background: green; color: white; border: none; cursor: pointer; }
   </style>
 </head>
 <body>
   <h1>Dashboard Pasto Sano</h1>
-  <p>Gestione degli ordini ricevuti via WhatsApp</p>
 
-  <ul id="orders">
-    <li data-nome="Andrea Padoan" data-articoli="Fusilli (x3), Roastbeef (x2)">
-      Andrea Padoan - Fusilli (x3), Roastbeef (x2)
-    </li>
-    <li data-nome="Lara" data-articoli="Fusilli (x1), Roastbeef (x1), Riso (x1), Pancakes (x1)">
-      Lara - Fusilli (x1), Roastbeef (x1), Riso (x1), Pancakes (x1)
-    </li>
-  </ul>
+  <div id="ordini">
+    <div class="ordine" data-nome="Andrea Padoan" data-articoli="1. Fusilli (x3), 2. Roastbeef (x2)">
+      <strong>Andrea Padoan</strong><br />
+      1. Fusilli, Macinato Manzo, Zucchine, Melanzane (x3)<br />
+      2. Roastbeef, Patate al Forno, Fagiolini (x2)<br />
+      Totale: 40.00€
+    </div>
+    <div class="ordine" data-nome="Lara" data-articoli="1. Fusilli (x1), 2. Roastbeef (x1), 3. Riso (x1), 12. Pancakes (x1)">
+      <strong>Lara</strong><br />
+      1. Fusilli, Macinato Manzo, Zucchine, Melanzane (x1)<br />
+      2. Roastbeef, Patate al Forno, Fagiolini (x1)<br />
+      3. Riso, Hamburger Manzo, Carotine Baby (x1)<br />
+      12. Pancakes (x1)<br />
+      Totale: 30.00€
+    </div>
+  </div>
 
-  <button onclick="generaPDF()">📄 Genera PDF per Fornitore</button>
+  <button class="btn" onclick="generaPDF()">📄 Esporta PDF Fornitore</button>
 
   <script>
     async function generaPDF() {
@@ -35,7 +43,7 @@
       doc.text("ORDINI PASTO SANO - FORNITORE", 10, y);
       y += 10;
 
-      const ordini = document.querySelectorAll("#orders li");
+      const ordini = document.querySelectorAll(".ordine");
       ordini.forEach((ordine, index) => {
         const nome = ordine.getAttribute("data-nome");
         const articoli = ordine.getAttribute("data-articoli");
