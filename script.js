@@ -530,8 +530,6 @@ function initPayPal() {
             height: 40,
             layout: 'vertical'
         },
-        // MOBILE-FRIENDLY: Usa redirect invece di popup
-        env: 'production', // o 'sandbox' per test
         
         createOrder: function(data, actions) {
             const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -551,18 +549,14 @@ function initPayPal() {
                         value: total.toFixed(2),
                         currency_code: 'EUR'
                     },
-                    description: 'Ordine Pasto Sano - Test'
+                    description: 'Ordine Pasto Sano'
                 }],
                 application_context: {
-                    // MOBILE FIX: Forza redirect invece di popup
                     user_action: 'PAY_NOW',
                     shipping_preference: 'NO_SHIPPING',
                     brand_name: 'Pasto Sano',
                     locale: 'it_IT',
-                    landing_page: 'BILLING',
-                    // IMPORTANTE: Redirect URLs per mobile
-                    return_url: window.location.origin + '/success.html?source=paypal',
-                    cancel_url: window.location.href
+                    landing_page: 'BILLING'
                 }
             });
         },
@@ -600,7 +594,7 @@ function initPayPal() {
         }
         
     }).render('#paypal-button-container').then(() => {
-        console.log('✅ Bottoni PayPal renderizzati con configurazione mobile!');
+        console.log('✅ Bottoni PayPal renderizzati!');
         container.style.display = 'block';
     }).catch((error) => {
         console.error('❌ Errore rendering PayPal:', error);
