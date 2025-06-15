@@ -526,15 +526,21 @@ function initPayPal() {
         style: {
             color: 'blue',
             shape: 'rect',
-            height: 40
+            height: 40,
+            layout: 'vertical'
         },
+        // MOBILE-FRIENDLY: Usa redirect invece di popup
+        env: 'production', // o 'sandbox' per test
+        
         createOrder: function(data, actions) {
             const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
             const discountAmount = (subtotal * appliedDiscount) / 100;
             const total = subtotal - discountAmount;
             
+            console.log('Creando ordine PayPal per:', total);
+            
             if (total <= 0) {
-                alert('Carrello vuoto!');
+                showToast('Carrello vuoto!', 'error');
                 return Promise.reject('Carrello vuoto');
             }
             
@@ -544,23 +550,60 @@ function initPayPal() {
                         value: total.toFixed(2),
                         currency_code: 'EUR'
                     },
-                    description: 'Ordine Pasto Sano'
-                }]
+                    description: 'Ordine Pasto Sano - Test'
+                }],
+                application_context: {
+                    // MOBILE FIX: Forza redirect invece di popup
+                    user_action: 'PAY_NOW',
+                    shipping_preference: 'NO_SHIPPING',
+                    brand_name: 'Pasto Sano',
+                    locale: 'it_IT',
+                    landing_page: 'BILLING',
+                    // IMPORTANTE: Redirect URLs per mobile
+                    return_url: window.location.origin + '/success.html?source=paypal',
+                    cancel_url: window.location.href
+                }
             });
         },
+        
         onApprove: function(data, actions) {
+            console.log('PayPal onApprove chiamato:', data);
+            
             return actions.order.capture().then(function(details) {
                 console.log('Pagamento PayPal completato:', details);
-                handleSuccessfulPayment('paypal', details);
+                
+                // Salva dettagli ordine
+                const orderDetails = {
+                    paypal_order_id: data.orderID,
+                    payer: details.payer,
+                    amount: details.purchase_units[0].amount.value,
+                    currency: details.purchase_units[0].amount.currency_code,
+                    status: details.status
+                };
+                
+                handleSuccessfulPayment('paypal', orderDetails);
+            }).catch(function(error) {
+                console.error('Errore cattura pagamento:', error);
+                showToast('Errore durante la finalizzazione del pagamento', 'error');
             });
         },
+        
+        onCancel: function(data) {
+            console.log('Pagamento PayPal cancellato:', data);
+            showToast('Pagamento cancellato', 'error');
+        },
+        
         onError: function(err) {
             console.error('Errore PayPal:', err);
-            showToast('Errore durante il pagamento PayPal.', 'error');
+            showToast('Errore durante il pagamento PayPal. Riprova o usa un altro metodo.', 'error');
         }
+        
     }).render('#paypal-button-container').then(() => {
-        console.log('✅ Bottoni PayPal renderizzati!');
+        console.log('✅ Bottoni PayPal renderizzati con configurazione mobile!');
         container.style.display = 'block';
+    }).catch((error) => {
+        console.error('❌ Errore rendering PayPal:', error);
+        showToast('Errore caricamento PayPal', 'error');
     });
 }
 
