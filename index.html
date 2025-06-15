@@ -906,19 +906,47 @@
 
     function generateProducts() {
         const products = [
-            { name: "FUSILLI, MACINATO MANZO, ZUCCHINE, MELANZANE", price: 8 },
-            { name: "ROASTBEEF, PATATE AL FORNO, FAGIOLINI", price: 8 },
-            { name: "RISO, HAMBURGER MANZO, CAROTINE BABY", price: 8 },
-            { name: "RISO NERO, GAMBERI, TONNO, PISELLI", price: 8 },
-            { name: "PATATE, SALMONE GRIGLIATO, BROCCOLI", price: 8 },
-            { name: "POLLO GRIGLIATO, PATATE AL FORNO, ZUCCHINE", price: 8 }
+            { 
+                name: "FUSILLI, MACINATO MANZO, ZUCCHINE, MELANZANE", 
+                price: 8,
+                image: "https://images.unsplash.com/photo-1551892373-bbf3dc75952e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200&q=80"
+            },
+            { 
+                name: "ROASTBEEF, PATATE AL FORNO, FAGIOLINI", 
+                price: 8,
+                image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200&q=80"
+            },
+            { 
+                name: "RISO, HAMBURGER MANZO, CAROTINE BABY", 
+                price: 8,
+                image: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200&q=80"
+            },
+            { 
+                name: "RISO NERO, GAMBERI, TONNO, PISELLI", 
+                price: 8,
+                image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200&q=80"
+            },
+            { 
+                name: "PATATE, SALMONE GRIGLIATO, BROCCOLI", 
+                price: 8,
+                image: "https://images.unsplash.com/photo-1467003909585-2f8a72700288?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200&q=80"
+            },
+            { 
+                name: "POLLO GRIGLIATO, PATATE AL FORNO, ZUCCHINE", 
+                price: 8,
+                image: "https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200&q=80"
+            }
         ];
 
         const container = document.getElementById('main-meals');
         if (container) {
             container.innerHTML = products.map(product => `
                 <div class="product-card">
-                    <div class="product-image">🍽️</div>
+                    <div class="product-image">
+                        <img src="${product.image}" alt="${product.name}" 
+                             style="width: 100%; height: 200px; object-fit: cover;"
+                             onerror="this.style.display='none'; this.parentElement.innerHTML='🍽️'; this.parentElement.style.display='flex'; this.parentElement.style.alignItems='center'; this.parentElement.style.justifyContent='center'; this.parentElement.style.fontSize='3rem';">
+                    </div>
                     <div class="product-content">
                         <h3 class="product-title">${product.name}</h3>
                         <div class="product-footer">
