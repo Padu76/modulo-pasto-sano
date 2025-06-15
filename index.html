@@ -175,32 +175,13 @@
         gap: 20px;
     }
 
+    /* CSS SEMPLIFICATO PER LOGO TRASPARENTE! */
     .logo-transparent {
         height: 60px;
         width: auto;
-        /* RIMUOVE COMPLETAMENTE LO SFONDO BIANCO! */
-        background: transparent;
-        mix-blend-mode: normal;
-        filter: 
-            brightness(0) saturate(100%) 
-            invert(23%) sepia(95%) saturate(1340%) 
-            hue-rotate(13deg) brightness(95%) contrast(90%)
-            drop-shadow(0 2px 8px rgba(0,0,0,0.1));
+        object-fit: contain;
         transition: transform 0.3s ease;
-    }
-
-    /* Versione alternativa per browser che supportano backdrop-filter */
-    @supports (backdrop-filter: blur(1px)) {
-        .logo-transparent {
-            filter: 
-                drop-shadow(0 2px 8px rgba(0,0,0,0.1));
-            backdrop-filter: blur(0px);
-            background: 
-                radial-gradient(circle at center, transparent 45%, white 50%),
-                conic-gradient(from 0deg, transparent, transparent);
-            background-size: 100% 100%;
-            background-blend-mode: screen;
-        }
+        /* Già trasparente, non servono filtri! */
     }
 
     .logo-transparent:hover {
