@@ -17,7 +17,7 @@ const products = {
         { id: 12, name: "PANCAKES", price: 6, image: "pancakes.jpg" }
     ],
     testMeals: [
-        { id: 99, name: "🧪 PRODOTTO TEST - Solo per prove pagamento", price: 0.10, image: "logo.png" }
+        { id: 99, name: "🧪 PRODOTTO TEST - Solo per prove pagamento", price: 0.50, image: "logo.png" }
     ]
 };
 
