@@ -178,10 +178,16 @@
                 <!-- Container per i bottoni PayPal (nascosto inizialmente) -->
                 <div id="paypal-button-container" style="display: none; margin-bottom: 10px;"></div>
                 
-                <!-- Form Stripe (nascosto inizialmente) -->
+                <!-- Form Stripe semplificato (nascosto inizialmente) -->
                 <div id="stripe-payment-form" style="display: none; margin-bottom: 15px;">
-                    <div id="card-element" style="padding: 12px; border: 2px solid #e2e8f0; border-radius: 6px; background: white;"></div>
-                    <div id="card-errors" style="color: #e53e3e; margin-top: 8px; font-size: 0.9rem;"></div>
+                    <div style="background: #f0f7f0; padding: 15px; border-radius: 8px; border: 1px solid #7a9e7e;">
+                        <p style="margin: 0; color: #2d5a2d; font-weight: 600;">
+                            💳 Pagamento sicuro con Stripe
+                        </p>
+                        <p style="margin: 8px 0 0 0; color: #718096; font-size: 0.9rem;">
+                            Sarai reindirizzato alla pagina sicura di Stripe per completare il pagamento
+                        </p>
+                    </div>
                 </div>
                 
                 <button class="btn-secondary" id="clear-cart">Svuota</button>
@@ -201,7 +207,7 @@
     <script src="https://js.stripe.com/v3/"></script>
     
     <!-- PayPal SDK -->
-    <script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID&currency=EUR&components=buttons"></script>
+    <script src="https://www.paypal.com/sdk/js?client-id=ATRYKexpKZq-EFO0jpNzElUuJaeQ1qE9qHhGIRbcAgra5--Wd6_2OkJEt5odzNu2obNQUnmQdnJYu7aD&currency=EUR&components=buttons"></script>
     
     <script src="script.js"></script>
 
@@ -644,19 +650,8 @@
         const dateWrapper = dateInput.closest('.date-input-wrapper');
         
         // Inizializza Stripe
-        const stripe = Stripe('pk_test_YOUR_STRIPE_PUBLISHABLE_KEY'); // Sostituisci con la tua chiave
-        const elements = stripe.elements();
-        const cardElement = elements.create('card', {
-            style: {
-                base: {
-                    fontSize: '16px',
-                    color: '#2d3748',
-                    '::placeholder': {
-                        color: '#a0aec0',
-                    },
-                },
-            },
-        });
+        const stripe = Stripe('pk_live_51Mc3WmIYsn5WJ3XKfVY9mm0YZZeUfJ1GyZKjyq1JmA2T37zjQgcjSetaEBAjGTLCnC18Qm7iQ5E7jj5lG9XL4xig00n1Zj4kmZ');
+        let currentPaymentMethod = 'cash';
         
         // Fallback per browser che non supportano showPicker()
         dateWrapper.addEventListener('click', function(e) {
@@ -691,20 +686,6 @@
         const orderButtonText = document.getElementById('order-button-text');
         const stripeForm = document.getElementById('stripe-payment-form');
         const paypalContainer = document.getElementById('paypal-button-container');
-        let currentPaymentMethod = 'cash';
-        
-        // Monta il card element di Stripe
-        cardElement.mount('#card-element');
-        
-        // Gestione errori Stripe
-        cardElement.on('change', ({error}) => {
-            const displayError = document.getElementById('card-errors');
-            if (error) {
-                displayError.textContent = error.message;
-            } else {
-                displayError.textContent = '';
-            }
-        });
         
         // Inizializza PayPal
         function initPayPal() {
@@ -814,38 +795,49 @@
             }
         });
         
-        // Funzione per gestire pagamento Stripe
+        // Funzione per gestire pagamento Stripe con Checkout
         async function handleStripePayment() {
-            const {token, error} = await stripe.createToken(cardElement);
+            const customerName = document.getElementById('customer-name').value;
+            const pickupDate = document.getElementById('pickup-date').value;
+            const totalAmount = getTotalAmount();
             
-            if (error) {
-                document.getElementById('card-errors').textContent = error.message;
-                return;
-            }
-            
-            // Qui dovresti inviare il token al tuo server per processare il pagamento
-            console.log('Token Stripe ricevuto:', token);
-            
-            // Simula chiamata al server
-            const response = await fetch('/process-stripe-payment', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    token: token.id,
-                    amount: getTotalAmount() * 100, // Stripe usa centesimi
-                    customerName: document.getElementById('customer-name').value,
-                    pickupDate: document.getElementById('pickup-date').value,
-                    items: getCartItems() // Funzione per ottenere items del carrello
-                })
-            });
-            
-            if (response.ok) {
-                const result = await response.json();
-                handleSuccessfulPayment('stripe', result);
-            } else {
-                throw new Error('Errore nel processare il pagamento');
+            try {
+                // Chiamata al backend per creare sessione Stripe
+                const response = await fetch('stripe-checkout.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        customerName: customerName,
+                        pickupDate: pickupDate,
+                        amount: totalAmount,
+                        items: getCartItems(),
+                        success_url: window.location.origin + '/success.html',
+                        cancel_url: window.location.href
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Errore nella creazione della sessione');
+                }
+                
+                const session = await response.json();
+                
+                // Redirect a Stripe Checkout
+                const result = await stripe.redirectToCheckout({
+                    sessionId: session.id
+                });
+                
+                if (result.error) {
+                    alert(result.error.message);
+                }
+                
+            } catch (error) {
+                console.error('Errore Stripe:', error);
+                // Fallback: WhatsApp
+                alert('Servizio pagamento temporaneamente non disponibile. Ti contatteremo su WhatsApp per il pagamento.');
+                handleCashOrder();
             }
         }
         
@@ -853,7 +845,7 @@
         function handleCashOrder() {
             // Genera messaggio WhatsApp
             const message = generateWhatsAppMessage();
-            const whatsappUrl = `https://wa.me/YOUR_WHATSAPP_NUMBER?text=${encodeURIComponent(message)}`;
+            const whatsappUrl = `https://wa.me/393478881515?text=${encodeURIComponent(message)}`;
             window.open(whatsappUrl, '_blank');
         }
         
