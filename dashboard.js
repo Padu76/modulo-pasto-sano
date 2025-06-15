@@ -1,4 +1,6 @@
 // Dashboard Pasto Sano - JavaScript Corretto per Gestione Ordini Reali
+// SOSTITUISCI il file "dashboard.js" in GitHub con questo codice
+
 let allOrders = [];
 let currentFilter = 'tutti';
 let lastOrderCount = 0;
