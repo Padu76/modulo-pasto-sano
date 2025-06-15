@@ -141,9 +141,9 @@ function attachEventListeners() {
     }
 
     // Azioni carrello
-    const confirmOrder = document.getElementById('confirm-order');
-    if (confirmOrder) {
-        confirmOrder.addEventListener('click', confirmOrder);
+    const confirmOrderBtn = document.getElementById('confirm-order');
+    if (confirmOrderBtn) {
+        confirmOrderBtn.addEventListener('click', confirmOrder);
     }
     
     const clearCartBtn = document.getElementById('clear-cart');
