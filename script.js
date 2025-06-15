@@ -1,4 +1,4 @@
-// Dati dei prodotti completi - 10 pasti + 2 colazioni
+// Dati dei prodotti completi - 10 pasti + 2 colazioni + 1 test
 const products = {
     mainMeals: [
         { id: 1, name: "FUSILLI, MACINATO MANZO, ZUCCHINE, MELANZANE", price: 8, image: "fusilli-macinato-zucchine-melanzane.jpg" },
@@ -15,6 +15,9 @@ const products = {
     breakfastMeals: [
         { id: 11, name: "UOVA STRAPAZZATE, BACON, FRUTTI DI BOSCO", price: 6, image: "uovastrapazzate-bacon-fruttidibosco.jpg" },
         { id: 12, name: "PANCAKES", price: 6, image: "pancakes.jpg" }
+    ],
+    testMeals: [
+        { id: 99, name: "🧪 PRODOTTO TEST - Solo per prove pagamento", price: 0.10, image: "logo.png" }
     ]
 };
 
