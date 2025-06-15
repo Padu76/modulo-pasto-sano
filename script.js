@@ -299,49 +299,113 @@ function confirmOrder() {
     }, 1500);
 }
 
-function processWhatsAppOrder(pickupDate) {
+async function processWhatsAppOrder(pickupDate) {
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const totalQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
+    const discountAmount = (subtotal * appliedDiscount) / 100;
+    const finalTotal = subtotal - discountAmount;
 
-    let orderDetails = "🎉 Nuovo Ordine Pasto Sano! 🎉\n\n";
-    orderDetails += "Dettagli dell'Ordine:\n";
-    orderDetails += "-----------------------------------\n";
+    // Prepara dati per Firebase
+    const orderData = {
+        customerName: 'Cliente Web', // Temporaneo - potrai aggiungere un form
+        customerPhone: 'N/A',
+        items: cart.filter(item => item.quantity > 0).map(item => ({
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            subtotal: item.price * item.quantity
+        })),
+        totalItems: totalQuantity,
+        subtotalAmount: subtotal,
+        discountCode: discountCode || null,
+        discountPercent: appliedDiscount || 0,
+        discountAmount: discountAmount || 0,
+        totalAmount: finalTotal,
+        pickupDate: pickupDate,
+        status: 'pending',
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        source: 'website'
+    };
 
-    cart.forEach(item => {
-        if (item.quantity > 0) {
-            orderDetails += `• ${item.name}\n  Quantità: ${item.quantity}\n  Costo: ${(item.price * item.quantity).toFixed(2)}€\n\n`;
+    try {
+        // Salva su Firebase
+        const docRef = await firebase.firestore().collection('orders').add(orderData);
+        console.log('✅ Ordine salvato su Firebase con ID:', docRef.id);
+        
+        // Crea messaggio WhatsApp
+        let orderDetails = "🎉 Nuovo Ordine Pasto Sano! 🎉\n\n";
+        orderDetails += "Dettagli dell'Ordine:\n";
+        orderDetails += "-----------------------------------\n";
+
+        cart.forEach(item => {
+            if (item.quantity > 0) {
+                orderDetails += `• ${item.name}\n  Quantità: ${item.quantity}\n  Costo: ${(item.price * item.quantity).toFixed(2)}€\n\n`;
+            }
+        });
+
+        orderDetails += "-----------------------------------\n";
+        orderDetails += `📦 Totale Articoli: ${totalQuantity}\n`;
+
+        if (appliedDiscount > 0) {
+            orderDetails += `💰 Subtotale: ${subtotal.toFixed(2)}€\n`;
+            orderDetails += `🎁 Sconto ${discountCode} (-${appliedDiscount}%): -${discountAmount.toFixed(2)}€\n`;
+            orderDetails += `💰 Totale Finale: ${finalTotal.toFixed(2)}€\n`;
+        } else {
+            orderDetails += `💰 Totale Ordine: ${subtotal.toFixed(2)}€\n`;
         }
-    });
 
-    orderDetails += "-----------------------------------\n";
-    orderDetails += `📦 Totale Articoli: ${totalQuantity}\n`;
+        orderDetails += `🗓️ Data di Ritiro Prevista: ${pickupDate}\n`;
+        orderDetails += `🆔 ID Ordine: ${docRef.id}\n`;
+        orderDetails += "-----------------------------------\n";
+        orderDetails += "Si prega di confermare la disponibilità. Grazie!";
 
-    if (appliedDiscount > 0) {
-        const discountAmount = (subtotal * appliedDiscount) / 100;
-        orderDetails += `💰 Subtotale: ${subtotal.toFixed(2)}€\n`;
-        orderDetails += `🎁 Sconto ${discountCode} (-${appliedDiscount}%): -${discountAmount.toFixed(2)}€\n`;
-        orderDetails += `💰 Totale Finale: ${(subtotal - discountAmount).toFixed(2)}€\n`;
-    } else {
-        orderDetails += `💰 Totale Ordine: ${subtotal.toFixed(2)}€\n`;
+        const encodedMessage = encodeURIComponent(orderDetails);
+        const phoneNumber = "+393478881515"; // CAMBIA CON IL TUO NUMERO
+        const whatsappLink = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+
+        // Apri WhatsApp
+        window.open(whatsappLink, '_blank');
+
+        // Reset dopo invio
+        setTimeout(() => {
+            clearCart();
+            closeCartModal();
+            showToast('✅ Ordine inviato e salvato con successo!');
+        }, 1000);
+
+    } catch (error) {
+        console.error('❌ Errore salvataggio ordine:', error);
+        showToast('Errore durante il salvataggio. Ordine inviato solo su WhatsApp.', 'error');
+        
+        // Invia comunque su WhatsApp anche se Firebase fallisce
+        let orderDetails = "🎉 Nuovo Ordine Pasto Sano! 🎉\n\n";
+        orderDetails += "Dettagli dell'Ordine:\n";
+        orderDetails += "-----------------------------------\n";
+
+        cart.forEach(item => {
+            if (item.quantity > 0) {
+                orderDetails += `• ${item.name}\n  Quantità: ${item.quantity}\n  Costo: ${(item.price * item.quantity).toFixed(2)}€\n\n`;
+            }
+        });
+
+        orderDetails += "-----------------------------------\n";
+        orderDetails += `📦 Totale Articoli: ${totalQuantity}\n`;
+        orderDetails += `💰 Totale Ordine: ${finalTotal.toFixed(2)}€\n`;
+        orderDetails += `🗓️ Data di Ritiro Prevista: ${pickupDate}\n`;
+        orderDetails += "-----------------------------------\n";
+        orderDetails += "Si prega di confermare la disponibilità. Grazie!";
+
+        const encodedMessage = encodeURIComponent(orderDetails);
+        const phoneNumber = "+393478881515";
+        const whatsappLink = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+        
+        window.open(whatsappLink, '_blank');
+        
+        setTimeout(() => {
+            clearCart();
+            closeCartModal();
+        }, 1000);
     }
-
-    orderDetails += `🗓️ Data di Ritiro Prevista: ${pickupDate}\n`;
-    orderDetails += "-----------------------------------\n";
-    orderDetails += "Si prega di confermare la disponibilità. Grazie!";
-
-    const encodedMessage = encodeURIComponent(orderDetails);
-    const phoneNumber = "+393478881515"; // CAMBIA CON IL TUO NUMERO
-    const whatsappLink = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
-
-    // Apri WhatsApp
-    window.open(whatsappLink, '_blank');
-
-    // Reset dopo invio
-    setTimeout(() => {
-        clearCart();
-        closeCartModal();
-        showToast('✅ Ordine inviato con successo!');
-    }, 1000);
 }
 
 function clearCart() {
