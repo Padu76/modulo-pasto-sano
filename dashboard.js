@@ -1,4 +1,4 @@
-// Dashboard Pasto Sano - JavaScript Pulito Funzionante
+// Dashboard Pasto Sano - JavaScript Corretto per Gestione Ordini Reali
 let allOrders = [];
 let currentFilter = 'tutti';
 let lastOrderCount = 0;
@@ -86,93 +86,38 @@ function waitForFirebase() {
     });
 }
 
-// CARICAMENTO DATI
+// CARICAMENTO DATI - RIMOSSO FALLBACK AI DATI MOCK
 async function loadAllData() {
     try {
-        console.log('📊 Caricamento ordini...');
+        console.log('📊 Caricamento ordini da Firebase...');
         
-        if (typeof window.getOrders === 'function') {
-            allOrders = await window.getOrders(100);
-            console.log(`✅ ${allOrders.length} ordini caricati`);
-        } else {
-            throw new Error('Funzione getOrders non disponibile');
+        if (typeof window.getOrders !== 'function') {
+            throw new Error('Firebase non inizializzato correttamente');
         }
         
-        if (allOrders.length === 0) {
-            console.log('⚠️ Nessun ordine trovato, uso dati di esempio');
-            allOrders = getMockOrders();
+        allOrders = await window.getOrders(100);
+        console.log(`✅ ${allOrders.length} ordini caricati da Firebase`);
+        
+        // VERIFICA DATI ORDINI
+        if (allOrders.length > 0) {
+            console.log('🔍 Verifica primo ordine:', allOrders[0]);
+            
+            // Controlla se gli ordini hanno i campi necessari
+            const firstOrder = allOrders[0];
+            if (!firstOrder.customerName || firstOrder.customerName === 'Cliente Web') {
+                console.warn('⚠️ PROBLEMA: Gli ordini non contengono nomi reali dei clienti');
+                console.warn('📋 Campi disponibili nell\'ordine:', Object.keys(firstOrder));
+            }
+            
+            if (!firstOrder.customerPhone) {
+                console.warn('⚠️ PROBLEMA: Gli ordini non contengono numeri di telefono');
+            }
         }
         
     } catch (error) {
-        console.error('❌ Errore caricamento ordini:', error);
-        console.log('🔄 Fallback: uso dati di esempio');
-        allOrders = getMockOrders();
+        console.error('❌ Errore caricamento ordini da Firebase:', error);
+        throw error; // Non usa più dati mock di fallback
     }
-}
-
-// DATI DI ESEMPIO
-function getMockOrders() {
-    const today = new Date();
-    today.setHours(10, 30, 0, 0);
-    
-    return [
-        {
-            id: 'mock1',
-            customerName: 'Lara Test',
-            customerPhone: '+39 347 939 543',
-            items: [
-                {name: '1. FUSILLI, MACINATO MANZO, ZUCCHINE, MELANZANE', quantity: 1, price: 8},
-                {name: '2. ROASTBEEF, PATATE AL FORNO, FAGIOLINI', quantity: 1, price: 8}
-            ],
-            totalAmount: 30,
-            pickupDate: '2025-06-16',
-            appliedDiscount: 0,
-            discountCode: '',
-            timestamp: { toDate: () => today }
-        },
-        {
-            id: 'mock2', 
-            customerName: 'Andrea Padoan',
-            customerPhone: '0347881515',
-            customerEmail: 'andrea.padoan@gmail.com',
-            items: [
-                {name: '3. RISO, HAMBURGER MANZO, CAROTINE BABY', quantity: 1, price: 8},
-                {name: '5. PATATE, SALMONE GRIGLIATO, BROCCOLI', quantity: 2, price: 8},
-                {name: '9. TORTILLAS, SALMONE AFFUMICATO, FORMAGGIO SPALMABILE, INSALATA', quantity: 1, price: 8}
-            ],
-            totalAmount: 40,
-            pickupDate: '2025-06-16',
-            appliedDiscount: 0,
-            discountCode: '',
-            timestamp: {
-                toDate: () => {
-                    const earlier = new Date(today);
-                    earlier.setHours(9, 15, 0, 0);
-                    return earlier;
-                }
-            }
-        },
-        {
-            id: 'mock3',
-            customerName: 'Marco Verdi',
-            customerPhone: '347.939.543',
-            items: [
-                {name: '4. QUINOA, POLLO GRIGLIATO, VERDURE MISTE', quantity: 1, price: 8}
-            ],
-            totalAmount: 12,
-            pickupDate: '2025-06-15',
-            appliedDiscount: 10,
-            discountCode: 'SCONTO10',
-            timestamp: {
-                toDate: () => {
-                    const yesterday = new Date(today);
-                    yesterday.setDate(yesterday.getDate() - 1);
-                    yesterday.setHours(14, 30, 0, 0);
-                    return yesterday;
-                }
-            }
-        }
-    ];
 }
 
 // AGGIORNAMENTO STATISTICHE
@@ -207,23 +152,52 @@ function updateStats() {
     console.log(`✅ Statistiche aggiornate: ${ordersToday} ordini oggi, ${revenueToday.toFixed(2)}€ fatturato, ${uniqueCustomers} clienti unici`);
 }
 
-// NORMALIZZAZIONE TELEFONO
+// NORMALIZZAZIONE TELEFONO MIGLIORATA
 function normalizePhone(phone) {
     if (!phone) return '';
+    
+    // Rimuovi spazi, trattini, punti
     let normalized = phone.replace(/[\s\-\.]/g, '');
+    
+    // Rimuovi prefisso internazionale Italia
     if (normalized.startsWith('+39')) normalized = normalized.substring(3);
     if (normalized.startsWith('0039')) normalized = normalized.substring(4);
-    if (normalized.startsWith('03') && normalized.length === 11) normalized = normalized.substring(1);
+    
+    // Rimuovi zero iniziale se presente (numeri fissi italiani)
+    if (normalized.startsWith('0') && normalized.length === 11) {
+        normalized = normalized.substring(1);
+    }
+    
     return normalized;
 }
 
 function getUniqueCustomers(orders) {
-    const uniquePhones = new Set();
+    const uniqueData = new Map();
+    
     orders.forEach(order => {
+        // Usa il telefono normalizzato come chiave principale
         const normalizedPhone = normalizePhone(order.customerPhone);
-        if (normalizedPhone) uniquePhones.add(normalizedPhone);
+        
+        if (normalizedPhone) {
+            // Se non abbiamo ancora questo numero, aggiungilo
+            if (!uniqueData.has(normalizedPhone)) {
+                uniqueData.set(normalizedPhone, {
+                    phone: order.customerPhone,
+                    name: order.customerName || 'Cliente',
+                    email: order.customerEmail || null
+                });
+            }
+        } else if (order.customerEmail) {
+            // Se non c'è telefono ma c'è email, usa l'email
+            uniqueData.set(order.customerEmail, {
+                phone: order.customerPhone || null,
+                name: order.customerName || 'Cliente',
+                email: order.customerEmail
+            });
+        }
     });
-    return uniquePhones;
+    
+    return uniqueData;
 }
 
 function updateChangeIndicators(todayOrders) {
@@ -236,6 +210,271 @@ function updateChangeIndicators(todayOrders) {
         `<span style="color: #38a169;">↗ ${revenueChange}%</span> vs ieri`;
     document.getElementById('avg-change').textContent = 'vs settimana scorsa';
     document.getElementById('customers-change').textContent = 'clienti registrati';
+}
+
+// VISUALIZZAZIONE ORDINI MIGLIORATA
+function displayOrders() {
+    console.log('📋 Visualizzazione ordini...');
+    
+    const ordersList = document.getElementById('orders-list');
+    if (!ordersList) return;
+    
+    let filteredOrders = getFilteredOrders();
+    
+    if (filteredOrders.length === 0) {
+        ordersList.innerHTML = '<div class="loading">Nessun ordine trovato per il filtro selezionato</div>';
+        return;
+    }
+    
+    ordersList.innerHTML = filteredOrders.map(order => {
+        const orderDate = order.timestamp && order.timestamp.toDate ? 
+            order.timestamp.toDate() : new Date();
+            
+        const formattedDate = orderDate.toLocaleDateString('it-IT', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+        const itemsText = (order.items || []).map(item => 
+            `${item.name || 'Prodotto'} (x${item.quantity || 1})`
+        ).join(', ');
+        
+        const discountText = order.appliedDiscount > 0 ? 
+            `<br><small style="color: #e53e3e;">Sconto ${order.discountCode}: -${order.appliedDiscount}%</small>` : '';
+        
+        // GESTIONE MIGLIORATA DEI DATI CLIENTE
+        const customerName = getCustomerDisplayName(order);
+        const customerPhone = getCustomerDisplayPhone(order);
+        const customerInfo = getCustomerInfo(order);
+        
+        return `
+            <div class="order-item ${selectedOrders.has(order.id) ? 'selected' : ''}" data-order-id="${order.id}">
+                <div class="order-header">
+                    <div style="display: flex; align-items: center;">
+                        <input type="checkbox" class="order-checkbox" 
+                               ${selectedOrders.has(order.id) ? 'checked' : ''} 
+                               onchange="toggleOrderSelection('${order.id}')">
+                        <span class="order-id">#${order.id.substring(0, 8)}</span>
+                    </div>
+                    <span class="order-total">${(order.totalAmount || 0).toFixed(2)}€</span>
+                </div>
+                <div class="order-details">
+                    <strong style="color: ${customerName === 'Cliente Web' ? '#e53e3e' : '#2d3748'};">
+                        ${customerName}
+                    </strong><br>
+                    📱 ${customerPhone}<br>
+                    ${order.customerEmail ? `📧 ${order.customerEmail}<br>` : ''}
+                    📅 Ritiro: ${order.pickupDate || 'N/A'}<br>
+                    🍽️ ${itemsText || 'Nessun articolo'}${discountText}
+                    ${customerInfo.warning ? `<br><small style="color: #e53e3e;">⚠️ ${customerInfo.warning}</small>` : ''}
+                </div>
+                <div style="margin-top: 8px;">
+                    <span class="order-status status-nuovo">Nuovo</span>
+                    <small style="color: #718096; margin-left: 10px;">${formattedDate}</small>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    console.log(`✅ Visualizzati ${filteredOrders.length} ordini`);
+}
+
+// FUNZIONI DI SUPPORTO PER I DATI CLIENTE
+function getCustomerDisplayName(order) {
+    // Priorità: customerName reale > from (numero WhatsApp) > fallback
+    if (order.customerName && order.customerName !== 'Cliente Web' && order.customerName !== 'N/A') {
+        return order.customerName;
+    }
+    
+    // Se abbiamo il campo 'from' (numero WhatsApp), usalo
+    if (order.from) {
+        return `Cliente ${order.from.replace('whatsapp:', '').replace('@c.us', '')}`;
+    }
+    
+    // Se abbiamo il numero di telefono, usalo
+    if (order.customerPhone && order.customerPhone !== 'N/A') {
+        return `Cliente ${order.customerPhone}`;
+    }
+    
+    return 'Cliente Web';
+}
+
+function getCustomerDisplayPhone(order) {
+    // Priorità: customerPhone > from > N/A
+    if (order.customerPhone && order.customerPhone !== 'N/A') {
+        return order.customerPhone;
+    }
+    
+    if (order.from) {
+        return order.from.replace('whatsapp:', '').replace('@c.us', '');
+    }
+    
+    return 'N/A';
+}
+
+function getCustomerInfo(order) {
+    const info = { warning: null };
+    
+    // Se il nome è ancora "Cliente Web", c'è un problema
+    if (!order.customerName || order.customerName === 'Cliente Web') {
+        info.warning = 'Dati cliente non estratti correttamente da WhatsApp';
+    }
+    
+    // Se manca il numero di telefono, c'è un problema
+    if (!order.customerPhone || order.customerPhone === 'N/A') {
+        info.warning = 'Numero di telefono mancante';
+    }
+    
+    return info;
+}
+
+function getFilteredOrders() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    switch (currentFilter) {
+        case 'oggi':
+            return allOrders.filter(order => {
+                try {
+                    const orderDate = order.timestamp && order.timestamp.toDate ? 
+                        order.timestamp.toDate() : new Date(order.timestamp);
+                    return orderDate >= today;
+                } catch (e) {
+                    return false;
+                }
+            });
+        case 'settimana':
+            const weekAgo = new Date(today);
+            weekAgo.setDate(weekAgo.getDate() - 7);
+            return allOrders.filter(order => {
+                try {
+                    const orderDate = order.timestamp && order.timestamp.toDate ? 
+                        order.timestamp.toDate() : new Date(order.timestamp);
+                    return orderDate >= weekAgo;
+                } catch (e) {
+                    return false;
+                }
+            });
+        case 'mese':
+            const monthAgo = new Date(today);
+            monthAgo.setMonth(monthAgo.getMonth() - 1);
+            return allOrders.filter(order => {
+                try {
+                    const orderDate = order.timestamp && order.timestamp.toDate ? 
+                        order.timestamp.toDate() : new Date(order.timestamp);
+                    return orderDate >= monthAgo;
+                } catch (e) {
+                    return false;
+                }
+            });
+        default:
+            return allOrders;
+    }
+}
+
+// FILTRI ORDINI
+window.filterOrders = function(filter) {
+    currentFilter = filter;
+    
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    const clickedBtn = Array.from(document.querySelectorAll('.filter-btn'))
+        .find(btn => btn.textContent.toLowerCase().includes(filter.toLowerCase()));
+    if (clickedBtn) {
+        clickedBtn.classList.add('active');
+    }
+    
+    displayOrders();
+    console.log(`🔍 Filtro applicato: ${filter}`);
+};
+
+// SELEZIONE ORDINI
+window.toggleOrderSelection = function(orderId) {
+    if (selectedOrders.has(orderId)) {
+        selectedOrders.delete(orderId);
+    } else {
+        selectedOrders.add(orderId);
+    }
+    updateSelectedCount();
+    updateOrderDisplay(orderId);
+};
+
+window.selectAllOrders = function() {
+    const filteredOrders = getFilteredOrders();
+    selectedOrders.clear();
+    filteredOrders.forEach(order => selectedOrders.add(order.id));
+    updateSelectedCount();
+    displayOrders();
+};
+
+window.clearSelection = function() {
+    selectedOrders.clear();
+    updateSelectedCount();
+    displayOrders();
+};
+
+function updateSelectedCount() {
+    const countElement = document.getElementById('selected-count');
+    if (countElement) {
+        countElement.textContent = `${selectedOrders.size} selezionati`;
+    }
+}
+
+function updateOrderDisplay(orderId) {
+    const orderElement = document.querySelector(`[data-order-id="${orderId}"]`);
+    if (orderElement) {
+        if (selectedOrders.has(orderId)) {
+            orderElement.classList.add('selected');
+        } else {
+            orderElement.classList.remove('selected');
+        }
+    }
+}
+
+// TOP PRODUCTS
+function updateTopProducts() {
+    console.log('🏆 Aggiornamento top products...');
+    
+    const productSales = {};
+    
+    allOrders.forEach(order => {
+        if (order.items) {
+            order.items.forEach(item => {
+                const name = item.name || 'Prodotto sconosciuto';
+                if (productSales[name]) {
+                    productSales[name] += item.quantity || 1;
+                } else {
+                    productSales[name] = item.quantity || 1;
+                }
+            });
+        }
+    });
+    
+    const sortedProducts = Object.entries(productSales)
+        .sort(([,a], [,b]) => b - a)
+        .slice(0, 10);
+    
+    const topProductsList = document.getElementById('top-products-list');
+    if (!topProductsList) return;
+    
+    if (sortedProducts.length === 0) {
+        topProductsList.innerHTML = '<div class="loading">Nessun dato disponibile</div>';
+        return;
+    }
+    
+    topProductsList.innerHTML = sortedProducts.map(([name, sales]) => `
+        <div class="product-item">
+            <span class="product-name">${name.length > 40 ? name.substring(0, 40) + '...' : name}</span>
+            <span class="product-sales">${sales} venduti</span>
+        </div>
+    `).join('');
+    
+    console.log(`✅ Top products aggiornati: ${sortedProducts.length} prodotti`);
 }
 
 // GRAFICO VENDITE
@@ -470,214 +709,6 @@ function checkNewOrders() {
     lastOrderCount = currentCount;
 }
 
-// VISUALIZZAZIONE ORDINI
-function displayOrders() {
-    console.log('📋 Visualizzazione ordini...');
-    
-    const ordersList = document.getElementById('orders-list');
-    if (!ordersList) return;
-    
-    let filteredOrders = getFilteredOrders();
-    
-    if (filteredOrders.length === 0) {
-        ordersList.innerHTML = '<div class="loading">Nessun ordine trovato per il filtro selezionato</div>';
-        return;
-    }
-    
-    ordersList.innerHTML = filteredOrders.map(order => {
-        const orderDate = order.timestamp && order.timestamp.toDate ? 
-            order.timestamp.toDate() : new Date();
-            
-        const formattedDate = orderDate.toLocaleDateString('it-IT', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-        
-        const itemsText = (order.items || []).map(item => 
-            `${item.name || 'Prodotto'} (x${item.quantity || 1})`
-        ).join(', ');
-        
-        const discountText = order.appliedDiscount > 0 ? 
-            `<br><small style="color: #e53e3e;">Sconto ${order.discountCode}: -${order.appliedDiscount}%</small>` : '';
-        
-        return `
-            <div class="order-item ${selectedOrders.has(order.id) ? 'selected' : ''}" data-order-id="${order.id}">
-                <div class="order-header">
-                    <div style="display: flex; align-items: center;">
-                        <input type="checkbox" class="order-checkbox" 
-                               ${selectedOrders.has(order.id) ? 'checked' : ''} 
-                               onchange="toggleOrderSelection('${order.id}')">
-                        <span class="order-id">#${order.id.substring(0, 8)}</span>
-                    </div>
-                    <span class="order-total">${(order.totalAmount || 0).toFixed(2)}€</span>
-                </div>
-                <div class="order-details">
-                    <strong>${order.customerName || 'Cliente'}</strong><br>
-                    📱 ${order.customerPhone || 'N/A'}<br>
-                    ${order.customerEmail ? `📧 ${order.customerEmail}<br>` : ''}
-                    📅 Ritiro: ${order.pickupDate || 'N/A'}<br>
-                    🍽️ ${itemsText || 'Nessun articolo'}${discountText}
-                </div>
-                <div style="margin-top: 8px;">
-                    <span class="order-status status-nuovo">Nuovo</span>
-                    <small style="color: #718096; margin-left: 10px;">${formattedDate}</small>
-                </div>
-            </div>
-        `;
-    }).join('');
-    
-    console.log(`✅ Visualizzati ${filteredOrders.length} ordini`);
-}
-
-function getFilteredOrders() {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    switch (currentFilter) {
-        case 'oggi':
-            return allOrders.filter(order => {
-                try {
-                    const orderDate = order.timestamp && order.timestamp.toDate ? 
-                        order.timestamp.toDate() : new Date(order.timestamp);
-                    return orderDate >= today;
-                } catch (e) {
-                    return false;
-                }
-            });
-        case 'settimana':
-            const weekAgo = new Date(today);
-            weekAgo.setDate(weekAgo.getDate() - 7);
-            return allOrders.filter(order => {
-                try {
-                    const orderDate = order.timestamp && order.timestamp.toDate ? 
-                        order.timestamp.toDate() : new Date(order.timestamp);
-                    return orderDate >= weekAgo;
-                } catch (e) {
-                    return false;
-                }
-            });
-        case 'mese':
-            const monthAgo = new Date(today);
-            monthAgo.setMonth(monthAgo.getMonth() - 1);
-            return allOrders.filter(order => {
-                try {
-                    const orderDate = order.timestamp && order.timestamp.toDate ? 
-                        order.timestamp.toDate() : new Date(order.timestamp);
-                    return orderDate >= monthAgo;
-                } catch (e) {
-                    return false;
-                }
-            });
-        default:
-            return allOrders;
-    }
-}
-
-// FILTRI ORDINI
-window.filterOrders = function(filter) {
-    currentFilter = filter;
-    
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    
-    const clickedBtn = Array.from(document.querySelectorAll('.filter-btn'))
-        .find(btn => btn.textContent.toLowerCase().includes(filter.toLowerCase()));
-    if (clickedBtn) {
-        clickedBtn.classList.add('active');
-    }
-    
-    displayOrders();
-    console.log(`🔍 Filtro applicato: ${filter}`);
-};
-
-// SELEZIONE ORDINI
-window.toggleOrderSelection = function(orderId) {
-    if (selectedOrders.has(orderId)) {
-        selectedOrders.delete(orderId);
-    } else {
-        selectedOrders.add(orderId);
-    }
-    updateSelectedCount();
-    updateOrderDisplay(orderId);
-};
-
-window.selectAllOrders = function() {
-    const filteredOrders = getFilteredOrders();
-    selectedOrders.clear();
-    filteredOrders.forEach(order => selectedOrders.add(order.id));
-    updateSelectedCount();
-    displayOrders();
-};
-
-window.clearSelection = function() {
-    selectedOrders.clear();
-    updateSelectedCount();
-    displayOrders();
-};
-
-function updateSelectedCount() {
-    const countElement = document.getElementById('selected-count');
-    if (countElement) {
-        countElement.textContent = `${selectedOrders.size} selezionati`;
-    }
-}
-
-function updateOrderDisplay(orderId) {
-    const orderElement = document.querySelector(`[data-order-id="${orderId}"]`);
-    if (orderElement) {
-        if (selectedOrders.has(orderId)) {
-            orderElement.classList.add('selected');
-        } else {
-            orderElement.classList.remove('selected');
-        }
-    }
-}
-
-// TOP PRODUCTS
-function updateTopProducts() {
-    console.log('🏆 Aggiornamento top products...');
-    
-    const productSales = {};
-    
-    allOrders.forEach(order => {
-        if (order.items) {
-            order.items.forEach(item => {
-                const name = item.name || 'Prodotto sconosciuto';
-                if (productSales[name]) {
-                    productSales[name] += item.quantity || 1;
-                } else {
-                    productSales[name] = item.quantity || 1;
-                }
-            });
-        }
-    });
-    
-    const sortedProducts = Object.entries(productSales)
-        .sort(([,a], [,b]) => b - a)
-        .slice(0, 10);
-    
-    const topProductsList = document.getElementById('top-products-list');
-    if (!topProductsList) return;
-    
-    if (sortedProducts.length === 0) {
-        topProductsList.innerHTML = '<div class="loading">Nessun dato disponibile</div>';
-        return;
-    }
-    
-    topProductsList.innerHTML = sortedProducts.map(([name, sales]) => `
-        <div class="product-item">
-            <span class="product-name">${name.length > 40 ? name.substring(0, 40) + '...' : name}</span>
-            <span class="product-sales">${sales} venduti</span>
-        </div>
-    `).join('');
-    
-    console.log(`✅ Top products aggiornati: ${sortedProducts.length} prodotti`);
-}
-
 // EXPORT CSV
 window.exportToCSV = function() {
     console.log('📥 Export CSV...');
@@ -703,8 +734,8 @@ window.exportToCSV = function() {
         return [
             order.id.substring(0, 8),
             orderDate,
-            order.customerName || 'Cliente',
-            order.customerPhone || 'N/A',
+            getCustomerDisplayName(order),
+            getCustomerDisplayPhone(order),
             order.customerEmail || 'N/A',
             order.pickupDate || 'N/A',
             items,
@@ -743,7 +774,7 @@ window.generateProductionDoc = function() {
     
     selectedOrdersData.forEach(order => {
         orderDetails.push({
-            customerName: order.customerName || 'Cliente',
+            customerName: getCustomerDisplayName(order),
             pickupDate: order.pickupDate || 'N/A',
             orderId: order.id.substring(0, 8),
             items: order.items || []
@@ -869,23 +900,89 @@ function generateProductionHTML(orderDetails, productSummary) {
     console.log(`✅ Documento produzione generato per ${selectedOrders.size} ordini`);
 }
 
-// GESTIONE ERRORI
+// GESTIONE ERRORI MIGLIORATA
 function showError(message) {
     console.error('❌ Errore dashboard:', message);
     
     const errorElement = document.getElementById('error-message');
     if (errorElement) {
-        errorElement.textContent = message;
+        errorElement.innerHTML = `
+            <strong>⚠️ Errore di Connessione</strong><br>
+            ${message}<br><br>
+            <strong>Possibili cause:</strong><br>
+            • Problema di connessione a Firebase<br>
+            • Configurazione Firebase non corretta<br>
+            • Gli ordini non contengono i dati corretti del cliente<br><br>
+            <strong>Verifica:</strong><br>
+            • Apri la Console (F12) per vedere i log dettagliati<br>
+            • Controlla che il webhook WhatsApp stia salvando correttamente i dati<br>
+            • Assicurati che i campi 'customerName' e 'customerPhone' vengano popolati
+        `;
         errorElement.style.display = 'block';
     }
     
-    allOrders = getMockOrders();
-    lastOrderCount = allOrders.length;
+    // Non usare più dati mock come fallback
+    allOrders = [];
     updateStats();
     displayOrders();
     updateTopProducts();
     if (salesChart) updateSalesChart();
 }
+
+// FUNZIONE DI DIAGNOSI PER DEBUG
+window.diagnoseOrders = function() {
+    console.log('🔍 DIAGNOSI ORDINI:');
+    console.log('==================');
+    
+    if (allOrders.length === 0) {
+        console.log('❌ Nessun ordine caricato');
+        return;
+    }
+    
+    console.log(`📊 Totale ordini: ${allOrders.length}`);
+    
+    // Analizza il primo ordine
+    const firstOrder = allOrders[0];
+    console.log('🔍 Primo ordine disponibile:');
+    console.log('ID:', firstOrder.id);
+    console.log('Campi disponibili:', Object.keys(firstOrder));
+    
+    // Verifica presenza dati cliente
+    const clientsWithName = allOrders.filter(o => o.customerName && o.customerName !== 'Cliente Web').length;
+    const clientsWithPhone = allOrders.filter(o => o.customerPhone && o.customerPhone !== 'N/A').length;
+    const clientsWithFrom = allOrders.filter(o => o.from).length;
+    
+    console.log('📊 Analisi dati cliente:');
+    console.log(`• Ordini con nome reale: ${clientsWithName}/${allOrders.length}`);
+    console.log(`• Ordini con telefono: ${clientsWithPhone}/${allOrders.length}`);
+    console.log(`• Ordini con campo 'from': ${clientsWithFrom}/${allOrders.length}`);
+    
+    if (clientsWithName === 0) {
+        console.warn('⚠️ PROBLEMA: Nessun ordine ha un nome cliente reale');
+        console.warn('💡 SOLUZIONE: Verifica che il webhook WhatsApp salvi il campo "profile.name"');
+    }
+    
+    if (clientsWithPhone === 0) {
+        console.warn('⚠️ PROBLEMA: Nessun ordine ha un numero di telefono');
+        console.warn('💡 SOLUZIONE: Verifica che il webhook WhatsApp salvi il campo "from"');
+    }
+    
+    // Mostra esempio di ordine completo
+    console.log('📋 Esempio di come dovrebbe essere un ordine:');
+    console.log({
+        id: 'order123',
+        customerName: 'Mario Rossi', // Dal profile.name di WhatsApp
+        customerPhone: '+39 347 123 4567', // Dal campo from
+        customerEmail: 'mario@email.com', // Opzionale
+        from: 'whatsapp:+393471234567@c.us', // ID WhatsApp originale
+        items: [
+            {name: 'Fusilli con verdure', quantity: 2, price: 8}
+        ],
+        totalAmount: 16,
+        timestamp: 'Timestamp Firebase',
+        pickupDate: '2025-06-16'
+    });
+};
 
 // AUTO-REFRESH ogni 30 secondi
 setInterval(async () => {
@@ -903,4 +1000,8 @@ setInterval(async () => {
     }
 }, 30000);
 
-console.log('📊 Dashboard.js caricato completamente');
+// Esporre funzione di diagnosi globalmente
+window.diagnoseOrders = window.diagnoseOrders;
+
+console.log('📊 Dashboard.js corretto caricato completamente');
+console.log('💡 Per diagnosticare problemi, digita: diagnoseOrders() nella console');
