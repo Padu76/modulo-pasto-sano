@@ -1,0 +1,25 @@
+{
+  "name": "pasto-sano",
+  "version": "1.0.0",
+  "description": "Pasto Sano - Sistema ordini con pagamenti Stripe e PayPal",
+  "main": "index.html",
+  "dependencies": {
+    "stripe": "^14.0.0"
+  },
+  "scripts": {
+    "build": "echo 'Build complete'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/pasto-sano"
+  },
+  "keywords": [
+    "food",
+    "orders",
+    "stripe",
+    "paypal",
+    "netlify"
+  ],
+  "author": "Pasto Sano",
+  "license": "MIT"
+}
