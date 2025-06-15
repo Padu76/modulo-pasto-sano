@@ -346,11 +346,12 @@
         bottom: 1rem !important;
         right: 1rem !important;
         z-index: 1000 !important;
-        max-width: 220px !important;
+        max-width: 250px !important;
         cursor: pointer !important;
         pointer-events: auto !important;
-        padding: 1rem 1.2rem !important;
-        font-size: 1rem !important;
+        padding: 1.2rem 1.5rem !important;
+        font-size: 1.1rem !important;
+        min-height: 60px !important;
     }
 
     .floating-cart:hover {
@@ -359,9 +360,9 @@
 
     .cart-counter {
         flex-shrink: 0 !important;
-        width: 28px !important;
-        height: 28px !important;
-        font-size: 0.9rem !important;
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 1rem !important;
     }
 
     /* Previeni scroll orizzontale SEMPLIFICATO */
@@ -371,35 +372,6 @@
 
     html {
         overflow-x: hidden !important;
-    }
-
-    /* Modal carrello stabile e centrato */
-    .cart-modal {
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        bottom: 0 !important;
-        z-index: 2000 !important;
-        display: none !important;
-        align-items: center !important;
-        justify-content: center !important;
-        padding: 20px !important;
-        box-sizing: border-box !important;
-    }
-
-    .cart-modal.show {
-        display: flex !important;
-    }
-
-    .cart-content {
-        width: 100% !important;
-        max-width: 500px !important;
-        max-height: 90vh !important;
-        margin: 0 auto !important;
-        box-sizing: border-box !important;
-        overflow-x: hidden !important;
-        overflow-y: auto !important;
     }
 
     /* Responsive per mobile */
@@ -446,27 +418,17 @@
         .floating-cart {
             bottom: 20px !important;
             right: 20px !important;
-            max-width: 180px !important;
+            max-width: 200px !important;
             pointer-events: auto !important;
-            padding: 0.8rem 1rem !important;
-            font-size: 0.9rem !important;
+            padding: 1rem 1.2rem !important;
+            font-size: 1rem !important;
+            min-height: 55px !important;
         }
 
         .cart-counter {
-            width: 24px !important;
-            height: 24px !important;
-            font-size: 0.8rem !important;
-        }
-
-        /* Modal mobile stabile */
-        .cart-modal {
-            padding: 15px !important;
-        }
-
-        .cart-content {
-            width: calc(100% - 30px) !important;
-            max-width: none !important;
-            margin: 0 !important;
+            width: 28px !important;
+            height: 28px !important;
+            font-size: 0.9rem !important;
         }
     }
 
@@ -491,27 +453,17 @@
         .floating-cart {
             bottom: 15px !important;
             right: 15px !important;
-            max-width: 150px !important;
+            max-width: 170px !important;
             pointer-events: auto !important;
-            padding: 0.7rem 0.9rem !important;
-            font-size: 0.85rem !important;
+            padding: 0.9rem 1.1rem !important;
+            font-size: 0.95rem !important;
+            min-height: 50px !important;
         }
 
         .cart-counter {
-            width: 22px !important;
-            height: 22px !important;
-            font-size: 0.75rem !important;
-        }
-
-        /* Modal mobile piccolo super stabile */
-        .cart-modal {
-            padding: 10px !important;
-        }
-
-        .cart-content {
-            width: calc(100% - 20px) !important;
-            max-width: none !important;
-            margin: 0 !important;
+            width: 26px !important;
+            height: 26px !important;
+            font-size: 0.85rem !important;
         }
     }
     </style>
