@@ -4,465 +4,101 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pasto Sano - Ordina i tuoi pasti</title>
-    <link rel="stylesheet" href="style-improved.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
-        <h1><img src="logo.png" alt="Logo Pasto Sano" style="width:80px; vertical-align:middle; margin-right:10px;" onerror="this.style.display='none'">Pasto Sano</h1>
-        <p class="header-subtitle">Ordina i tuoi pasti sani • Consegna garantita</p>
+    <!-- Header -->
+    <header class="header">
+        <h1>🍽️ Pasto Sano</h1>
     </header>
-    
-    <main>
-        <!-- CARRELLO MOBILE FLOATING -->
-        <div class="cart-floating" id="cart-floating">
-            <div class="cart-floating-content">
-                <span class="cart-items-count" id="cart-items-count">0</span>
-                <span class="cart-floating-text">Carrello</span>
-                <span class="cart-total-floating" id="cart-total-floating">0€</span>
-            </div>
-        </div>
 
-        <!-- SEZIONE PASTI COMPLETI -->
-        <section id="main-meals" class="menu-section">
+    <!-- Container principale -->
+    <div class="container">
+        <!-- Sezione Pasti Completi -->
+        <section class="menu-section">
             <div class="section-header">
-                <h2>🍽️ Pasti Completi</h2>
+                <h2 class="section-title">Pasti Completi</h2>
                 <div class="price-badge">8€ cad.</div>
             </div>
-            <div class="meal-grid">
-
-                <div class="meal-card" data-id="1" data-price="8">
-                    <div class="meal-image-container">
-                        <img src="fusilli-macinato-zucchine-melanzane.jpg" alt="FUSILLI, MACINATO MANZO, ZUCCHINE, MELANZANE" class="meal-img" loading="lazy">
-                        <div class="price-overlay">8€</div>
-                    </div>
-                    <div class="meal-info">
-                        <h3>Fusilli con Macinato di Manzo</h3>
-                        <p class="meal-description">Zucchine e melanzane fresche</p>
-                        <div class="meal-actions">
-                            <div class="quantity-control">
-                                <button class="qty-btn minus-btn" data-action="minus">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                        <path d="M5 12h14" stroke="currentColor" stroke-width="2"/>
-                                    </svg>
-                                </button>
-                                <span class="quantity-display">0</span>
-                                <button class="qty-btn plus-btn" data-action="plus">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                        <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2"/>
-                                    </svg>
-                                </button>
-                            </div>
-                            <button class="add-to-cart-btn">Aggiungi</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="meal-card" data-id="2" data-price="8">
-                    <div class="meal-image-container">
-                        <img src="roastbeef-patatealforno-fagiolini.jpg" alt="ROASTBEEF, PATATE AL FORNO, FAGIOLINI" class="meal-img" loading="lazy">
-                        <div class="price-overlay">8€</div>
-                    </div>
-                    <div class="meal-info">
-                        <h3>Roastbeef con Patate</h3>
-                        <p class="meal-description">Patate al forno e fagiolini</p>
-                        <div class="meal-actions">
-                            <div class="quantity-control">
-                                <button class="qty-btn minus-btn" data-action="minus">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                        <path d="M5 12h14" stroke="currentColor" stroke-width="2"/>
-                                    </svg>
-                                </button>
-                                <span class="quantity-display">0</span>
-                                <button class="qty-btn plus-btn" data-action="plus">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                        <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2"/>
-                                    </svg>
-                                </button>
-                            </div>
-                            <button class="add-to-cart-btn">Aggiungi</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="meal-card" data-id="3" data-price="8">
-                    <div class="meal-image-container">
-                        <img src="risobasmati-hamburgermanzo-carotine.jpg" alt="RISO, HAMBURGER MANZO, CAROTINE BABY" class="meal-img" loading="lazy">
-                        <div class="price-overlay">8€</div>
-                    </div>
-                    <div class="meal-info">
-                        <h3>Riso con Hamburger di Manzo</h3>
-                        <p class="meal-description">Carotine baby</p>
-                        <div class="meal-actions">
-                            <div class="quantity-control">
-                                <button class="qty-btn minus-btn" data-action="minus">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                        <path d="M5 12h14" stroke="currentColor" stroke-width="2"/>
-                                    </svg>
-                                </button>
-                                <span class="quantity-display">0</span>
-                                <button class="qty-btn plus-btn" data-action="plus">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                        <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2"/>
-                                    </svg>
-                                </button>
-                            </div>
-                            <button class="add-to-cart-btn">Aggiungi</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="meal-card" data-id="4" data-price="8">
-                    <div class="meal-image-container">
-                        <img src="riso nero-gamberi-tonno-piselli.jpg" alt="RISO NERO, GAMBERI, TONNO, PISELLI" class="meal-img" loading="lazy">
-                        <div class="price-overlay">8€</div>
-                    </div>
-                    <div class="meal-info">
-                        <h3>Riso Nero con Gamberi</h3>
-                        <p class="meal-description">Tonno e piselli</p>
-                        <div class="meal-actions">
-                            <div class="quantity-control">
-                                <button class="qty-btn minus-btn" data-action="minus">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                        <path d="M5 12h14" stroke="currentColor" stroke-width="2"/>
-                                    </svg>
-                                </button>
-                                <span class="quantity-display">0</span>
-                                <button class="qty-btn plus-btn" data-action="plus">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                        <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2"/>
-                                    </svg>
-                                </button>
-                            </div>
-                            <button class="add-to-cart-btn">Aggiungi</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="meal-card" data-id="5" data-price="8">
-                    <div class="meal-image-container">
-                        <img src="salmonegrigliato-patatealforno-broccoli.jpg" alt="PATATE, SALMONE GRIGLIATO, BROCCOLI" class="meal-img" loading="lazy">
-                        <div class="price-overlay">8€</div>
-                    </div>
-                    <div class="meal-info">
-                        <h3>Salmone Grigliato</h3>
-                        <p class="meal-description">Patate al forno e broccoli</p>
-                        <div class="meal-actions">
-                            <div class="quantity-control">
-                                <button class="qty-btn minus-btn" data-action="minus">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                        <path d="M5 12h14" stroke="currentColor" stroke-width="2"/>
-                                    </svg>
-                                </button>
-                                <span class="quantity-display">0</span>
-                                <button class="qty-btn plus-btn" data-action="plus">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                        <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2"/>
-                                    </svg>
-                                </button>
-                            </div>
-                            <button class="add-to-cart-btn">Aggiungi</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="meal-card" data-id="6" data-price="8">
-                    <div class="meal-image-container">
-                        <img src="pollogrigliato-patatealforno-zucchine.jpg" alt="POLLO GRIGLIATO, PATATE AL FORNO, ZUCCHINE" class="meal-img" loading="lazy">
-                        <div class="price-overlay">8€</div>
-                    </div>
-                    <div class="meal-info">
-                        <h3>Pollo Grigliato</h3>
-                        <p class="meal-description">Patate al forno e zucchine</p>
-                        <div class="meal-actions">
-                            <div class="quantity-control">
-                                <button class="qty-btn minus-btn" data-action="minus">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                        <path d="M5 12h14" stroke="currentColor" stroke-width="2"/>
-                                    </svg>
-                                </button>
-                                <span class="quantity-display">0</span>
-                                <button class="qty-btn plus-btn" data-action="plus">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                        <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2"/>
-                                    </svg>
-                                </button>
-                            </div>
-                            <button class="add-to-cart-btn">Aggiungi</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="meal-card" data-id="7" data-price="8">
-                    <div class="meal-image-container">
-                        <img src="orzo-ceci-feta-pomodorini-basilico.jpg" alt="ORZO, CECI, FETA, POMODORINI, BASILICO" class="meal-img" loading="lazy">
-                        <div class="price-overlay">8€</div>
-                    </div>
-                    <div class="meal-info">
-                        <h3>Orzo con Ceci e Feta</h3>
-                        <p class="meal-description">Pomodorini e basilico</p>
-                        <div class="meal-actions">
-                            <div class="quantity-control">
-                                <button class="qty-btn minus-btn" data-action="minus">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                        <path d="M5 12h14" stroke="currentColor" stroke-width="2"/>
-                                    </svg>
-                                </button>
-                                <span class="quantity-display">0</span>
-                                <button class="qty-btn plus-btn" data-action="plus">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                        <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2"/>
-                                    </svg>
-                                </button>
-                            </div>
-                            <button class="add-to-cart-btn">Aggiungi</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="meal-card" data-id="8" data-price="8">
-                    <div class="meal-image-container">
-                        <img src="tortillas-tacchinoaffumicato-hummusceci-insalata.jpg" alt="TORTILLAS, TACCHINO AFFUMICATO, HUMMUS CECI, INSALATA" class="meal-img" loading="lazy">
-                        <div class="price-overlay">8€</div>
-                    </div>
-                    <div class="meal-info">
-                        <h3>Tortillas con Tacchino</h3>
-                        <p class="meal-description">Hummus di ceci e insalata</p>
-                        <div class="meal-actions">
-                            <div class="quantity-control">
-                                <button class="qty-btn minus-btn" data-action="minus">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                        <path d="M5 12h14" stroke="currentColor" stroke-width="2"/>
-                                    </svg>
-                                </button>
-                                <span class="quantity-display">0</span>
-                                <button class="qty-btn plus-btn" data-action="plus">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                        <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2"/>
-                                    </svg>
-                                </button>
-                            </div>
-                            <button class="add-to-cart-btn">Aggiungi</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="meal-card" data-id="9" data-price="8">
-                    <div class="meal-image-container">
-                        <img src="tortillas-salmoneaffumicato-formaggiospalmabile-insalata.jpg" alt="TORTILLAS, SALMONE AFFUMICATO, FORMAGGIO SPALMABILE, INSALATA" class="meal-img" loading="lazy">
-                        <div class="price-overlay">8€</div>
-                    </div>
-                    <div class="meal-info">
-                        <h3>Tortillas con Salmone</h3>
-                        <p class="meal-description">Formaggio spalmabile e insalata</p>
-                        <div class="meal-actions">
-                            <div class="quantity-control">
-                                <button class="qty-btn minus-btn" data-action="minus">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                        <path d="M5 12h14" stroke="currentColor" stroke-width="2"/>
-                                    </svg>
-                                </button>
-                                <span class="quantity-display">0</span>
-                                <button class="qty-btn plus-btn" data-action="plus">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                        <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2"/>
-                                    </svg>
-                                </button>
-                            </div>
-                            <button class="add-to-cart-btn">Aggiungi</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="meal-card" data-id="10" data-price="8">
-                    <div class="meal-image-container">
-                        <img src="risobasmati-polloalcurry-zucchine.jpg" alt="RISO, POLLO AL CURRY, ZUCCHINE" class="meal-img" loading="lazy">
-                        <div class="price-overlay">8€</div>
-                    </div>
-                    <div class="meal-info">
-                        <h3>Riso con Pollo al Curry</h3>
-                        <p class="meal-description">Zucchine fresche</p>
-                        <div class="meal-actions">
-                            <div class="quantity-control">
-                                <button class="qty-btn minus-btn" data-action="minus">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                        <path d="M5 12h14" stroke="currentColor" stroke-width="2"/>
-                                    </svg>
-                                </button>
-                                <span class="quantity-display">0</span>
-                                <button class="qty-btn plus-btn" data-action="plus">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                        <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2"/>
-                                    </svg>
-                                </button>
-                            </div>
-                            <button class="add-to-cart-btn">Aggiungi</button>
-                        </div>
-                    </div>
-                </div>
-
+            
+            <div class="products-grid" id="main-meals">
+                <!-- I pasti verranno generati dinamicamente -->
             </div>
         </section>
 
-        <!-- SEZIONE COLAZIONI -->
-        <section id="breakfast-meals" class="menu-section">
+        <!-- Sezione Colazioni -->
+        <section class="menu-section">
             <div class="section-header">
-                <h2>🌅 Colazioni</h2>
+                <h2 class="section-title">Colazioni</h2>
                 <div class="price-badge">6€ cad.</div>
             </div>
-            <div class="meal-grid">
-
-                <div class="meal-card" data-id="11" data-price="6">
-                    <div class="meal-image-container">
-                        <img src="uovastrapazzate-bacon-fruttidibosco.jpg" alt="UOVA STRAPAZZATE, BACON, FRUTTI DI BOSCO" class="meal-img" loading="lazy">
-                        <div class="price-overlay">6€</div>
-                    </div>
-                    <div class="meal-info">
-                        <h3>Uova Strapazzate</h3>
-                        <p class="meal-description">Bacon e frutti di bosco</p>
-                        <div class="meal-actions">
-                            <div class="quantity-control">
-                                <button class="qty-btn minus-btn" data-action="minus">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                        <path d="M5 12h14" stroke="currentColor" stroke-width="2"/>
-                                    </svg>
-                                </button>
-                                <span class="quantity-display">0</span>
-                                <button class="qty-btn plus-btn" data-action="plus">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                        <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2"/>
-                                    </svg>
-                                </button>
-                            </div>
-                            <button class="add-to-cart-btn">Aggiungi</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="meal-card" data-id="12" data-price="6">
-                    <div class="meal-image-container">
-                        <img src="pancakes.jpg" alt="PANCAKES" class="meal-img" loading="lazy">
-                        <div class="price-overlay">6€</div>
-                    </div>
-                    <div class="meal-info">
-                        <h3>Pancakes</h3>
-                        <p class="meal-description">Dolci e soffici</p>
-                        <div class="meal-actions">
-                            <div class="quantity-control">
-                                <button class="qty-btn minus-btn" data-action="minus">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                        <path d="M5 12h14" stroke="currentColor" stroke-width="2"/>
-                                    </svg>
-                                </button>
-                                <span class="quantity-display">0</span>
-                                <button class="qty-btn plus-btn" data-action="plus">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                        <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2"/>
-                                    </svg>
-                                </button>
-                            </div>
-                            <button class="add-to-cart-btn">Aggiungi</button>
-                        </div>
-                    </div>
-                </div>
-
+            
+            <div class="products-grid" id="breakfast-meals">
+                <!-- Le colazioni verranno generate dinamicamente -->
             </div>
         </section>
+    </div>
 
-        <!-- SEZIONE CARRELLO DESKTOP -->
-        <section id="cart-section" class="cart-desktop">
+    <!-- Carrello floating -->
+    <div class="floating-cart" id="floating-cart">
+        <div class="cart-counter" id="cart-counter">0</div>
+        <span>Carrello</span>
+        <span id="cart-total">0.00€</span>
+    </div>
+
+    <!-- Modal carrello -->
+    <div class="cart-modal" id="cart-modal">
+        <div class="cart-content">
             <div class="cart-header">
-                <h2>🛒 Il tuo Ordine</h2>
-                <button class="clear-cart-btn" id="clear-cart">Svuota</button>
+                <h3>Il tuo Ordine</h3>
+                <button class="close-btn" id="close-cart">&times;</button>
             </div>
             
-            <div class="cart-content">
-                <div id="cart-items" class="cart-items-list"></div>
-                
-                <div class="cart-summary">
-                    <div class="cart-stats">
-                        <span>Articoli: <strong id="total-items">0</strong></span>
-                    </div>
-                    
-                    <!-- SEZIONE CODICE PROMOZIONALE -->
-                    <div class="promo-section">
-                        <div class="promo-input-group">
-                            <input type="text" id="promo-code" placeholder="Codice promozionale">
-                            <button id="apply-promo">Applica</button>
-                        </div>
-                        <div id="promo-message"></div>
-                    </div>
-                    
-                    <div id="discount-line" class="discount-line"></div>
-                    
-                    <div class="total-price">
-                        <span>Totale: <strong id="total-price">0.00€</strong></span>
-                    </div>
-                    
-                    <div class="pickup-date-section">
-                        <label for="pickup-date">📅 Giorno di Ritiro</label>
-                        <input type="date" id="pickup-date" name="pickup-date">
-                        <p class="note">Ordine con 2 giorni di anticipo</p>
-                    </div>
-                    
-                    <button id="submit-order" class="submit-order-btn">🚀 Procedi all'Ordine</button>
+            <div id="cart-items">
+                <!-- Items del carrello -->
+            </div>
+
+            <!-- Sezione codice promozionale ridisegnata -->
+            <div class="promo-section">
+                <div class="promo-input-group">
+                    <input type="text" class="promo-input" id="promo-code" placeholder="Codice promozionale">
+                    <button class="promo-btn" id="apply-promo">Applica</button>
+                </div>
+                <div class="promo-message" id="promo-message"></div>
+            </div>
+
+            <div id="discount-display"></div>
+
+            <div class="cart-total">
+                <div style="font-size: 1.2rem; font-weight: 700; color: #2d5a2d;">
+                    Totale: <span id="modal-total">0.00€</span>
+                </div>
+                <div style="color: #6c757d; margin-top: 0.25rem;">
+                    <span id="total-items">0</span> articoli
                 </div>
             </div>
 
-            <div id="order-message" class="order-message"></div>
-        </section>
-    </main>
-
-    <!-- POPUP DATI CLIENTE -->
-    <div class="popup-overlay" id="customer-popup">
-        <div class="popup-content">
-            <div class="popup-header">
-                <h3>👤 I tuoi Dati</h3>
-                <button class="popup-close" id="close-customer-popup">&times;</button>
+            <div class="order-form">
+                <div class="form-group">
+                    <label class="form-label" for="pickup-date">Data di Ritiro</label>
+                    <input type="date" class="form-input" id="pickup-date">
+                    <div class="form-note">L'ordine deve essere effettuato con 2 giorni di anticipo</div>
+                </div>
             </div>
-            <form id="customer-form">
-                <div class="form-group">
-                    <label for="customer-name">Nome e Cognome *</label>
-                    <input type="text" id="customer-name" required>
-                </div>
-                <div class="form-group">
-                    <label for="customer-phone">Telefono *</label>
-                    <input type="tel" id="customer-phone" required placeholder="es. 347 123 4567">
-                </div>
-                <div class="form-group">
-                    <label for="customer-email">Email (opzionale)</label>
-                    <input type="email" id="customer-email" placeholder="es. mario@email.com">
-                </div>
-                <div class="form-group">
-                    <label for="order-notes">Note aggiuntive</label>
-                    <textarea id="order-notes" rows="3" placeholder="Allergie, preferenze particolari..."></textarea>
-                </div>
-            </form>
-            <button id="confirm-customer" class="confirm-btn">
-                ✅ Conferma e Procedi
-            </button>
+
+            <div class="action-buttons">
+                <button class="btn-primary" id="confirm-order">
+                    <span>📱 Invia su WhatsApp</span>
+                    <div class="spinner" id="loading-spinner" style="display: none;"></div>
+                </button>
+                <button class="btn-secondary" id="clear-cart">Svuota</button>
+            </div>
         </div>
     </div>
 
-    <!-- POPUP RIEPILOGATIVO -->
-    <div class="popup-overlay" id="summary-popup">
-        <div class="popup-content">
-            <div class="popup-header">
-                <h3>📋 Riepilogo Ordine</h3>
-                <button class="popup-close" id="close-popup">&times;</button>
-            </div>
-            <div id="popup-items" class="popup-items"></div>
-            <div class="popup-total" id="popup-total"></div>
-            <button id="confirm-order" class="confirm-btn whatsapp-btn">
-                📱 Conferma e Invia su WhatsApp
-            </button>
-        </div>
-    </div>
+    <!-- Toast per notifiche -->
+    <div class="toast" id="toast"></div>
 
-    <!-- NOTIFICA CONFERMA -->
-    <div class="notification" id="notification">
-        ✅ Ordine inviato con successo!
-    </div>
-
-    <script src="script-improved.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
