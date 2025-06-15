@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pagamento Completato - Pasto Sano</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f0f7f0 0%, #e8f5e8 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .success-container {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        .success-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+        
+        .success-title {
+            color: #2d5a2d;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .success-message {
+            color: #718096;
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        
+        .order-details {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #7a9e7e;
+        }
+        
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: #2d3748;
+        }
+        
+        .detail-value {
+            color: #718096;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            flex: 1;
+            min-width: 120px;
+        }
+        
+        .btn-primary {
+            background: #7a9e7e;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #6b8a6f;
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: #7a9e7e;
+            border: 2px solid #7a9e7e;
+        }
+        
+        .btn-secondary:hover {
+            background: #f0f7f0;
+        }
+        
+        @media (max-width: 768px) {
+            .success-container {
+                padding: 30px 20px;
+            }
+            
+            .success-title {
+                font-size: 1.5rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="success-container">
+        <div class="success-icon">✅</div>
+        <h1 class="success-title">Pagamento Completato!</h1>
+        <p class="success-message">
+            Grazie per il tuo ordine! Il pagamento è stato elaborato con successo. 
+            Ti invieremo una conferma e i dettagli per il ritiro via email.
+        </p>
+        
+        <div class="order-details">
+            <div class="detail-item">
+                <span class="detail-label">📧 Email di conferma:</span>
+                <span class="detail-value">Entro 5 minuti</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">⏰ Preparazione:</span>
+                <span class="detail-value">2 giorni lavorativi</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">📱 Contatto:</span>
+                <span class="detail-value">347 888 1515</span>
+            </div>
+        </div>
+        
+        <div class="action-buttons">
+            <a href="/" class="btn btn-primary">🏠 Torna al Menu</a>
+            <a href="https://wa.me/393478881515?text=Ciao!%20Ho%20appena%20completato%20un%20ordine%20e%20volevo%20conferma" class="btn btn-secondary">💬 Contattaci</a>
+        </div>
+    </div>
+
+    <script>
+        // Ottieni session_id dall'URL per tracking
+        const urlParams = new URLSearchParams(window.location.search);
+        const sessionId = urlParams.get('session_id');
+        
+        if (sessionId) {
+            console.log('Session ID:', sessionId);
+            // Qui puoi fare una chiamata per recuperare i dettagli dell'ordine
+        }
+        
+        // Auto-redirect dopo 30 secondi
+        setTimeout(() => {
+            if (confirm('Vuoi tornare al menu principale?')) {
+                window.location.href = '/';
+            }
+        }, 30000);
+    </script>
+</body>
+</html>
