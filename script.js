@@ -64,8 +64,11 @@ function renderProducts() {
     console.log('📦 Caricamento prodotti...');
     renderProductSection('main-meals', products.mainMeals);
     renderProductSection('breakfast-meals', products.breakfastMeals);
+    renderProductSection('test-meals', products.testMeals);
     console.log('✅ Prodotti caricati');
 }
+
+// Rimuovi la funzione renderTestSection separata
 
 function renderProductSection(containerId, productList) {
     const container = document.getElementById(containerId);
@@ -404,9 +407,11 @@ function confirmOrder() {
     const confirmButton = document.getElementById('confirm-order');
     const spinner = document.getElementById('loading-spinner');
 
-    // Validazioni
-    if (totalQuantity < 4) {
-        showToast('Errore: Il minimo d\'ordine è 4 pezzi a scelta', 'error');
+    // Validazioni - RIMUOVO IL MINIMO per i test
+    const hasTestProduct = cart.some(item => item.id === '99');
+    
+    if (!hasTestProduct && totalQuantity < 4) {
+        showToast('Errore: Il minimo d\'ordine è 4 pezzi a scelta (tranne per prodotti test)', 'error');
         return;
     }
 
