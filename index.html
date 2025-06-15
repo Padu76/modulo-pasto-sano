@@ -1,22 +1,4 @@
-        // Funzione per gestire pagamento completato con successo
-        function handleSuccessfulPayment(method, details) {
-            console.log(`Pagamento ${method} completato:`, details);
-            
-            // Messaggio di successo
-            alert(`✅ Pagamento completato con successo tramite ${method.toUpperCase()}!\n\nRiceverai una email di conferma a breve.`);
-            
-            // Chiudi modal
-            if (cartModal) cartModal.style.display = 'none';
-            
-            // Svuota carrello dopo pagamento riuscito
-            clearCart();
-            
-            // Mostra toast di successo
-            showToast(`Pagamento ${method} completato! 🎉`);
-            
-            // Redirect alla pagina di successo (opzionale)
-            // window.location.href = 'success.html';
-        }<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="it">
 <head>
     <meta charset="UTF-8">
@@ -96,7 +78,7 @@
                 <!-- Items del carrello -->
             </div>
 
-            <!-- Sezione codice promozionale ridisegnata -->
+            <!-- Sezione codice promozionale -->
             <div class="promo-section">
                 <div class="promo-input-group">
                     <input type="text" class="promo-input" id="promo-code" placeholder="Codice promozionale">
@@ -193,10 +175,10 @@
                     <div class="spinner" id="loading-spinner" style="display: none;"></div>
                 </button>
                 
-                <!-- Container per i bottoni PayPal (nascosto inizialmente) -->
+                <!-- Container per i bottoni PayPal -->
                 <div id="paypal-button-container" style="display: none; margin-bottom: 10px;"></div>
                 
-                <!-- Form Stripe semplificato (nascosto inizialmente) -->
+                <!-- Form Stripe -->
                 <div id="stripe-payment-form" style="display: none; margin-bottom: 15px;">
                     <div style="background: #f0f7f0; padding: 15px; border-radius: 8px; border: 1px solid #7a9e7e;">
                         <p style="margin: 0; color: #2d5a2d; font-weight: 600;">
@@ -216,21 +198,11 @@
     <!-- Toast per notifiche -->
     <div class="toast" id="toast"></div>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-    <script src="firebase-config.js"></script>
-    
-    <!-- Stripe SDK -->
-    <script src="https://js.stripe.com/v3/"></script>
-    
     <!-- PayPal SDK -->
     <script src="https://www.paypal.com/sdk/js?client-id=ATRYKexpKZq-EFO0jpNzElUuJaeQ1qE9qHhGIRbcAgra5--Wd6_2OkJEt5odzNu2obNQUnmQdnJYu7aD&currency=EUR&components=buttons"></script>
     
-    <script src="script.js"></script>
-
     <style>
-    /* Header con logo trasparente via CSS */
+    /* Header con logo trasparente */
     .header {
         background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(10px);
@@ -257,13 +229,11 @@
         gap: 20px;
     }
 
-    /* CSS SEMPLIFICATO PER LOGO TRASPARENTE! */
     .logo-transparent {
         height: 80px;
         width: auto;
         object-fit: contain;
         transition: transform 0.3s ease;
-        /* Già trasparente, non servono filtri! */
     }
 
     .logo-transparent:hover {
@@ -296,7 +266,7 @@
         letter-spacing: 0.5px;
     }
 
-    /* Stili per la sezione informazioni cliente */
+    /* Sezione informazioni cliente */
     .customer-info-section {
         background: #f8f9fa;
         padding: 20px;
@@ -304,12 +274,6 @@
         margin-bottom: 20px;
         border-left: 4px solid #7a9e7e;
         border: 1px solid #e9ecef;
-    }
-
-    .customer-info-section h4 {
-        font-size: 1.1rem;
-        font-weight: 600;
-        margin-bottom: 15px;
     }
 
     .form-group {
@@ -340,19 +304,14 @@
         box-shadow: 0 0 0 3px rgba(122, 158, 126, 0.1);
     }
 
-    .form-input:required {
-        border-color: #cbd5e0;
+    .form-note {
+        font-size: 0.85rem;
+        color: #718096;
+        margin-top: 5px;
+        font-style: italic;
     }
 
-    .form-input:invalid:not(:placeholder-shown) {
-        border-color: #e53e3e;
-    }
-
-    .form-input:valid {
-        border-color: #38a169;
-    }
-
-    /* Stili migliorati per il campo data */
+    /* Date input styling */
     .date-input-wrapper {
         position: relative;
         cursor: pointer;
@@ -362,27 +321,9 @@
         position: relative;
         z-index: 2;
         color: transparent;
-        background: transparent;
     }
 
-    .date-input::-webkit-calendar-picker-indicator {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        width: auto;
-        height: auto;
-        color: transparent;
-        background: transparent;
-        cursor: pointer;
-        z-index: 3;
-    }
-
-    .date-input:focus {
-        color: #2d3748;
-    }
-
+    .date-input:focus,
     .date-input:valid {
         color: #2d3748;
     }
@@ -407,22 +348,7 @@
         opacity: 0;
     }
 
-    .calendar-icon {
-        font-size: 18px;
-    }
-
-    .placeholder-text {
-        font-size: 16px;
-    }
-
-    .form-note {
-        font-size: 0.85rem;
-        color: #718096;
-        margin-top: 5px;
-        font-style: italic;
-    }
-
-    /* Stili per la sezione pagamenti */
+    /* Sezione pagamenti */
     .payment-section {
         background: #f8f9fa;
         padding: 20px;
@@ -430,12 +356,6 @@
         margin-bottom: 20px;
         border-left: 4px solid #7a9e7e;
         border: 1px solid #e9ecef;
-    }
-
-    .payment-section h4 {
-        font-size: 1.1rem;
-        font-weight: 600;
-        margin-bottom: 15px;
     }
 
     .payment-methods {
@@ -453,7 +373,6 @@
         border-radius: 8px;
         cursor: pointer;
         transition: all 0.2s ease;
-        position: relative;
     }
 
     .payment-method:hover {
@@ -500,24 +419,7 @@
         accent-color: #7a9e7e;
     }
 
-    /* Stili per i container di pagamento */
-    #stripe-payment-form {
-        background: #f8f9fa;
-        padding: 20px;
-        border-radius: 8px;
-        border: 1px solid #e9ecef;
-    }
-
-    #card-element {
-        transition: border-color 0.2s ease;
-    }
-
-    #card-element:focus,
-    #card-element.StripeElement--focus {
-        border-color: #7a9e7e !important;
-        box-shadow: 0 0 0 3px rgba(122, 158, 126, 0.1) !important;
-    }
-
+    /* Container PayPal */
     #paypal-button-container {
         background: #f8f9fa;
         padding: 20px;
@@ -525,15 +427,7 @@
         border: 1px solid #e9ecef;
     }
 
-    /* Stili responsive per i payment containers */
-    @media (max-width: 768px) {
-        #stripe-payment-form,
-        #paypal-button-container {
-            padding: 15px;
-        }
-    }
-
-    /* Fix per floating cart che sborda - SEMPLIFICATO */
+    /* Floating cart */
     .floating-cart {
         position: fixed !important;
         bottom: 1rem !important;
@@ -547,10 +441,6 @@
         min-height: 60px !important;
     }
 
-    .floating-cart:hover {
-        transform: translateY(-2px) !important;
-    }
-
     .cart-counter {
         flex-shrink: 0 !important;
         width: 32px !important;
@@ -558,7 +448,7 @@
         font-size: 1rem !important;
     }
 
-    /* Previeni scroll orizzontale SEMPLIFICATO */
+    /* Previeni scroll orizzontale */
     body {
         overflow-x: hidden !important;
     }
@@ -567,7 +457,7 @@
         overflow-x: hidden !important;
     }
 
-    /* Responsive per mobile */
+    /* Responsive */
     @media (max-width: 768px) {
         .brand-container {
             gap: 15px;
@@ -585,34 +475,10 @@
             font-size: 0.9rem;
         }
 
-        .customer-info-section {
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-        
-        .customer-info-section h4 {
-            font-size: 1rem;
-        }
-        
-        .form-input {
-            padding: 10px;
-            font-size: 16px;
-        }
-
-        .date-placeholder {
-            left: 10px;
-        }
-
-        .placeholder-text, .calendar-icon {
-            font-size: 16px;
-        }
-
-        /* Floating cart responsive SEMPLIFICATO */
         .floating-cart {
             bottom: 20px !important;
             right: 20px !important;
             max-width: 200px !important;
-            pointer-events: auto !important;
             padding: 1rem 1.2rem !important;
             font-size: 1rem !important;
             min-height: 55px !important;
@@ -642,12 +508,10 @@
             font-size: 0.8rem;
         }
 
-        /* Floating cart mobile piccolo SEMPLIFICATO */
         .floating-cart {
             bottom: 15px !important;
             right: 15px !important;
             max-width: 170px !important;
-            pointer-events: auto !important;
             padding: 0.9rem 1.1rem !important;
             font-size: 0.95rem !important;
             min-height: 50px !important;
@@ -662,12 +526,10 @@
     </style>
 
     <script>
-    <script>
-    // Sistema carrello semplificato
+    // Sistema carrello completo
     let cart = [];
     let cartTotal = 0;
 
-    // Funzioni helper per il carrello
     function getTotalAmount() {
         return cartTotal;
     }
@@ -683,14 +545,12 @@
         const totalItems = document.getElementById('total-items');
         const cartItemsContainer = document.getElementById('cart-items');
 
-        // Aggiorna contatori
         const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
         cartCounter.textContent = itemCount;
         cartTotalElement.textContent = cartTotal.toFixed(2) + '€';
         modalTotal.textContent = cartTotal.toFixed(2) + '€';
         totalItems.textContent = itemCount;
 
-        // Aggiorna contenuto modal
         if (cart.length === 0) {
             cartItemsContainer.innerHTML = '<div style="text-align: center; color: #6c757d; padding: 2rem;">Il carrello è vuoto</div>';
         } else {
@@ -727,13 +587,6 @@
         
         cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         updateCartDisplay();
-        
-        // Debug log
-        console.log('Prodotto aggiunto:', name);
-        console.log('Carrello aggiornato:', cart);
-        console.log('Nuovo totale:', cartTotal);
-        
-        // Mostra toast
         showToast(`${name} aggiunto al carrello!`);
     }
 
@@ -775,7 +628,6 @@
         }, 3000);
     }
 
-    // Genera prodotti di esempio
     function generateProducts() {
         const products = [
             { name: "FUSILLI, MACINATO MANZO, ZUCCHINE, MELANZANE", price: 8 },
@@ -803,15 +655,118 @@
         }
     }
 
-    // Script per migliorare l'esperienza del date picker
+    // Inizializza PayPal
+    function initPayPal() {
+        console.log('Inizializzando PayPal...');
+        const container = document.getElementById('paypal-button-container');
+        
+        if (!container) {
+            console.error('Container PayPal non trovato');
+            return;
+        }
+        
+        container.innerHTML = '';
+        
+        if (typeof paypal !== 'undefined') {
+            paypal.Buttons({
+                style: {
+                    color: 'blue',
+                    shape: 'rect',
+                    height: 40
+                },
+                createOrder: function(data, actions) {
+                    const total = getTotalAmount();
+                    console.log('Creando ordine PayPal per:', total);
+                    
+                    if (total <= 0) {
+                        alert('Carrello vuoto!');
+                        return Promise.reject('Carrello vuoto');
+                    }
+                    
+                    return actions.order.create({
+                        purchase_units: [{
+                            amount: {
+                                value: total.toFixed(2),
+                                currency_code: 'EUR'
+                            },
+                            description: 'Ordine Pasto Sano'
+                        }]
+                    });
+                },
+                onApprove: function(data, actions) {
+                    return actions.order.capture().then(function(details) {
+                        console.log('Pagamento PayPal completato:', details);
+                        handleSuccessfulPayment('paypal', details);
+                    });
+                },
+                onError: function(err) {
+                    console.error('Errore PayPal:', err);
+                    alert('Errore durante il pagamento PayPal.');
+                }
+            }).render('#paypal-button-container').then(() => {
+                console.log('✅ Bottoni PayPal renderizzati!');
+                container.style.display = 'block';
+            });
+        } else {
+            container.innerHTML = '<div style="padding: 20px; text-align: center; color: #e53e3e;">PayPal non disponibile</div>';
+        }
+    }
+
+    function handleSuccessfulPayment(method, details) {
+        alert(`Pagamento ${method} completato con successo!`);
+        document.getElementById('cart-modal').style.display = 'none';
+        clearCart();
+        showToast(`Pagamento completato! 🎉`);
+    }
+
+    function handleCashOrder() {
+        if (cart.length === 0) {
+            alert('Aggiungi prodotti al carrello!');
+            return;
+        }
+        
+        const message = generateWhatsAppMessage();
+        const whatsappUrl = `https://wa.me/393478881515?text=${encodeURIComponent(message)}`;
+        window.open(whatsappUrl, '_blank');
+        
+        setTimeout(() => {
+            document.getElementById('cart-modal').style.display = 'none';
+            showToast('Ordine inviato su WhatsApp! 📱');
+            if (confirm('Ordine inviato! Vuoi svuotare il carrello?')) {
+                clearCart();
+            }
+        }, 1000);
+    }
+
+    function generateWhatsAppMessage() {
+        const customerName = document.getElementById('customer-name')?.value || 'Cliente';
+        const pickupDate = document.getElementById('pickup-date')?.value || 'Da definire';
+        
+        let message = `🍽️ *Nuovo Ordine Pasto Sano*\n\n`;
+        message += `👤 Nome: ${customerName}\n`;
+        message += `📅 Data ritiro: ${pickupDate}\n`;
+        message += `💵 Pagamento: Contanti alla consegna\n\n`;
+        
+        if (cart.length > 0) {
+            message += `📋 *Dettagli Ordine:*\n`;
+            cart.forEach(item => {
+                const itemTotal = (item.quantity * item.price).toFixed(2);
+                message += `• ${item.name}\n`;
+                message += `  Quantità: ${item.quantity} x ${item.price}€ = ${itemTotal}€\n\n`;
+            });
+        }
+        
+        message += `📱 Grazie per il tuo ordine!\nTi ricontatteremo per confermare i dettagli.`;
+        return message;
+    }
+
+    // Inizializzazione
     document.addEventListener('DOMContentLoaded', function() {
-        // Genera prodotti
         generateProducts();
         
         const dateInput = document.getElementById('pickup-date');
         const dateWrapper = dateInput?.closest('.date-input-wrapper');
         
-        // Fallback per browser che non supportano showPicker()
         if (dateWrapper) {
             dateWrapper.addEventListener('click', function(e) {
                 if (e.target === dateWrapper) {
@@ -820,26 +775,19 @@
                             dateInput.showPicker();
                         } catch (error) {
                             dateInput.focus();
-                            dateInput.click();
                         }
                     } else {
                         dateInput.focus();
-                        dateInput.click();
                     }
                 }
             });
         }
 
-        // Gestisci il placeholder quando viene selezionata una data
         if (dateInput) {
             dateInput.addEventListener('change', function() {
                 const placeholder = document.getElementById('date-placeholder');
                 if (placeholder) {
-                    if (this.value) {
-                        placeholder.style.opacity = '0';
-                    } else {
-                        placeholder.style.opacity = '1';
-                    }
+                    placeholder.style.opacity = this.value ? '0' : '1';
                 }
             });
         }
@@ -854,26 +802,18 @@
         
         paymentMethods.forEach(method => {
             method.addEventListener('click', function() {
-                // Rimuovi selezione da tutti
-                paymentMethods.forEach(m => {
-                    m.removeAttribute('data-selected');
-                });
-                
-                // Aggiungi selezione al metodo cliccato
+                paymentMethods.forEach(m => m.removeAttribute('data-selected'));
                 this.setAttribute('data-selected', 'true');
                 
-                // Seleziona il radio button
                 const radio = this.querySelector('input[type="radio"]');
                 if (radio) {
                     radio.checked = true;
                     currentPaymentMethod = radio.value;
                 }
                 
-                // Nascondi tutti i form di pagamento
                 if (stripeForm) stripeForm.style.display = 'none';
                 if (paypalContainer) paypalContainer.style.display = 'none';
                 
-                // Aggiorna il testo del bottone
                 if (orderButtonText) {
                     switch(currentPaymentMethod) {
                         case 'stripe':
@@ -884,14 +824,9 @@
                             orderButtonText.textContent = '🅿️ Seleziona PayPal qui sotto';
                             if (paypalContainer) {
                                 paypalContainer.style.display = 'block';
-                                console.log('Mostrando container PayPal');
-                                // Forza inizializzazione PayPal
                                 setTimeout(() => {
                                     if (!paypalContainer.hasChildNodes() || paypalContainer.children.length === 0) {
-                                        console.log('Inizializzando bottoni PayPal...');
                                         initPayPal();
-                                    } else {
-                                        console.log('Bottoni PayPal già presenti');
                                     }
                                 }, 500);
                             }
@@ -904,12 +839,10 @@
             });
         });
         
-        // Gestione click bottone conferma ordine
         if (orderButton) {
             orderButton.addEventListener('click', async function(e) {
                 e.preventDefault();
                 
-                // Validazione form
                 const customerName = document.getElementById('customer-name')?.value;
                 const pickupDate = document.getElementById('pickup-date')?.value;
                 
@@ -941,7 +874,7 @@
                             break;
                     }
                 } catch (error) {
-                    console.error('Errore durante il pagamento:', error);
+                    console.error('Errore:', error);
                     alert('Errore durante il pagamento. Riprova.');
                 } finally {
                     if (spinner) spinner.style.display = 'none';
@@ -976,7 +909,6 @@
             });
         }
         
-        // Chiudi modal cliccando fuori
         if (cartModal) {
             cartModal.addEventListener('click', function(e) {
                 if (e.target === cartModal) {
@@ -984,77 +916,6 @@
                 }
             });
         }
-        
-        // Funzione per gestire ordine in contanti MIGLIORATA
-        function handleCashOrder() {
-            console.log('Gestendo ordine contanti...');
-            console.log('Carrello attuale:', cart);
-            console.log('Totale attuale:', cartTotal);
-            
-            if (cart.length === 0) {
-                alert('Aggiungi almeno un prodotto al carrello prima di ordinare!');
-                return;
-            }
-            
-            const message = generateWhatsAppMessage();
-            console.log('Messaggio da inviare:', message);
-            
-            const whatsappUrl = `https://wa.me/393478881515?text=${encodeURIComponent(message)}`;
-            console.log('URL WhatsApp:', whatsappUrl);
-            
-            // Apri WhatsApp
-            window.open(whatsappUrl, '_blank');
-            
-            // Mostra conferma e chiudi modal
-            setTimeout(() => {
-                if (cartModal) cartModal.style.display = 'none';
-                showToast('Ordine inviato su WhatsApp! 📱');
-                
-                // Non svuotare il carrello immediatamente, lasciamo che l'utente confermi
-                if (confirm('Ordine inviato! Vuoi svuotare il carrello?')) {
-                    clearCart();
-                }
-            }, 1000);
-        }
-        
-        // Genera messaggio WhatsApp DETTAGLIATO
-        function generateWhatsAppMessage() {
-            const customerName = document.getElementById('customer-name')?.value || 'Cliente';
-            const pickupDate = document.getElementById('pickup-date')?.value || 'Da definire';
-            
-            console.log('Generando messaggio con carrello:', cart);
-            console.log('Totale carrello:', cartTotal);
-            
-            let message = `🍽️ *Nuovo Ordine Pasto Sano*\n\n`;
-            message += `👤 Nome: ${customerName}\n`;
-            message += `📅 Data ritiro: ${pickupDate}\n`;
-            message += `💵 Pagamento: Contanti alla consegna\n\n`;
-            
-            if (cart && cart.length > 0) {
-                message += `📋 *Dettagli Ordine:*\n`;
-                
-                cart.forEach(item => {
-                    const itemTotal = (item.quantity * item.price).toFixed(2);
-                    message += `• ${item.name}\n`;
-                    message += `  Quantità: ${item.quantity} x ${item.price}€ = ${itemTotal}€\n\n`;
-                });
-                
-                message += `💰 *Totale Ordine: ${cartTotal.toFixed(2)}€*\n\n`;
-            } else {
-                message += `⚠️ *Carrello vuoto*\n\n`;
-            }
-            
-            message += `📱 Grazie per il tuo ordine!\n`;
-            message += `Ti ricontatteremo per confermare i dettagli.`;
-            
-            console.log('Messaggio generato:', message);
-            
-            return message;
-        }
-        
-        // Rendi le funzioni globali
-        window.handleCashOrder = handleCashOrder;
-        window.generateWhatsAppMessage = generateWhatsAppMessage;
     });
     </script>
 </body>
