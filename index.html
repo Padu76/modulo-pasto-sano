@@ -885,11 +885,15 @@
                             if (paypalContainer) {
                                 paypalContainer.style.display = 'block';
                                 console.log('Mostrando container PayPal');
-                                // Inizializza PayPal se non già fatto
-                                if (!paypalContainer.hasChildNodes()) {
-                                    console.log('Inizializzando bottoni PayPal...');
-                                    initPayPal();
-                                }
+                                // Forza inizializzazione PayPal
+                                setTimeout(() => {
+                                    if (!paypalContainer.hasChildNodes() || paypalContainer.children.length === 0) {
+                                        console.log('Inizializzando bottoni PayPal...');
+                                        initPayPal();
+                                    } else {
+                                        console.log('Bottoni PayPal già presenti');
+                                    }
+                                }, 500);
                             }
                             break;
                         case 'cash':
