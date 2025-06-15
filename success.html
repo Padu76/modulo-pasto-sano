@@ -4,7 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pagamento Completato - Pasto Sano</title>
+    <link rel="icon" type="image/png" href="logo.png">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #f0f7f0 0%, #e8f5e8 100%);
@@ -18,24 +25,49 @@
         
         .success-container {
             background: white;
-            border-radius: 16px;
+            border-radius: 20px;
             padding: 40px;
             text-align: center;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            max-width: 500px;
+            max-width: 600px;
             width: 100%;
+            animation: slideUp 0.6s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         
         .success-icon {
             font-size: 4rem;
             margin-bottom: 20px;
+            animation: bounce 1s ease-in-out;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
         }
         
         .success-title {
             color: #2d5a2d;
-            font-size: 2rem;
+            font-size: 2.2rem;
             font-weight: 700;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
         
         .success-message {
@@ -47,26 +79,54 @@
         
         .order-details {
             background: #f8f9fa;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 20px 0;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
             border-left: 4px solid #7a9e7e;
+            text-align: left;
+        }
+        
+        .detail-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2d5a2d;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .detail-item {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 10px;
+            align-items: center;
+            margin-bottom: 12px;
             font-size: 1rem;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .detail-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
         }
         
         .detail-label {
             font-weight: 600;
             color: #2d3748;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .detail-value {
             color: #718096;
+            font-weight: 500;
+        }
+        
+        .highlight {
+            color: #7a9e7e;
+            font-weight: 600;
         }
         
         .action-buttons {
@@ -78,23 +138,30 @@
         }
         
         .btn {
-            padding: 12px 24px;
-            border-radius: 8px;
+            padding: 14px 28px;
+            border-radius: 12px;
             font-weight: 600;
             text-decoration: none;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
             flex: 1;
-            min-width: 120px;
+            min-width: 140px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 1rem;
         }
         
         .btn-primary {
-            background: #7a9e7e;
+            background: linear-gradient(135deg, #7a9e7e, #5a7f65);
             color: white;
+            box-shadow: 0 4px 12px rgba(122, 158, 126, 0.3);
         }
         
         .btn-primary:hover {
-            background: #6b8a6f;
-            transform: translateY(-1px);
+            background: linear-gradient(135deg, #6b8a6f, #4a6b55);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(122, 158, 126, 0.4);
         }
         
         .btn-secondary {
@@ -105,20 +172,75 @@
         
         .btn-secondary:hover {
             background: #f0f7f0;
+            transform: translateY(-2px);
+        }
+        
+        .contact-info {
+            background: linear-gradient(135deg, #e8f5e8, #f0f7f0);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 25px 0;
+        }
+        
+        .contact-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2d5a2d;
+            margin-bottom: 10px;
+        }
+        
+        .contact-item {
+            color: #718096;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .loading-dots {
+            display: inline-block;
+            animation: dots 1.5s infinite;
+        }
+        
+        @keyframes dots {
+            0%, 20% { content: ''; }
+            40% { content: '.'; }
+            60% { content: '..'; }
+            80%, 100% { content: '...'; }
         }
         
         @media (max-width: 768px) {
             .success-container {
                 padding: 30px 20px;
+                margin: 10px;
             }
             
             .success-title {
-                font-size: 1.5rem;
+                font-size: 1.8rem;
+            }
+            
+            .success-message {
+                font-size: 1rem;
             }
             
             .action-buttons {
                 flex-direction: column;
             }
+            
+            .btn {
+                min-width: auto;
+                width: 100%;
+            }
+        }
+        
+        .session-info {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 0.9rem;
+            color: #856404;
         }
     </style>
 </head>
@@ -132,23 +254,61 @@
         </p>
         
         <div class="order-details">
-            <div class="detail-item">
-                <span class="detail-label">📧 Email di conferma:</span>
-                <span class="detail-value">Entro 5 minuti</span>
+            <div class="detail-title">
+                <span>📋</span> Dettagli Ordine
             </div>
             <div class="detail-item">
-                <span class="detail-label">⏰ Preparazione:</span>
+                <span class="detail-label">
+                    <span>📧</span> Email di conferma
+                </span>
+                <span class="detail-value highlight">Entro 5 minuti</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">
+                    <span>⏰</span> Preparazione
+                </span>
                 <span class="detail-value">2 giorni lavorativi</span>
             </div>
             <div class="detail-item">
-                <span class="detail-label">📱 Contatto:</span>
-                <span class="detail-value">347 888 1515</span>
+                <span class="detail-label">
+                    <span>🏪</span> Ritiro
+                </span>
+                <span class="detail-value">Presso il nostro punto vendita</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">
+                    <span>💳</span> Stato pagamento
+                </span>
+                <span class="detail-value highlight">Completato</span>
+            </div>
+        </div>
+
+        <div class="contact-info">
+            <div class="contact-title">📞 Hai bisogno di aiuto?</div>
+            <div class="contact-item">
+                <span>📱</span> WhatsApp: <strong>347 888 1515</strong>
+            </div>
+            <div class="contact-item">
+                <span>📧</span> Email: <strong>info@pastosano.it</strong>
+            </div>
+            <div class="contact-item">
+                <span>🕒</span> Orari: Lun-Ven 9:00-18:00
             </div>
         </div>
         
+        <!-- Info sessione (per debugging) -->
+        <div id="session-info" class="session-info" style="display: none;">
+            <strong>ID Sessione:</strong> <span id="session-id">Caricamento<span class="loading-dots"></span></span>
+        </div>
+        
         <div class="action-buttons">
-            <a href="/" class="btn btn-primary">🏠 Torna al Menu</a>
-            <a href="https://wa.me/393478881515?text=Ciao!%20Ho%20appena%20completato%20un%20ordine%20e%20volevo%20conferma" class="btn btn-secondary">💬 Contattaci</a>
+            <a href="/" class="btn btn-primary">
+                <span>🏠</span> Torna al Menu
+            </a>
+            <a href="https://wa.me/393478881515?text=Ciao!%20Ho%20appena%20completato%20un%20ordine%20e%20volevo%20conferma" 
+               class="btn btn-secondary">
+                <span>💬</span> Contattaci
+            </a>
         </div>
     </div>
 
@@ -159,15 +319,117 @@
         
         if (sessionId) {
             console.log('Session ID:', sessionId);
+            
+            // Mostra info sessione per debugging (nascosto di default)
+            const sessionInfo = document.getElementById('session-info');
+            const sessionIdSpan = document.getElementById('session-id');
+            
+            if (sessionInfo && sessionIdSpan) {
+                sessionIdSpan.textContent = sessionId;
+                // sessionInfo.style.display = 'block'; // Decommentare per debugging
+            }
+            
             // Qui puoi fare una chiamata per recuperare i dettagli dell'ordine
+            // fetchOrderDetails(sessionId);
         }
         
-        // Auto-redirect dopo 30 secondi
-        setTimeout(() => {
-            if (confirm('Vuoi tornare al menu principale?')) {
-                window.location.href = '/';
+        // Funzione per recuperare dettagli ordine (opzionale)
+        async function fetchOrderDetails(sessionId) {
+            try {
+                const response = await fetch(`/api/order-details.php?session_id=${sessionId}`);
+                const orderData = await response.json();
+                
+                if (orderData && orderData.success) {
+                    // Aggiorna l'interfaccia con i dettagli dell'ordine
+                    updateOrderDetails(orderData.order);
+                }
+            } catch (error) {
+                console.error('Errore recupero dettagli ordine:', error);
             }
-        }, 30000);
+        }
+        
+        // Funzione per aggiornare i dettagli dell'ordine nell'interfaccia
+        function updateOrderDetails(orderData) {
+            // Implementa qui l'aggiornamento dell'UI con i dati dell'ordine
+            console.log('Dettagli ordine:', orderData);
+        }
+        
+        // Auto-redirect dopo 60 secondi (opzionale)
+        let redirectTimer = null;
+        
+        function startRedirectTimer() {
+            redirectTimer = setTimeout(() => {
+                if (confirm('Vuoi tornare al menu principale?')) {
+                    window.location.href = '/';
+                } else {
+                    // Riavvia il timer se l'utente annulla
+                    startRedirectTimer();
+                }
+            }, 60000); // 60 secondi
+        }
+        
+        // Avvia il timer solo se l'utente non interagisce
+        let userInteracted = false;
+        
+        document.addEventListener('click', () => {
+            userInteracted = true;
+            if (redirectTimer) {
+                clearTimeout(redirectTimer);
+            }
+        });
+        
+        document.addEventListener('scroll', () => {
+            userInteracted = true;
+            if (redirectTimer) {
+                clearTimeout(redirectTimer);
+            }
+        });
+        
+        // Avvia il timer dopo 10 secondi se l'utente non ha interagito
+        setTimeout(() => {
+            if (!userInteracted) {
+                startRedirectTimer();
+            }
+        }, 10000);
+        
+        // Confetti effect (opzionale)
+        function createConfetti() {
+            const colors = ['#7a9e7e', '#ff6b35', '#2d5a2d', '#5a7f65'];
+            
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.style.position = 'fixed';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.top = '-10px';
+                confetti.style.width = '10px';
+                confetti.style.height = '10px';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.borderRadius = '50%';
+                confetti.style.pointerEvents = 'none';
+                confetti.style.zIndex = '9999';
+                confetti.style.animation = `fall ${Math.random() * 3 + 2}s linear forwards`;
+                
+                document.body.appendChild(confetti);
+                
+                setTimeout(() => {
+                    confetti.remove();
+                }, 5000);
+            }
+        }
+        
+        // Aggiungi CSS per l'animazione confetti
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fall {
+                to {
+                    transform: translateY(100vh) rotate(360deg);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Avvia confetti dopo 500ms
+        setTimeout(createConfetti, 500);
     </script>
 </body>
 </html>
