@@ -455,7 +455,7 @@ function confirmOrder() {
     }, 1500);
 }
 
-// Funzione per gestire pagamento Stripe
+// Funzione per gestire pagamento Stripe - CORRETTA PER NETLIFY
 async function processStripePayment() {
     if (!stripe) {
         showToast('Errore: Sistema di pagamento non disponibile', 'error');
@@ -482,7 +482,8 @@ async function processStripePayment() {
             cancel_url: window.location.href
         };
 
-        const response = await fetch('stripe-checkout.php', {
+        // CAMBIATO: Ora chiama la funzione Netlify invece del PHP
+        const response = await fetch('/.netlify/functions/stripe-checkout', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
