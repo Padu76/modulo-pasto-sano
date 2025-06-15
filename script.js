@@ -48,20 +48,29 @@ const stripe = window.Stripe ? Stripe('pk_live_51Mc3WmIYsn5WJ3XKwrOx7N6Q6mIFgJ3y
 
 // Inizializzazione
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('🚀 Inizializzazione app...');
     renderProducts();
     updateCartDisplay();
     setMinPickupDate();
     attachEventListeners();
+    console.log('✅ App inizializzata correttamente');
 });
 
 // Render dei prodotti
 function renderProducts() {
+    console.log('📦 Caricamento prodotti...');
     renderProductSection('main-meals', products.mainMeals);
     renderProductSection('breakfast-meals', products.breakfastMeals);
+    console.log('✅ Prodotti caricati');
 }
 
 function renderProductSection(containerId, productList) {
     const container = document.getElementById(containerId);
+    if (!container) {
+        console.error('❌ Container non trovato:', containerId);
+        return;
+    }
+    
     container.innerHTML = productList.map(product => `
         <div class="product-card fade-in">
             <div class="product-image-container">
@@ -83,10 +92,14 @@ function renderProductSection(containerId, productList) {
             </div>
         </div>
     `).join('');
+    
+    console.log(`✅ Sezione ${containerId} caricata con ${productList.length} prodotti`);
 }
 
 // Event listeners
 function attachEventListeners() {
+    console.log('🔗 Collegamento event listeners...');
+    
     // Pulsanti quantità
     document.addEventListener('click', (e) => {
         if (e.target.classList.contains('minus-btn')) {
@@ -101,24 +114,42 @@ function attachEventListeners() {
     });
 
     // Carrello floating
-    floatingCart.addEventListener('click', () => {
-        cartModal.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
-        renderCartItems();
-    });
+    if (floatingCart) {
+        floatingCart.addEventListener('click', () => {
+            cartModal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            renderCartItems();
+        });
+    }
 
     // Chiudi modal
-    document.getElementById('close-cart').addEventListener('click', closeCartModal);
-    cartModal.addEventListener('click', (e) => {
-        if (e.target === cartModal) closeCartModal();
-    });
+    const closeCart = document.getElementById('close-cart');
+    if (closeCart) {
+        closeCart.addEventListener('click', closeCartModal);
+    }
+    
+    if (cartModal) {
+        cartModal.addEventListener('click', (e) => {
+            if (e.target === cartModal) closeCartModal();
+        });
+    }
 
     // Codice promozionale
-    document.getElementById('apply-promo').addEventListener('click', applyPromoCode);
+    const applyPromo = document.getElementById('apply-promo');
+    if (applyPromo) {
+        applyPromo.addEventListener('click', applyPromoCode);
+    }
 
     // Azioni carrello
-    document.getElementById('confirm-order').addEventListener('click', confirmOrder);
-    document.getElementById('clear-cart').addEventListener('click', clearCart);
+    const confirmOrder = document.getElementById('confirm-order');
+    if (confirmOrder) {
+        confirmOrder.addEventListener('click', confirmOrder);
+    }
+    
+    const clearCartBtn = document.getElementById('clear-cart');
+    if (clearCartBtn) {
+        clearCartBtn.addEventListener('click', clearCart);
+    }
 
     // Date picker
     const dateInput = document.getElementById('pickup-date');
@@ -217,16 +248,16 @@ function attachEventListeners() {
         }
     });
 
-    // Rendi le funzioni globali per compatibilità
-    window.currentPaymentMethod = currentPaymentMethod;
-    window.handleCashOrder = handleCashOrder;
-    window.generateWhatsAppMessage = generateWhatsAppMessage;
+    console.log('✅ Event listeners collegati');
 }
 
 function changeQuantity(productId, change) {
     if (!quantities[productId]) quantities[productId] = 0;
     quantities[productId] = Math.max(0, quantities[productId] + change);
-    document.getElementById(`qty-${productId}`).textContent = quantities[productId];
+    const qtyDisplay = document.getElementById(`qty-${productId}`);
+    if (qtyDisplay) {
+        qtyDisplay.textContent = quantities[productId];
+    }
 }
 
 function addToCart(button) {
@@ -253,7 +284,10 @@ function addToCart(button) {
 
     // Reset quantità locale
     quantities[productId] = 0;
-    document.getElementById(`qty-${productId}`).textContent = '0';
+    const qtyDisplay = document.getElementById(`qty-${productId}`);
+    if (qtyDisplay) {
+        qtyDisplay.textContent = '0';
+    }
 
     // Effetto visivo
     button.classList.add('pulse');
@@ -271,31 +305,37 @@ function updateCartDisplay() {
     const total = subtotal - discountAmount;
 
     // Aggiorna contatori
-    cartCounter.textContent = totalQuantity;
-    totalItems.textContent = totalQuantity;
-    cartTotal.textContent = `${total.toFixed(2)}€`;
-    modalTotal.textContent = `${total.toFixed(2)}€`;
+    if (cartCounter) cartCounter.textContent = totalQuantity;
+    if (totalItems) totalItems.textContent = totalQuantity;
+    if (cartTotal) cartTotal.textContent = `${total.toFixed(2)}€`;
+    if (modalTotal) modalTotal.textContent = `${total.toFixed(2)}€`;
 
     // Mostra/nascondi carrello floating
-    if (totalQuantity > 0) {
-        floatingCart.classList.add('visible');
-    } else {
-        floatingCart.classList.remove('visible');
+    if (floatingCart) {
+        if (totalQuantity > 0) {
+            floatingCart.classList.add('visible');
+        } else {
+            floatingCart.classList.remove('visible');
+        }
     }
 
     // Aggiorna display sconto
-    if (appliedDiscount > 0) {
-        discountDisplay.innerHTML = `
-            <div class="discount-line">
-                Sconto ${discountCode} (-${appliedDiscount}%): -${discountAmount.toFixed(2)}€
-            </div>
-        `;
-    } else {
-        discountDisplay.innerHTML = '';
+    if (discountDisplay) {
+        if (appliedDiscount > 0) {
+            discountDisplay.innerHTML = `
+                <div class="discount-line">
+                    Sconto ${discountCode} (-${appliedDiscount}%): -${discountAmount.toFixed(2)}€
+                </div>
+            `;
+        } else {
+            discountDisplay.innerHTML = '';
+        }
     }
 }
 
 function renderCartItems() {
+    if (!cartItems) return;
+    
     if (cart.length === 0) {
         cartItems.innerHTML = '<div style="text-align: center; color: #6c757d; padding: 2rem;">Il carrello è vuoto</div>';
         return;
@@ -320,8 +360,12 @@ function renderCartItems() {
 }
 
 function applyPromoCode() {
-    const code = document.getElementById('promo-code').value.toUpperCase().trim();
+    const promoInput = document.getElementById('promo-code');
     const messageDiv = document.getElementById('promo-message');
+    
+    if (!promoInput || !messageDiv) return;
+    
+    const code = promoInput.value.toUpperCase().trim();
 
     if (!code) {
         messageDiv.innerHTML = '<div class="promo-error">Inserisci un codice promozionale</div>';
@@ -341,16 +385,19 @@ function applyPromoCode() {
 }
 
 function setMinPickupDate() {
+    const dateInput = document.getElementById('pickup-date');
+    if (!dateInput) return;
+    
     const today = new Date();
     today.setDate(today.getDate() + 2);
     const minDate = today.toISOString().split('T')[0];
-    document.getElementById('pickup-date').min = minDate;
+    dateInput.min = minDate;
 }
 
 function confirmOrder() {
     const totalQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
-    const pickupDate = document.getElementById('pickup-date').value;
-    const customerName = document.getElementById('customer-name').value;
+    const pickupDate = document.getElementById('pickup-date')?.value;
+    const customerName = document.getElementById('customer-name')?.value;
     const confirmButton = document.getElementById('confirm-order');
     const spinner = document.getElementById('loading-spinner');
 
@@ -375,8 +422,8 @@ function confirmOrder() {
     }
 
     // Loading state
-    confirmButton.classList.add('loading');
-    spinner.style.display = 'block';
+    if (confirmButton) confirmButton.classList.add('loading');
+    if (spinner) spinner.style.display = 'block';
 
     // Ottieni il metodo di pagamento corrente
     const currentPaymentMethod = document.querySelector('input[name="payment"]:checked')?.value || 'cash';
@@ -394,8 +441,8 @@ function confirmOrder() {
                 handleCashOrder();
                 break;
         }
-        confirmButton.classList.remove('loading');
-        spinner.style.display = 'none';
+        if (confirmButton) confirmButton.classList.remove('loading');
+        if (spinner) spinner.style.display = 'none';
     }, 1500);
 }
 
@@ -406,14 +453,13 @@ async function processStripePayment() {
         return;
     }
 
-    const customerName = document.getElementById('customer-name').value;
-    const pickupDate = document.getElementById('pickup-date').value;
+    const customerName = document.getElementById('customer-name')?.value;
+    const pickupDate = document.getElementById('pickup-date')?.value;
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const discountAmount = (subtotal * appliedDiscount) / 100;
     const finalTotal = subtotal - discountAmount;
 
     try {
-        // Prepara dati per il backend
         const orderData = {
             customerName: customerName,
             pickupDate: pickupDate,
@@ -427,7 +473,6 @@ async function processStripePayment() {
             cancel_url: window.location.href
         };
 
-        // Chiamata al backend PHP
         const response = await fetch('stripe-checkout.php', {
             method: 'POST',
             headers: {
@@ -439,7 +484,6 @@ async function processStripePayment() {
         const session = await response.json();
 
         if (response.ok && session.id) {
-            // Redirect a Stripe Checkout
             const result = await stripe.redirectToCheckout({
                 sessionId: session.id
             });
@@ -480,8 +524,6 @@ function initPayPal() {
             const discountAmount = (subtotal * appliedDiscount) / 100;
             const total = subtotal - discountAmount;
             
-            console.log('Creando ordine PayPal per:', total);
-            
             if (total <= 0) {
                 alert('Carrello vuoto!');
                 return Promise.reject('Carrello vuoto');
@@ -516,7 +558,6 @@ function initPayPal() {
 function handleSuccessfulPayment(method, details) {
     showToast(`Pagamento ${method} completato con successo! 🎉`);
     
-    // Salva ordine su Firebase se disponibile
     if (typeof firebase !== 'undefined' && firebase.firestore) {
         saveOrderToFirebase(method, details);
     }
@@ -524,13 +565,10 @@ function handleSuccessfulPayment(method, details) {
     setTimeout(() => {
         clearCart();
         closeCartModal();
-        
-        // Redirect alla pagina di successo
         window.location.href = 'success.html';
     }, 2000);
 }
 
-// Funzione per gestire ordine in contanti
 function handleCashOrder() {
     if (cart.length === 0) {
         showToast('Aggiungi prodotti al carrello!', 'error');
@@ -540,10 +578,8 @@ function handleCashOrder() {
     const message = generateWhatsAppMessage();
     const whatsappUrl = `https://wa.me/393478881515?text=${encodeURIComponent(message)}`;
     
-    // Apri WhatsApp
     window.open(whatsappUrl, '_blank');
     
-    // Salva ordine su Firebase se disponibile
     if (typeof firebase !== 'undefined' && firebase.firestore) {
         saveOrderToFirebase('cash');
     }
@@ -593,9 +629,13 @@ function generateWhatsAppMessage() {
     return message;
 }
 
-// Salva ordine su Firebase
 async function saveOrderToFirebase(paymentMethod, paymentDetails = null) {
     try {
+        if (typeof firebase === 'undefined' || !firebase.firestore) {
+            console.log('Firebase non disponibile');
+            return;
+        }
+
         const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         const totalQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
         const discountAmount = (subtotal * appliedDiscount) / 100;
@@ -637,13 +677,16 @@ function clearCart() {
     discountCode = '';
     quantities = {};
     
-    // Reset input promozionale
-    document.getElementById('promo-code').value = '';
-    document.getElementById('promo-message').innerHTML = '';
-    document.getElementById('pickup-date').value = '';
-    document.getElementById('customer-name').value = '';
+    const promoInput = document.getElementById('promo-code');
+    const promoMessage = document.getElementById('promo-message');
+    const pickupDate = document.getElementById('pickup-date');
+    const customerName = document.getElementById('customer-name');
+    
+    if (promoInput) promoInput.value = '';
+    if (promoMessage) promoMessage.innerHTML = '';
+    if (pickupDate) pickupDate.value = '';
+    if (customerName) customerName.value = '';
 
-    // Reset quantità prodotti
     document.querySelectorAll('.quantity-display').forEach(display => {
         if (display.id && display.id.startsWith('qty-')) {
             display.textContent = '0';
@@ -657,7 +700,7 @@ function clearCart() {
 }
 
 function closeCartModal() {
-    cartModal.style.display = 'none';
+    if (cartModal) cartModal.style.display = 'none';
     document.body.style.overflow = 'auto';
 }
 
@@ -666,38 +709,30 @@ function saveCart() {
 }
 
 function showToast(message, type = 'success') {
-    const toastEl = document.getElementById('toast');
-    toastEl.textContent = message;
-    toastEl.style.background = type === 'error' ? '#dc3545' : '#28a745';
-    toastEl.classList.add('show');
+    if (!toast) return;
+    
+    toast.textContent = message;
+    toast.style.background = type === 'error' ? '#dc3545' : '#28a745';
+    toast.classList.add('show');
 
     setTimeout(() => {
-        toastEl.classList.remove('show');
+        toast.classList.remove('show');
     }, 3000);
 }
 
 function addHapticFeedback() {
-    // Vibrazione per dispositivi mobili
     if ('vibrate' in navigator) {
         navigator.vibrate(50);
     }
 }
 
-// Auto-save quando l'utente lascia la pagina
 window.addEventListener('beforeunload', () => {
     saveCart();
 });
 
-// Gestione responsive per floating cart
 function updateFloatingCartPosition() {
-    const isMobile = window.innerWidth <= 480;
-    if (isMobile && cart.length > 0) {
-        floatingCart.style.position = 'fixed';
-        floatingCart.style.bottom = '0';
-        floatingCart.style.left = '0';
-        floatingCart.style.right = '0';
-// Gestione responsive per floating cart
-function updateFloatingCartPosition() {
+    if (!floatingCart) return;
+    
     const isMobile = window.innerWidth <= 480;
     if (isMobile && cart.length > 0) {
         floatingCart.style.position = 'fixed';
@@ -734,10 +769,6 @@ setTimeout(() => {
     document.querySelectorAll('.product-image').forEach(img => {
         imageObserver.observe(img);
     });
-}, 100); = '20px 20px 0 0';
-    } else {
-        floatingCart.style.position = 'fixed';
-        floatingCart.style.bottom = '2rem';
-        floatingCart.style.right = '2rem';
-        floatingCart.style.left = 'auto';
-        floatingCart.style.borderRadius
+}, 100);
+
+console.log('🎉 Script caricato completamente!');
