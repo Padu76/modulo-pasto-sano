@@ -66,6 +66,7 @@ function renderProducts() {
     renderProductSection('breakfast-meals', products.breakfastMeals);
     renderProductSection('test-meals', products.testMeals);
     console.log('✅ Prodotti caricati');
+    console.log('🧪 Prodotti test:', products.testMeals);
 }
 
 // Rimuovi la funzione renderTestSection separata
