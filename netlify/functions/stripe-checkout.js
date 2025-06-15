@@ -23,8 +23,13 @@ exports.handler = async (event, context) => {
     };
 
     try {
-        // Inizializza Stripe (sostituisci con la tua secret key)
-        const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY || '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');
+        // Verifica che la chiave Stripe sia presente
+        if (!process.env.STRIPE_SECRET_KEY) {
+            throw new Error('STRIPE_SECRET_KEY non configurata');
+        }
+
+        // Inizializza Stripe con la secret key dalle variabili d'ambiente
+        const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
         
         // Parsing dati dalla richiesta
         const data = JSON.parse(event.body);
