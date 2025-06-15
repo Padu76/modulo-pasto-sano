@@ -46,8 +46,8 @@ const cartItems = document.getElementById('cart-items');
 const discountDisplay = document.getElementById('discount-display');
 const toast = document.getElementById('toast');
 
-// Stripe
-const stripe = window.Stripe ? Stripe('pk_live_51Mc3WmIYsn5WJ3XKwrOx7N6Q6mIFgJ3yrFrN0bV1d6kThEiHoBnJGzC8VU6zZrJL4gEjwlR3C1iBvmLJUhKVnlNE00HfJVQBFO') : null;
+// Stripe - CHIAVE CORRETTA
+const stripe = window.Stripe ? Stripe('pk_live_51Mc3WmIYsn5WJ3XKfVY9mm0YZZeUfJ1GyZKjyq1JmA2T37zjQgcjSetaEBAjGTLCnC18Qm7iQ5E7jj5lG9XL4xig00n1Zj4kmZ') : null;
 
 // Inizializzazione
 document.addEventListener('DOMContentLoaded', () => {
