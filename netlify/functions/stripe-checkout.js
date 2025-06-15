@@ -88,14 +88,13 @@ exports.handler = async (event, context) => {
         // URL base per redirect
         const baseUrl = event.headers.origin || 'https://pastosano.netlify.app';
 
-        // Crea Stripe Checkout Session
+        // Crea Stripe Checkout Session - RIMOSSO customer_email
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
             line_items: lineItems,
             mode: 'payment',
             success_url: `${baseUrl}/success.html?session_id={CHECKOUT_SESSION_ID}&source=stripe`,
             cancel_url: `${baseUrl}/`,
-            customer_email: '', // Opzionale: puoi richiedere email nel form
             billing_address_collection: 'auto',
             shipping_address_collection: {
                 allowed_countries: ['IT'] // Solo Italia
