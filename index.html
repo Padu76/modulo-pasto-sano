@@ -4,12 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pasto Sano - Ordina i tuoi pasti</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
+    
+    <!-- Meta tags per social sharing -->
+    <meta name="description" content="Pasto Sano - La dieta a casa. Ordina i tuoi pasti sani e gustosi con consegna a domicilio.">
+    <meta property="og:title" content="Pasto Sano - La dieta a casa">
+    <meta property="og:description" content="Ordina i tuoi pasti sani e gustosi con consegna a domicilio">
+    <meta property="og:image" content="logo.png">
+    <meta property="og:type" content="website">
+    
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Header -->
+    <!-- Header migliorato con logo -->
     <header class="header">
-        <h1>🍽️ Pasto Sano</h1>
+        <div class="header-content">
+            <img src="logo.png" alt="Pasto Sano - La dieta a casa" class="logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <h1 class="logo-text" style="display: none;">🍽️ Pasto Sano</h1>
+        </div>
     </header>
 
     <!-- Container principale -->
@@ -128,6 +143,34 @@
     <script src="script.js"></script>
 
     <style>
+    /* Stili per il logo nell'header */
+    .header-content {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+
+    .logo {
+        height: 60px;
+        width: auto;
+        transition: transform 0.3s ease;
+        filter: drop-shadow(0 2px 8px rgba(0,0,0,0.1));
+    }
+
+    .logo:hover {
+        transform: scale(1.05);
+    }
+
+    .logo-text {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #2d5a2d;
+        margin: 0;
+    }
+
     /* Stili per la sezione informazioni cliente */
     .customer-info-section {
         background: #f8f9fa;
@@ -256,6 +299,10 @@
 
     /* Responsive per mobile */
     @media (max-width: 768px) {
+        .logo {
+            height: 50px;
+        }
+
         .customer-info-section {
             padding: 15px;
             margin-bottom: 15px;
@@ -276,6 +323,13 @@
 
         .placeholder-text, .calendar-icon {
             font-size: 16px;
+        }
+    }
+
+    /* Adattamento del logo per mobile small */
+    @media (max-width: 480px) {
+        .logo {
+            height: 45px;
         }
     }
     </style>
