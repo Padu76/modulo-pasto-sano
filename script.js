@@ -9,11 +9,11 @@ const products = {
         { id: 6, name: "POLLO GRIGLIATO, PATATE AL FORNO, ZUCCHINE", price: 8, image: "pollogrigliato-patatealforno-zucchine.jpg" },
         { id: 7, name: "RISO BASMATI, POLLO AL CURRY, ZUCCHINE", price: 8, image: "risobasmati-polloalcurry-zucchine.jpg" },
         { id: 8, name: "ORZO, CECI, FETA, POMODORINI, BASILICO", price: 8, image: "orzo-ceci-feta-pomodorini-basilico.jpg" },
-        { id: 9, name: "TORTILLAS, TACCHINO AFFUMICATO, HUMMUS CECI", price: 8, image: "pollogrigliato-patatealforno-zucchine.jpg" },
-        { id: 10, name: "TORTILLAS, SALMONE AFFUMICATO, FORMAGGIO SPALMABILE", price: 8, image: "salmonegrigliato-patatealforno-broccoli.jpg" }
+        { id: 9, name: "TORTILLAS, TACCHINO AFFUMICATO, HUMMUS CECI", price: 8, image: "tortillas-tacchinoaffumicato-hummusceci-insalata.jpg" },
+        { id: 10, name: "TORTILLAS, SALMONE AFFUMICATO, FORMAGGIO SPALMABILE", price: 8, image: "tortillas-salmoneaffumicato-formaggiospalmabile-insalata.jpg" }
     ],
     breakfastMeals: [
-        { id: 11, name: "UOVA STRAPAZZATE, BACON, FRUTTI DI BOSCO", price: 6, image: "pancakes.jpg" },
+        { id: 11, name: "UOVA STRAPAZZATE, BACON, FRUTTI DI BOSCO", price: 6, image: "uovastrapazzate-bacon-fruttidibosco.jpg" },
         { id: 12, name: "PANCAKES", price: 6, image: "pancakes.jpg" }
     ]
 };
