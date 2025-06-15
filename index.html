@@ -79,9 +79,30 @@
             </div>
 
             <div class="order-form">
+                <!-- NUOVO: Sezione informazioni cliente -->
+                <div class="customer-info-section">
+                    <h4 style="color: #3f6844; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                        <span>📝</span> Il tuo nome
+                    </h4>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="customer-name">Nome *</label>
+                        <input type="text" class="form-input" id="customer-name" placeholder="Come ti chiami?" required>
+                        <div class="form-note">
+                            Così possiamo identificare il tuo ordine più facilmente
+                        </div>
+                    </div>
+                </div>
+
                 <div class="form-group">
-                    <label class="form-label" for="pickup-date">Data di Ritiro</label>
-                    <input type="date" class="form-input" id="pickup-date">
+                    <label class="form-label" for="pickup-date">Data di Ritiro *</label>
+                    <div class="date-input-wrapper" onclick="document.getElementById('pickup-date').showPicker()">
+                        <input type="date" class="form-input date-input" id="pickup-date" required>
+                        <div class="date-placeholder" id="date-placeholder">
+                            <span class="calendar-icon">📅</span>
+                            <span class="placeholder-text">Seleziona la data di ritiro</span>
+                        </div>
+                    </div>
                     <div class="form-note">L'ordine deve essere effettuato con 2 giorni di anticipo</div>
                 </div>
             </div>
@@ -105,5 +126,195 @@
     <script src="firebase-config.js"></script>
     
     <script src="script.js"></script>
+
+    <style>
+    /* Stili per la sezione informazioni cliente */
+    .customer-info-section {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border-left: 4px solid #7a9e7e;
+        border: 1px solid #e9ecef;
+    }
+
+    .customer-info-section h4 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 15px;
+    }
+
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #2d3748;
+        font-size: 0.95rem;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e2e8f0;
+        border-radius: 6px;
+        font-size: 16px;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        background: white;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: #7a9e7e;
+        box-shadow: 0 0 0 3px rgba(122, 158, 126, 0.1);
+    }
+
+    .form-input:required {
+        border-color: #cbd5e0;
+    }
+
+    .form-input:invalid:not(:placeholder-shown) {
+        border-color: #e53e3e;
+    }
+
+    .form-input:valid {
+        border-color: #38a169;
+    }
+
+    /* Stili migliorati per il campo data */
+    .date-input-wrapper {
+        position: relative;
+        cursor: pointer;
+    }
+
+    .date-input {
+        position: relative;
+        z-index: 2;
+        color: transparent;
+        background: transparent;
+    }
+
+    .date-input::-webkit-calendar-picker-indicator {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: auto;
+        height: auto;
+        color: transparent;
+        background: transparent;
+        cursor: pointer;
+        z-index: 3;
+    }
+
+    .date-input:focus {
+        color: #2d3748;
+    }
+
+    .date-input:valid {
+        color: #2d3748;
+    }
+
+    .date-placeholder {
+        position: absolute;
+        top: 50%;
+        left: 12px;
+        transform: translateY(-50%);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        pointer-events: none;
+        color: #a0aec0;
+        font-size: 16px;
+        z-index: 1;
+        transition: opacity 0.2s;
+    }
+
+    .date-input:focus + .date-placeholder,
+    .date-input:valid + .date-placeholder {
+        opacity: 0;
+    }
+
+    .calendar-icon {
+        font-size: 18px;
+    }
+
+    .placeholder-text {
+        font-size: 16px;
+    }
+
+    .form-note {
+        font-size: 0.85rem;
+        color: #718096;
+        margin-top: 5px;
+        font-style: italic;
+    }
+
+    /* Responsive per mobile */
+    @media (max-width: 768px) {
+        .customer-info-section {
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .customer-info-section h4 {
+            font-size: 1rem;
+        }
+        
+        .form-input {
+            padding: 10px;
+            font-size: 16px; /* Previene zoom su iOS */
+        }
+
+        .date-placeholder {
+            left: 10px;
+        }
+
+        .placeholder-text, .calendar-icon {
+            font-size: 16px;
+        }
+    }
+    </style>
+
+    <script>
+    // Script per migliorare l'esperienza del date picker
+    document.addEventListener('DOMContentLoaded', function() {
+        const dateInput = document.getElementById('pickup-date');
+        const dateWrapper = dateInput.closest('.date-input-wrapper');
+        
+        // Fallback per browser che non supportano showPicker()
+        dateWrapper.addEventListener('click', function(e) {
+            if (e.target === dateWrapper) {
+                if (dateInput.showPicker) {
+                    try {
+                        dateInput.showPicker();
+                    } catch (error) {
+                        // Fallback: focus sull'input
+                        dateInput.focus();
+                        dateInput.click();
+                    }
+                } else {
+                    // Fallback per browser più vecchi
+                    dateInput.focus();
+                    dateInput.click();
+                }
+            }
+        });
+
+        // Gestisci il placeholder quando viene selezionata una data
+        dateInput.addEventListener('change', function() {
+            const placeholder = document.getElementById('date-placeholder');
+            if (this.value) {
+                placeholder.style.opacity = '0';
+            } else {
+                placeholder.style.opacity = '1';
+            }
+        });
+    });
+    </script>
 </body>
 </html>
