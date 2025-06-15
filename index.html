@@ -1,4 +1,22 @@
-<!DOCTYPE html>
+        // Funzione per gestire pagamento completato con successo
+        function handleSuccessfulPayment(method, details) {
+            console.log(`Pagamento ${method} completato:`, details);
+            
+            // Messaggio di successo
+            alert(`✅ Pagamento completato con successo tramite ${method.toUpperCase()}!\n\nRiceverai una email di conferma a breve.`);
+            
+            // Chiudi modal
+            if (cartModal) cartModal.style.display = 'none';
+            
+            // Svuota carrello dopo pagamento riuscito
+            clearCart();
+            
+            // Mostra toast di successo
+            showToast(`Pagamento ${method} completato! 🎉`);
+            
+            // Redirect alla pagina di successo (opzionale)
+            // window.location.href = 'success.html';
+        }<!DOCTYPE html>
 <html lang="it">
 <head>
     <meta charset="UTF-8">
@@ -863,8 +881,16 @@
                             if (stripeForm) stripeForm.style.display = 'block';
                             break;
                         case 'paypal':
-                            orderButtonText.textContent = '🅿️ Paga con PayPal';
-                            if (paypalContainer) paypalContainer.style.display = 'block';
+                            orderButtonText.textContent = '🅿️ Seleziona PayPal qui sotto';
+                            if (paypalContainer) {
+                                paypalContainer.style.display = 'block';
+                                console.log('Mostrando container PayPal');
+                                // Inizializza PayPal se non già fatto
+                                if (!paypalContainer.hasChildNodes()) {
+                                    console.log('Inizializzando bottoni PayPal...');
+                                    initPayPal();
+                                }
+                            }
                             break;
                         case 'cash':
                             orderButtonText.textContent = '📱 Invia su WhatsApp';
