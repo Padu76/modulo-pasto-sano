@@ -385,10 +385,42 @@
     /* Previeni scroll orizzontale FORZATO */
     body {
         overflow-x: hidden !important;
+        max-width: 100vw !important;
     }
 
     html {
         overflow-x: hidden !important;
+        max-width: 100vw !important;
+    }
+
+    * {
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Modal carrello responsive */
+    .cart-modal {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        background: rgba(0, 0, 0, 0.5) !important;
+        display: none !important;
+        align-items: center !important;
+        justify-content: center !important;
+        z-index: 2000 !important;
+        padding: 20px !important;
+    }
+
+    .cart-content {
+        background: white !important;
+        border-radius: 12px !important;
+        width: 100% !important;
+        max-width: 500px !important;
+        max-height: 90vh !important;
+        overflow-y: auto !important;
+        padding: 20px !important;
     }
 
     /* Responsive per mobile */
@@ -441,6 +473,7 @@
             max-width: 140px !important;
             transform: none !important;
             position: fixed !important;
+            width: auto !important;
         }
 
         .floating-cart:hover {
@@ -451,6 +484,18 @@
             width: 20px !important;
             height: 20px !important;
             font-size: 0.7rem !important;
+        }
+
+        /* Modal mobile ottimizzato */
+        .cart-modal {
+            padding: 10px !important;
+        }
+
+        .cart-content {
+            width: calc(100vw - 20px) !important;
+            max-width: none !important;
+            padding: 15px !important;
+            margin: 0 !important;
         }
     }
 
@@ -481,10 +526,23 @@
             max-width: 110px !important;
             transform: none !important;
             position: fixed !important;
+            width: auto !important;
         }
 
         .floating-cart:hover {
             transform: none !important;
+        }
+
+        /* Modal molto largo su mobile piccolo */
+        .cart-modal {
+            padding: 5px !important;
+        }
+
+        .cart-content {
+            width: calc(100vw - 10px) !important;
+            max-width: none !important;
+            padding: 12px !important;
+            border-radius: 8px !important;
         }
     }
     </style>
