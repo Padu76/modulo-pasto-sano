@@ -10,9 +10,9 @@
     <link rel="apple-touch-icon" href="logo.png">
     
     <!-- Meta tags per social sharing -->
-    <meta name="description" content="Pasto Sano - La dieta a casa. Ordina i tuoi pasti sani e gustosi con consegna a domicilio.">
-    <meta property="og:title" content="Pasto Sano - La dieta a casa">
-    <meta property="og:description" content="Ordina i tuoi pasti sani e gustosi con consegna a domicilio">
+    <meta name="description" content="Pasto Sano - La soluzione per stare in forma. Ordina i tuoi pasti sani e gustosi con consegna a domicilio.">
+    <meta property="og:title" content="Pasto Sano - La soluzione per stare in forma">
+    <meta property="og:description" content="La soluzione per stare in forma con pasti sani e gustosi a domicilio">
     <meta property="og:image" content="logo.png">
     <meta property="og:type" content="website">
     
@@ -26,7 +26,7 @@
                 <img src="logo.png" alt="Pasto Sano" class="logo-transparent" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                 <div class="brand-text">
                     <h1 class="brand-title">PASTO SANO</h1>
-                    <p class="brand-subtitle">La dieta a casa</p>
+                    <p class="brand-subtitle">La soluzione per stare in forma</p>
                 </div>
             </div>
         </div>
@@ -178,10 +178,29 @@
     .logo-transparent {
         height: 60px;
         width: auto;
-        /* RIMUOVE LO SFONDO BIANCO via CSS! */
-        mix-blend-mode: multiply;
-        filter: drop-shadow(0 2px 8px rgba(0,0,0,0.1));
+        /* RIMUOVE COMPLETAMENTE LO SFONDO BIANCO! */
+        background: transparent;
+        mix-blend-mode: normal;
+        filter: 
+            brightness(0) saturate(100%) 
+            invert(23%) sepia(95%) saturate(1340%) 
+            hue-rotate(13deg) brightness(95%) contrast(90%)
+            drop-shadow(0 2px 8px rgba(0,0,0,0.1));
         transition: transform 0.3s ease;
+    }
+
+    /* Versione alternativa per browser che supportano backdrop-filter */
+    @supports (backdrop-filter: blur(1px)) {
+        .logo-transparent {
+            filter: 
+                drop-shadow(0 2px 8px rgba(0,0,0,0.1));
+            backdrop-filter: blur(0px);
+            background: 
+                radial-gradient(circle at center, transparent 45%, white 50%),
+                conic-gradient(from 0deg, transparent, transparent);
+            background-size: 100% 100%;
+            background-blend-mode: screen;
+        }
     }
 
     .logo-transparent:hover {
