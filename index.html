@@ -340,48 +340,55 @@
         font-style: italic;
     }
 
-    /* Fix per floating cart che sborda */
+    /* Fix per floating cart che sborda - FORZATO */
     .floating-cart {
-        position: fixed;
-        bottom: 1rem;
-        right: 1rem;
-        background: #7a9e7e;
-        color: white;
-        padding: 0.75rem 1rem;
-        border-radius: 25px;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        font-weight: 600;
-        cursor: pointer;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        z-index: 1000;
-        transition: transform 0.2s ease;
-        max-width: 200px; /* Impedisce di sborcare */
-        font-size: 0.9rem;
+        position: fixed !important;
+        bottom: 1rem !important;
+        right: 1rem !important;
+        background: #7a9e7e !important;
+        color: white !important;
+        padding: 0.75rem 1rem !important;
+        border-radius: 25px !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 0.5rem !important;
+        font-weight: 600 !important;
+        cursor: pointer !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+        z-index: 1000 !important;
+        transition: transform 0.2s ease !important;
+        max-width: 180px !important; /* Ridotto ancora */
+        width: auto !important;
+        font-size: 0.9rem !important;
+        white-space: nowrap !important;
     }
 
     .floating-cart:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2) !important;
     }
 
     .cart-counter {
-        background: #ff6b35;
-        color: white;
-        border-radius: 50%;
-        width: 24px;
-        height: 24px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.75rem;
-        font-weight: 700;
+        background: #ff6b35 !important;
+        color: white !important;
+        border-radius: 50% !important;
+        width: 24px !important;
+        height: 24px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 0.75rem !important;
+        font-weight: 700 !important;
+        flex-shrink: 0 !important;
     }
 
-    /* Previeni scroll orizzontale */
+    /* Previeni scroll orizzontale FORZATO */
     body {
-        overflow-x: hidden;
+        overflow-x: hidden !important;
+    }
+
+    html {
+        overflow-x: hidden !important;
     }
 
     /* Responsive per mobile */
@@ -424,19 +431,26 @@
             font-size: 16px;
         }
 
-        /* Floating cart responsive */
+        /* Floating cart responsive FORZATO */
         .floating-cart {
-            bottom: 0.75rem;
-            right: 0.75rem;
-            padding: 0.6rem 0.8rem;
-            font-size: 0.8rem;
-            max-width: 150px;
+            bottom: 20px !important;
+            right: 20px !important;
+            left: auto !important;
+            padding: 0.6rem 0.8rem !important;
+            font-size: 0.8rem !important;
+            max-width: 140px !important;
+            transform: none !important;
+            position: fixed !important;
+        }
+
+        .floating-cart:hover {
+            transform: none !important;
         }
 
         .cart-counter {
-            width: 20px;
-            height: 20px;
-            font-size: 0.7rem;
+            width: 20px !important;
+            height: 20px !important;
+            font-size: 0.7rem !important;
         }
     }
 
@@ -457,13 +471,20 @@
             font-size: 0.8rem;
         }
 
-        /* Floating cart molto compatto su mobile piccolo */
+        /* Floating cart molto compatto su mobile piccolo FORZATO */
         .floating-cart {
-            bottom: 0.5rem;
-            right: 0.5rem;
-            padding: 0.5rem 0.7rem;
-            font-size: 0.75rem;
-            max-width: 120px;
+            bottom: 15px !important;
+            right: 15px !important;
+            left: auto !important;
+            padding: 0.5rem 0.7rem !important;
+            font-size: 0.75rem !important;
+            max-width: 110px !important;
+            transform: none !important;
+            position: fixed !important;
+        }
+
+        .floating-cart:hover {
+            transform: none !important;
         }
     }
     </style>
