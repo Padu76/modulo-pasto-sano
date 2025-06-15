@@ -1,361 +1,381 @@
-// Dati dei prodotti
-const products = {
-    mainMeals: [
-        { id: 1, name: "FUSILLI, MACINATO MANZO, ZUCCHINE, MELANZANE", price: 8, image: "fusilli-macinato-zucchine-melanzane.jpg" },
-        { id: 2, name: "ROASTBEEF, PATATE AL FORNO, FAGIOLINI", price: 8, image: "roastbeef-patatealforno-fagiolini.jpg" },
-        { id: 3, name: "RISO, HAMBURGER MANZO, CAROTINE BABY", price: 8, image: "risobasmati-hamburgermanzo-carotine.jpg" },
-        { id: 4, name: "RISO NERO, GAMBERI, TONNO, PISELLI", price: 8, image: "riso nero-gamberi-tonno-piselli.jpg" },
-        { id: 5, name: "PATATE, SALMONE GRIGLIATO, BROCCOLI", price: 8, image: "salmonegrigliato-patatealforno-broccoli.jpg" },
-        { id: 6, name: "POLLO GRIGLIATO, PATATE AL FORNO, ZUCCHINE", price: 8, image: "pollogrigliato-patatealforno-zucchine.jpg" },
-        { id: 7, name: "ORZO, CECI, FETA, POMODORINI, BASILICO", price: 8, image: "orzo-ceci-feta-pomodorini-basilico.jpg" },
-        { id: 8, name: "TORTILLAS, TACCHINO AFFUMICATO, HUMMUS CECI, INSALATA", price: 8, image: "tortillas-tacchinoaffumicato-hummusceci-insalata.jpg" },
-        { id: 9, name: "TORTILLAS, SALMONE AFFUMICATO, FORMAGGIO SPALMABILE, INSALATA", price: 8, image: "tortillas-salmoneaffumicato-formaggiospalmabile-insalata.jpg" },
-        { id: 10, name: "RISO, POLLO AL CURRY, ZUCCHINE", price: 8, image: "risobasmati-polloalcurry-zucchine.jpg" }
-    ],
-    breakfastMeals: [
-        { id: 11, name: "UOVA STRAPAZZATE, BACON, FRUTTI DI BOSCO", price: 6, image: "uovastrapazzate-bacon-fruttidibosco.jpg" },
-        { id: 12, name: "PANCAKES", price: 6, image: "pancakes.jpg" }
-    ]
-};
-
-// Codici promozionali
-const promoCodes = {
-    'PRIMAVERA10': 10,
-    'ESTATE15': 15,
-    'BENVENUTO5': 5,
-    'SCONTO20': 20
-};
-
-// Stato dell'applicazione
-let cart = JSON.parse(localStorage.getItem('pastoSanoCart')) || [];
-let appliedDiscount = 0;
-let discountCode = '';
-let quantities = {};
-
-// Elementi DOM
-const floatingCart = document.getElementById('floating-cart');
-const cartModal = document.getElementById('cart-modal');
-const cartCounter = document.getElementById('cart-counter');
-const cartTotal = document.getElementById('cart-total');
-const modalTotal = document.getElementById('modal-total');
-const totalItems = document.getElementById('total-items');
-const cartItems = document.getElementById('cart-items');
-const discountDisplay = document.getElementById('discount-display');
-const toast = document.getElementById('toast');
-
-// Inizializzazione
 document.addEventListener('DOMContentLoaded', () => {
-    renderProducts();
-    updateCartDisplay();
-    setMinPickupDate();
-    attachEventListeners();
-});
+    const mealItems = document.querySelectorAll('.meal-item');
+    const cartItemsList = document.getElementById('cart-items');
+    const totalPriceSpan = document.getElementById('total-price');
+    const totalItemsSpan = document.getElementById('total-items');
+    const submitOrderButton = document.getElementById('submit-order');
+    const pickupDateInput = document.getElementById('pickup-date');
+    const orderMessage = document.getElementById('order-message');
 
-// Render dei prodotti
-function renderProducts() {
-    renderProductSection('main-meals', products.mainMeals);
-    renderProductSection('breakfast-meals', products.breakfastMeals);
-}
+    let cart = [];
+    let appliedDiscount = 0;
+    let discountCode = '';
 
-function renderProductSection(containerId, productList) {
-    const container = document.getElementById(containerId);
-    container.innerHTML = productList.map(product => `
-        <div class="product-card fade-in">
-            <div class="product-image-container">
-                <img src="${product.image}" alt="${product.name}" class="product-image" 
-                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                <div class="product-image" style="display: none;">Immagine non disponibile</div>
-                <div class="price-overlay">${product.price}€</div>
-            </div>
-            <div class="product-content">
-                <h3 class="product-name">${product.name}</h3>
-                <div class="quantity-controls">
-                    <button class="quantity-btn minus-btn" data-id="${product.id}">−</button>
-                    <span class="quantity-display" id="qty-${product.id}">0</span>
-                    <button class="quantity-btn plus-btn" data-id="${product.id}">+</button>
-                </div>
-                <button class="add-button" data-id="${product.id}" data-name="${product.name}" data-price="${product.price}">
-                    Aggiungi al Carrello
-                </button>
-            </div>
-        </div>
-    `).join('');
-}
-
-// Event listeners
-function attachEventListeners() {
-    // Pulsanti quantità
-    document.addEventListener('click', (e) => {
-        if (e.target.classList.contains('minus-btn')) {
-            changeQuantity(e.target.dataset.id, -1);
-            addHapticFeedback();
-        } else if (e.target.classList.contains('plus-btn')) {
-            changeQuantity(e.target.dataset.id, 1);
-            addHapticFeedback();
-        } else if (e.target.classList.contains('add-button')) {
-            addToCart(e.target);
-        }
-    });
-
-    // Carrello floating
-    floatingCart.addEventListener('click', () => {
-        cartModal.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
-        renderCartItems();
-    });
-
-    // Chiudi modal
-    document.getElementById('close-cart').addEventListener('click', closeCartModal);
-    cartModal.addEventListener('click', (e) => {
-        if (e.target === cartModal) closeCartModal();
-    });
-
-    // Codice promozionale
-    document.getElementById('apply-promo').addEventListener('click', applyPromoCode);
-
-    // Azioni carrello
-    document.getElementById('confirm-order').addEventListener('click', confirmOrder);
-    document.getElementById('clear-cart').addEventListener('click', clearCart);
-
-    // Gestione quantità nel modal
-    document.addEventListener('click', (e) => {
-        if (e.target.classList.contains('modal-minus')) {
-            const index = parseInt(e.target.dataset.index);
-            if (cart[index].quantity > 0) {
-                cart[index].quantity--;
-                saveCart();
-                updateCartDisplay();
-                renderCartItems();
-            }
-        } else if (e.target.classList.contains('modal-plus')) {
-            const index = parseInt(e.target.dataset.index);
-            cart[index].quantity++;
-            saveCart();
-            updateCartDisplay();
-            renderCartItems();
-        }
-    });
-}
-
-function changeQuantity(productId, change) {
-    if (!quantities[productId]) quantities[productId] = 0;
-    quantities[productId] = Math.max(0, quantities[productId] + change);
-    document.getElementById(`qty-${productId}`).textContent = quantities[productId];
-}
-
-function addToCart(button) {
-    const productId = button.dataset.id;
-    const quantity = quantities[productId] || 0;
-
-    if (quantity === 0) {
-        showToast('Seleziona una quantità prima di aggiungere al carrello', 'error');
-        return;
-    }
-
-    const existingIndex = cart.findIndex(item => item.id === productId);
-
-    if (existingIndex > -1) {
-        cart[existingIndex].quantity += quantity;
-    } else {
-        cart.push({
-            id: productId,
-            name: button.dataset.name,
-            price: parseFloat(button.dataset.price),
-            quantity: quantity
-        });
-    }
-
-    // Reset quantità locale
-    quantities[productId] = 0;
-    document.getElementById(`qty-${productId}`).textContent = '0';
-
-    // Effetto visivo
-    button.classList.add('pulse');
-    setTimeout(() => button.classList.remove('pulse'), 600);
-
-    saveCart();
-    updateCartDisplay();
-    showToast(`${button.dataset.name} aggiunto al carrello!`);
-}
-
-function updateCartDisplay() {
-    const totalQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
-    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const discountAmount = (subtotal * appliedDiscount) / 100;
-    const total = subtotal - discountAmount;
-
-    // Aggiorna contatori
-    cartCounter.textContent = totalQuantity;
-    totalItems.textContent = totalQuantity;
-    cartTotal.textContent = `${total.toFixed(2)}€`;
-    modalTotal.textContent = `${total.toFixed(2)}€`;
-
-    // Mostra/nascondi carrello floating
-    if (totalQuantity > 0) {
-        floatingCart.classList.add('visible');
-    } else {
-        floatingCart.classList.remove('visible');
-    }
-
-    // Aggiorna display sconto
-    if (appliedDiscount > 0) {
-        discountDisplay.innerHTML = `
-            <div class="discount-line">
-                Sconto ${discountCode} (-${appliedDiscount}%): -${discountAmount.toFixed(2)}€
-            </div>
-        `;
-    } else {
-        discountDisplay.innerHTML = '';
-    }
-}
-
-function renderCartItems() {
-    if (cart.length === 0) {
-        cartItems.innerHTML = '<div style="text-align: center; color: #6c757d; padding: 2rem;">Il carrello è vuoto</div>';
-        return;
-    }
-
-    cartItems.innerHTML = cart.map((item, index) => {
-        if (item.quantity === 0) return '';
-        return `
-            <div class="cart-item">
-                <div class="item-info">
-                    <div class="item-name">${item.name}</div>
-                    <div class="item-price">${item.price}€ × ${item.quantity} = ${(item.price * item.quantity).toFixed(2)}€</div>
-                </div>
-                <div class="quantity-controls">
-                    <button class="quantity-btn modal-minus" data-index="${index}">−</button>
-                    <span class="quantity-display">${item.quantity}</span>
-                    <button class="quantity-btn modal-plus" data-index="${index}">+</button>
-                </div>
-            </div>
-        `;
-    }).join('');
-}
-
-function applyPromoCode() {
-    const code = document.getElementById('promo-code').value.toUpperCase().trim();
-    const messageDiv = document.getElementById('promo-message');
-
-    if (!code) {
-        messageDiv.innerHTML = '<div class="promo-error">Inserisci un codice promozionale</div>';
-        return;
-    }
-
-    if (promoCodes[code]) {
-        appliedDiscount = promoCodes[code];
-        discountCode = code;
-        messageDiv.innerHTML = `<div class="promo-success">✅ Codice applicato! Sconto del ${appliedDiscount}%</div>`;
-        updateCartDisplay();
-        showToast(`Sconto del ${appliedDiscount}% applicato!`);
-    } else {
-        messageDiv.innerHTML = '<div class="promo-error">❌ Codice non valido</div>';
-        showToast('Codice promozionale non valido', 'error');
-    }
-}
-
-function setMinPickupDate() {
-    const today = new Date();
-    today.setDate(today.getDate() + 2);
-    const minDate = today.toISOString().split('T')[0];
-    document.getElementById('pickup-date').min = minDate;
-}
-
-function confirmOrder() {
-    const totalQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
-    const pickupDate = document.getElementById('pickup-date').value;
-    const confirmButton = document.getElementById('confirm-order');
-    const spinner = document.getElementById('loading-spinner');
-
-    // Validazioni
-    if (totalQuantity < 4) {
-        showToast('Errore: Il minimo d\'ordine è 4 pezzi a scelta', 'error');
-        return;
-    }
-
-    if (!pickupDate) {
-        showToast('Errore: Seleziona una data di ritiro', 'error');
-        return;
-    }
-
-    const selectedDate = new Date(pickupDate);
-    const minDate = new Date();
-    minDate.setDate(minDate.getDate() + 2);
-
-    if (selectedDate < minDate) {
-        showToast('Errore: La data di ritiro deve essere almeno due giorni dopo oggi', 'error');
-        return;
-    }
-
-    // Loading state
-    confirmButton.classList.add('loading');
-    spinner.style.display = 'block';
-
-    // Simula processo ordine
-    setTimeout(() => {
-        processWhatsAppOrder(pickupDate);
-        confirmButton.classList.remove('loading');
-        spinner.style.display = 'none';
-    }, 1500);
-}
-
-async function processWhatsAppOrder(pickupDate) {
-    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const totalQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
-    const discountAmount = (subtotal * appliedDiscount) / 100;
-    const finalTotal = subtotal - discountAmount;
-
-    // Prepara dati per Firebase
-    const orderData = {
-        customerName: 'Cliente Web', // Temporaneo - potrai aggiungere un form
-        customerPhone: 'N/A',
-        items: cart.filter(item => item.quantity > 0).map(item => ({
-            name: item.name,
-            price: item.price,
-            quantity: item.quantity,
-            subtotal: item.price * item.quantity
-        })),
-        totalItems: totalQuantity,
-        subtotalAmount: subtotal,
-        discountCode: discountCode || null,
-        discountPercent: appliedDiscount || 0,
-        discountAmount: discountAmount || 0,
-        totalAmount: finalTotal,
-        pickupDate: pickupDate,
-        status: 'pending',
-        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-        source: 'website'
+    // CODICI PROMOZIONALI
+    const promoCodes = {
+        'PRIMAVERA10': 10,
+        'ESTATE15': 15,
+        'BENVENUTO5': 5,
+        'SCONTO20': 20
     };
 
-    try {
-        // Salva su Firebase
-        const docRef = await firebase.firestore().collection('orders').add(orderData);
-        console.log('✅ Ordine salvato su Firebase con ID:', docRef.id);
-        
-        // Crea messaggio WhatsApp
-        let orderDetails = "🎉 Nuovo Ordine Pasto Sano! 🎉\n\n";
-        orderDetails += "Dettagli dell'Ordine:\n";
-        orderDetails += "-----------------------------------\n";
+    function updateCartDisplay() {
+        cartItemsList.innerHTML = '';
+        let subtotal = 0;
+        let totalQuantity = 0;
 
         cart.forEach(item => {
             if (item.quantity > 0) {
-                orderDetails += `• ${item.name}\n  Quantità: ${item.quantity}\n  Costo: ${(item.price * item.quantity).toFixed(2)}€\n\n`;
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span>${item.name} (x${item.quantity})</span>
+                    <span>${(item.price * item.quantity).toFixed(2)}€</span>
+                `;
+                cartItemsList.appendChild(li);
+                subtotal += item.price * item.quantity;
+                totalQuantity += item.quantity;
             }
         });
 
-        orderDetails += "-----------------------------------\n";
-        orderDetails += `📦 Totale Articoli: ${totalQuantity}\n`;
+        // Applica sconto
+        const discountAmount = (subtotal * appliedDiscount) / 100;
+        const total = subtotal - discountAmount;
 
         if (appliedDiscount > 0) {
-            orderDetails += `💰 Subtotale: ${subtotal.toFixed(2)}€\n`;
-            orderDetails += `🎁 Sconto ${discountCode} (-${appliedDiscount}%): -${discountAmount.toFixed(2)}€\n`;
-            orderDetails += `💰 Totale Finale: ${finalTotal.toFixed(2)}€\n`;
+            document.getElementById('discount-line').style.display = 'block';
+            document.getElementById('discount-line').textContent = `Sconto ${discountCode} (-${appliedDiscount}%): -${discountAmount.toFixed(2)}€`;
         } else {
-            orderDetails += `💰 Totale Ordine: ${subtotal.toFixed(2)}€\n`;
+            document.getElementById('discount-line').style.display = 'none';
         }
 
+        totalPriceSpan.textContent = `${total.toFixed(2)}€`;
+        totalItemsSpan.textContent = totalQuantity;
+    }
+
+    // GESTIONE PULSANTI +/-
+    mealItems.forEach(item => {
+        const minusBtn = item.querySelector('.minus-btn');
+        const plusBtn = item.querySelector('.plus-btn');
+        const quantityDisplay = item.querySelector('.quantity-display');
+        const addButton = item.querySelector('.add-to-cart');
+        let quantity = 0;
+
+        minusBtn.addEventListener('click', () => {
+            if (quantity > 0) {
+                quantity--;
+                quantityDisplay.textContent = quantity;
+            }
+        });
+
+        plusBtn.addEventListener('click', () => {
+            quantity++;
+            quantityDisplay.textContent = quantity;
+        });
+
+        addButton.addEventListener('click', () => {
+            if (quantity > 0) {
+                const id = item.dataset.id;
+                const name = item.querySelector('h3').textContent;
+                const price = parseFloat(item.dataset.price);
+
+                const existingItemIndex = cart.findIndex(cartItem => cartItem.id === id);
+
+                if (existingItemIndex > -1) {
+                    cart[existingItemIndex].quantity += quantity;
+                } else {
+                    cart.push({ id, name, price, quantity });
+                }
+                
+                updateCartDisplay();
+                quantity = 0;
+                quantityDisplay.textContent = quantity;
+            } else {
+                alert('Seleziona una quantità prima di aggiungere al carrello.');
+            }
+        });
+    });
+
+    // GESTIONE CODICI PROMOZIONALI
+    document.getElementById('apply-promo').addEventListener('click', () => {
+        const code = document.getElementById('promo-code').value.toUpperCase().trim();
+        const messageDiv = document.getElementById('promo-message');
+        
+        if (promoCodes[code]) {
+            appliedDiscount = promoCodes[code];
+            discountCode = code;
+            messageDiv.innerHTML = `<div class="promo-success">✅ Codice applicato! Sconto del ${appliedDiscount}%</div>`;
+            updateCartDisplay();
+        } else if (code === '') {
+            messageDiv.innerHTML = `<div class="promo-error">Inserisci un codice promozionale</div>`;
+        } else {
+            messageDiv.innerHTML = `<div class="promo-error">❌ Codice non valido</div>`;
+        }
+    });
+
+    function setMinPickupDate() {
+        const today = new Date();
+        today.setDate(today.getDate() + 2);
+
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        
+        pickupDateInput.min = `${year}-${month}-${day}`;
+    }
+    setMinPickupDate();
+
+    // SVUOTA CARRELLO
+    const clearCartButton = document.getElementById('clear-cart');
+    clearCartButton.addEventListener('click', () => {
+        cart = [];
+        appliedDiscount = 0;
+        discountCode = '';
+        document.getElementById('promo-code').value = '';
+        document.getElementById('promo-message').innerHTML = '';
+        
+        // Pulisci anche il campo nome
+        const customerNameField = document.getElementById('customer-name');
+        if (customerNameField) {
+            customerNameField.value = '';
+        }
+        
+        updateCartDisplay();
+        pickupDateInput.value = '';
+        orderMessage.style.display = 'none';
+
+        // Reset quantità nei controlli
+        document.querySelectorAll('.quantity-display').forEach(display => display.textContent = '0');
+    });
+
+    // POPUP RIEPILOGATIVO
+    function showSummaryPopup() {
+        const popup = document.getElementById('summary-popup');
+        const popupItems = document.getElementById('popup-items');
+        const popupTotal = document.getElementById('popup-total');
+        
+        popupItems.innerHTML = '';
+        
+        cart.forEach((item, index) => {
+            if (item.quantity > 0) {
+                const popupItem = document.createElement('div');
+                popupItem.className = 'popup-item';
+                popupItem.innerHTML = `
+                    <div class="popup-item-name">${item.name}</div>
+                    <div class="popup-quantity-controls">
+                        <button class="quantity-btn popup-minus" data-index="${index}">-</button>
+                        <span class="quantity-display">${item.quantity}</span>
+                        <button class="quantity-btn popup-plus" data-index="${index}">+</button>
+                    </div>
+                    <div>${(item.price * item.quantity).toFixed(2)}€</div>
+                `;
+                popupItems.appendChild(popupItem);
+            }
+        });
+
+        // Calcola totale con sconto
+        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const discountAmount = (subtotal * appliedDiscount) / 100;
+        const total = subtotal - discountAmount;
+
+        let totalText = `Totale: ${total.toFixed(2)}€`;
+        if (appliedDiscount > 0) {
+            totalText = `Subtotale: ${subtotal.toFixed(2)}€<br>Sconto ${discountCode} (-${appliedDiscount}%): -${discountAmount.toFixed(2)}€<br><strong>Totale: ${total.toFixed(2)}€</strong>`;
+        }
+        popupTotal.innerHTML = totalText;
+
+        popup.style.display = 'block';
+    }
+
+    // GESTIONE POPUP QUANTITÀ
+    document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('popup-minus')) {
+            const index = parseInt(e.target.dataset.index);
+            if (cart[index].quantity > 0) {
+                cart[index].quantity--;
+                updateCartDisplay();
+                showSummaryPopup();
+            }
+        }
+        
+        if (e.target.classList.contains('popup-plus')) {
+            const index = parseInt(e.target.dataset.index);
+            cart[index].quantity++;
+            updateCartDisplay();
+            showSummaryPopup();
+        }
+    });
+
+    // CHIUDI POPUP
+    document.getElementById('close-popup').addEventListener('click', () => {
+        document.getElementById('summary-popup').style.display = 'none';
+    });
+
+    document.getElementById('summary-popup').addEventListener('click', (e) => {
+        if (e.target.id === 'summary-popup') {
+            document.getElementById('summary-popup').style.display = 'none';
+        }
+    });
+
+    // CONFERMA ORDINE DAL POPUP
+    document.getElementById('confirm-order').addEventListener('click', () => {
+        document.getElementById('summary-popup').style.display = 'none';
+        processOrder();
+    });
+
+    // NOTIFICA
+    function showNotification(message) {
+        const notification = document.getElementById('notification');
+        notification.textContent = message;
+        notification.style.display = 'block';
+        
+        setTimeout(() => {
+            notification.style.display = 'none';
+        }, 3000);
+    }
+
+    // PROCESSAMENTO ORDINE CON FIREBASE - VERSIONE CORRETTA
+    async function processOrder() {
+        const totalQuantity = parseInt(totalItemsSpan.textContent);
+        const pickupDate = pickupDateInput.value;
+        
+        // LEGGI IL NOME DAL FORM
+        const customerNameField = document.getElementById('customer-name');
+        const customerName = customerNameField ? customerNameField.value.trim() : '';
+
+        // VALIDAZIONE NOME OBBLIGATORIO
+        if (!customerName) {
+            orderMessage.style.display = 'block';
+            orderMessage.style.backgroundColor = '#f8d7da';
+            orderMessage.style.color = '#721c24';
+            orderMessage.textContent = 'Errore: Inserisci il tuo nome.';
+            const existingWhatsappButton = orderMessage.querySelector('.whatsapp-send-button');
+            if (existingWhatsappButton) {
+                existingWhatsappButton.remove();
+            }
+            return;
+        }
+
+        if (totalQuantity < 4) {
+            orderMessage.style.display = 'block';
+            orderMessage.style.backgroundColor = '#f8d7da';
+            orderMessage.style.color = '#721c24';
+            orderMessage.textContent = 'Errore: Il minimo d\'ordine è 4 pezzi a scelta.';
+            const existingWhatsappButton = orderMessage.querySelector('.whatsapp-send-button');
+            if (existingWhatsappButton) {
+                existingWhatsappButton.remove();
+            }
+            return;
+        }
+
+        if (!pickupDate) {
+            orderMessage.style.display = 'block';
+            orderMessage.style.backgroundColor = '#f8d7da';
+            orderMessage.style.color = '#721c24';
+            orderMessage.textContent = 'Errore: Seleziona una data di ritiro.';
+            const existingWhatsappButton = orderMessage.querySelector('.whatsapp-send-button');
+            if (existingWhatsappButton) {
+                existingWhatsappButton.remove();
+            }
+            return;
+        }
+
+        const selectedDate = new Date(pickupDate);
+        const minDate = new Date();
+        minDate.setDate(minDate.getDate() + 2);
+
+        selectedDate.setHours(0,0,0,0);
+        minDate.setHours(0,0,0,0);
+
+        if (selectedDate < minDate) {
+            orderMessage.style.display = 'block';
+            orderMessage.style.backgroundColor = '#f8d7da';
+            orderMessage.style.color = '#721c24';
+            orderMessage.textContent = 'Errore: La data di ritiro deve essere almeno due giorni dopo la data odierna.';
+            const existingWhatsappButton = orderMessage.querySelector('.whatsapp-send-button');
+            if (existingWhatsappButton) {
+                existingWhatsappButton.remove();
+            }
+            return;
+        }
+
+        orderMessage.style.display = 'block';
+        orderMessage.style.backgroundColor = '#d4edda';
+        orderMessage.style.color = '#155724';
+        
+        // SALVATAGGIO SU FIREBASE CON DATI REALI
+        try {
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const discountAmount = (subtotal * appliedDiscount) / 100;
+            const totalAmount = subtotal - discountAmount;
+            
+            const orderData = {
+                // DATI CLIENTE REALI
+                customerName: customerName, // NOME VERO DAL FORM!
+                customerPhone: 'Da WhatsApp', // Sarà popolato dal numero WhatsApp
+                customerEmail: null,
+                
+                // DATI ORDINE
+                items: cart.filter(item => item.quantity > 0),
+                totalItems: totalQuantity,
+                subtotalAmount: subtotal,
+                appliedDiscount: appliedDiscount,
+                discountCode: discountCode,
+                totalAmount: totalAmount,
+                pickupDate: pickupDate,
+                
+                // METADATA
+                source: 'web',
+                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                status: 'nuovo',
+                
+                // DATI AGGIUNTIVI
+                processedAt: new Date().toISOString(),
+                webhookData: {
+                    originalMessage: `Ordine web da ${customerName}`,
+                    fromWhatsApp: false
+                }
+            };
+            
+            // Salva su Firebase
+            if (typeof firebase !== 'undefined' && firebase.firestore) {
+                const db = firebase.firestore();
+                const docRef = await db.collection('orders').add(orderData);
+                console.log('✅ Ordine salvato su Firebase con ID:', docRef.id, 'Nome:', customerName);
+            } else {
+                console.log('⚠️ Firebase non disponibile');
+            }
+            
+        } catch (error) {
+            console.error('❌ Errore salvataggio Firebase:', error);
+        }
+        
+        // Costruisci messaggio WhatsApp CON NOME REALE
+        let orderDetails = "🎉 Nuovo Ordine Pasto Sano! 🎉\n\n";
+        orderDetails += `👤 Cliente: ${customerName}\n`; // NOME REALE
+        orderDetails += "Dettagli dell'Ordine:\n";
+        orderDetails += "-----------------------------------\n";
+        
+        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        
+        cart.forEach(item => {
+            if (item.quantity > 0) {
+                orderDetails += `• ${item.name}\n  Quantità: ${item.quantity}\n  Costo: ${(item.price * item.quantity).toFixed(2)}€\n`;
+            }
+        });
+        
+        orderDetails += "-----------------------------------\n";
+        orderDetails += `📦 Totale Articoli: ${totalQuantity}\n`;
+        
+        if (appliedDiscount > 0) {
+            const discountAmount = (subtotal * appliedDiscount) / 100;
+            orderDetails += `💰 Subtotale: ${subtotal.toFixed(2)}€\n`;
+            orderDetails += `🎁 Sconto ${discountCode} (-${appliedDiscount}%): -${discountAmount.toFixed(2)}€\n`;
+            orderDetails += `💰 Totale Finale: ${(subtotal - discountAmount).toFixed(2)}€\n`;
+        } else {
+            orderDetails += `💰 Totale Ordine: ${totalPriceSpan.textContent}\n`;
+        }
+        
         orderDetails += `🗓️ Data di Ritiro Prevista: ${pickupDate}\n`;
-        orderDetails += `🆔 ID Ordine: ${docRef.id}\n`;
         orderDetails += "-----------------------------------\n";
         orderDetails += "Si prega di confermare la disponibilità. Grazie!";
 
@@ -363,148 +383,49 @@ async function processWhatsAppOrder(pickupDate) {
         const phoneNumber = "+393478881515"; // CAMBIA CON IL TUO NUMERO
         const whatsappLink = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
 
-        // Apri WhatsApp
-        window.open(whatsappLink, '_blank');
-
-        // Reset dopo invio
-        setTimeout(() => {
-            clearCart();
-            closeCartModal();
-            showToast('✅ Ordine inviato e salvato con successo!');
-        }, 1000);
-
-    } catch (error) {
-        console.error('❌ Errore salvataggio ordine:', error);
-        showToast('Errore durante il salvataggio. Ordine inviato solo su WhatsApp.', 'error');
+        orderMessage.innerHTML = `Ordine preparato con successo!<br>Cliente: <strong>${customerName}</strong><br>Totale: ${totalPriceSpan.textContent}<br>Data di ritiro: ${pickupDate}<br><br>`;
         
-        // Invia comunque su WhatsApp anche se Firebase fallisce
-        let orderDetails = "🎉 Nuovo Ordine Pasto Sano! 🎉\n\n";
-        orderDetails += "Dettagli dell'Ordine:\n";
-        orderDetails += "-----------------------------------\n";
-
-        cart.forEach(item => {
-            if (item.quantity > 0) {
-                orderDetails += `• ${item.name}\n  Quantità: ${item.quantity}\n  Costo: ${(item.price * item.quantity).toFixed(2)}€\n\n`;
-            }
+        const whatsappButton = document.createElement('a');
+        whatsappButton.href = whatsappLink;
+        whatsappButton.target = "_blank";
+        whatsappButton.className = "whatsapp-send-button"; 
+        whatsappButton.textContent = "📱 Invia Ordine su WhatsApp";
+        
+        // Aggiungi evento click per notifica
+        whatsappButton.addEventListener('click', () => {
+            setTimeout(() => {
+                showNotification('✅ Ordine inviato con successo!');
+            }, 500);
         });
-
-        orderDetails += "-----------------------------------\n";
-        orderDetails += `📦 Totale Articoli: ${totalQuantity}\n`;
-        orderDetails += `💰 Totale Ordine: ${finalTotal.toFixed(2)}€\n`;
-        orderDetails += `🗓️ Data di Ritiro Prevista: ${pickupDate}\n`;
-        orderDetails += "-----------------------------------\n";
-        orderDetails += "Si prega di confermare la disponibilità. Grazie!";
-
-        const encodedMessage = encodeURIComponent(orderDetails);
-        const phoneNumber = "+393478881515";
-        const whatsappLink = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
         
-        window.open(whatsappLink, '_blank');
+        orderMessage.appendChild(whatsappButton);
+
+        // Svuota carrello dopo l'ordine
+        cart = [];
+        appliedDiscount = 0;
+        discountCode = '';
+        document.getElementById('promo-code').value = '';
+        document.getElementById('promo-message').innerHTML = '';
         
-        setTimeout(() => {
-            clearCart();
-            closeCartModal();
-        }, 1000);
-    }
-}
-
-function clearCart() {
-    cart = [];
-    appliedDiscount = 0;
-    discountCode = '';
-    quantities = {};
-    
-    // Reset input promozionale
-    document.getElementById('promo-code').value = '';
-    document.getElementById('promo-message').innerHTML = '';
-    document.getElementById('pickup-date').value = '';
-
-    // Reset quantità prodotti
-    document.querySelectorAll('.quantity-display').forEach(display => {
-        if (display.id && display.id.startsWith('qty-')) {
-            display.textContent = '0';
+        // Pulisci anche il campo nome
+        if (customerNameField) {
+            customerNameField.value = '';
         }
-    });
-
-    saveCart();
-    updateCartDisplay();
-    renderCartItems();
-    showToast('Carrello svuotato');
-}
-
-function closeCartModal() {
-    cartModal.style.display = 'none';
-    document.body.style.overflow = 'auto';
-}
-
-function saveCart() {
-    localStorage.setItem('pastoSanoCart', JSON.stringify(cart));
-}
-
-function showToast(message, type = 'success') {
-    const toastEl = document.getElementById('toast');
-    toastEl.textContent = message;
-    toastEl.style.background = type === 'error' ? '#dc3545' : '#28a745';
-    toastEl.classList.add('show');
-
-    setTimeout(() => {
-        toastEl.classList.remove('show');
-    }, 3000);
-}
-
-function addHapticFeedback() {
-    // Vibrazione per dispositivi mobili
-    if ('vibrate' in navigator) {
-        navigator.vibrate(50);
+        
+        updateCartDisplay();
+        pickupDateInput.value = '';
+        document.querySelectorAll('.quantity-display').forEach(display => display.textContent = '0');
     }
-}
 
-// Aggiorna carrello quando la pagina viene caricata
-window.addEventListener('load', () => {
-    renderCartItems();
-});
-
-// Auto-save quando l'utente lascia la pagina
-window.addEventListener('beforeunload', () => {
-    saveCart();
-});
-
-// Gestione responsive per floating cart
-function updateFloatingCartPosition() {
-    const isMobile = window.innerWidth <= 480;
-    if (isMobile && cart.length > 0) {
-        floatingCart.style.position = 'fixed';
-        floatingCart.style.bottom = '0';
-        floatingCart.style.left = '0';
-        floatingCart.style.right = '0';
-        floatingCart.style.borderRadius = '20px 20px 0 0';
-    } else {
-        floatingCart.style.position = 'fixed';
-        floatingCart.style.bottom = '2rem';
-        floatingCart.style.right = '2rem';
-        floatingCart.style.left = 'auto';
-        floatingCart.style.borderRadius = '50px';
-    }
-}
-
-window.addEventListener('resize', updateFloatingCartPosition);
-updateFloatingCartPosition();
-
-// Lazy loading per le immagini
-const imageObserver = new IntersectionObserver((entries, observer) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            const img = entry.target;
-            img.src = img.dataset.src || img.src;
-            img.classList.add('fade-in');
-            observer.unobserve(img);
+    // PULSANTE PROCEDI ALL'ORDINE (mostra popup)
+    submitOrderButton.addEventListener('click', () => {
+        const totalQuantity = parseInt(totalItemsSpan.textContent);
+        
+        if (totalQuantity === 0) {
+            alert('Aggiungi almeno un prodotto al carrello prima di procedere.');
+            return;
         }
+        
+        showSummaryPopup();
     });
 });
-
-// Osserva tutte le immagini quando vengono caricate
-setTimeout(() => {
-    document.querySelectorAll('.product-image').forEach(img => {
-        imageObserver.observe(img);
-    });
-}, 100);
