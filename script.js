@@ -1,4 +1,4 @@
-// Dati dei prodotti completi - 10 pasti + 2 colazioni + 1 test
+// Dati dei prodotti completi - 10 pasti + 2 colazioni
 const products = {
     mainMeals: [
         { id: 1, name: "FUSILLI, MACINATO MANZO, ZUCCHINE, MELANZANE", price: 8, image: "fusilli-macinato-zucchine-melanzane.jpg" },
@@ -15,9 +15,6 @@ const products = {
     breakfastMeals: [
         { id: 11, name: "UOVA STRAPAZZATE, BACON, FRUTTI DI BOSCO", price: 6, image: "uovastrapazzate-bacon-fruttidibosco.jpg" },
         { id: 12, name: "PANCAKES", price: 6, image: "pancakes.jpg" }
-    ],
-    testMeals: [
-        { id: 99, name: "🧪 PRODOTTO TEST - Solo per prove pagamento", price: 0.50, image: "logo.png" }
     ]
 };
 
@@ -64,9 +61,7 @@ function renderProducts() {
     console.log('📦 Caricamento prodotti...');
     renderProductSection('main-meals', products.mainMeals);
     renderProductSection('breakfast-meals', products.breakfastMeals);
-    renderProductSection('test-meals', products.testMeals);
     console.log('✅ Prodotti caricati');
-    console.log('🧪 Prodotti test:', products.testMeals);
 }
 
 // Rimuovi la funzione renderTestSection separata
@@ -408,11 +403,9 @@ function confirmOrder() {
     const confirmButton = document.getElementById('confirm-order');
     const spinner = document.getElementById('loading-spinner');
 
-    // Validazioni - RIMUOVO IL MINIMO per i test
-    const hasTestProduct = cart.some(item => item.id === '99');
-    
-    if (!hasTestProduct && totalQuantity < 4) {
-        showToast('Errore: Il minimo d\'ordine è 4 pezzi a scelta (tranne per prodotti test)', 'error');
+    // Validazioni
+    if (totalQuantity < 4) {
+        showToast('Errore: Il minimo d\'ordine è 4 pezzi a scelta', 'error');
         return;
     }
 
