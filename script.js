@@ -543,14 +543,7 @@ function initPayPal() {
                         currency_code: 'EUR'
                     },
                     description: 'Ordine Pasto Sano'
-                }],
-                application_context: {
-                    user_action: 'PAY_NOW',
-                    shipping_preference: 'NO_SHIPPING',
-                    brand_name: 'Pasto Sano',
-                    locale: 'it_IT',
-                    landing_page: 'BILLING'
-                }
+                }]
             });
         },
         
