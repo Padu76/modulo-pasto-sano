@@ -1,45 +1,10 @@
-<!DOCTYPE html>
-<html lang="it">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pasto Sano - Ordina i tuoi pasti</title>
-    
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="logo.png">
-    <link rel="apple-touch-icon" href="logo.png">
-    
-    <!-- Meta tags per social sharing -->
-    <meta name="description" content="Pasto Sano - La soluzione per stare in forma. Ordina i tuoi pasti sani e gustosi con consegna a domicilio.">
-    <meta property="og:title" content="Pasto Sano - La soluzione per stare in forma">
-    <meta property="og:description" content="La soluzione per stare in forma con pasti sani e gustosi a domicilio">
-    <meta property="og:image" content="logo.png">
-    <meta property="og:type" content="website">
-    
-    <!-- CSS -->
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <!-- Header con logo trasparente e testo affiancato -->
-    <header class="header">
-        <div class="header-content">
-            <div class="brand-container">
-                <img src="logo.png" alt="Pasto Sano" class="logo-transparent" onerror="this.style.display='none';">
-                <div class="brand-text">
-                    <h1 class="brand-title">PASTO SANO</h1>
-                    <p class="brand-subtitle">La soluzione per stare in forma</p>
-                </div>
-            </div>
-        </div>
-    </header>
+<!-- ✅ FILE 2: index.html - Aggiorna i price-badge nelle sezioni: -->
 
-    <!-- Container principale -->
-    <div class="container">
         <!-- Sezione Pasti Completi -->
         <section class="menu-section">
             <div class="section-header">
                 <h2 class="section-title">Pasti Completi</h2>
-                <div class="price-badge">8€ cad.</div>
+                <div class="price-badge">8.50€ cad.</div> <!-- ✅ DA: 8€ cad. -->
             </div>
             
             <div class="products-grid" id="main-meals">
@@ -51,154 +16,10 @@
         <section class="menu-section">
             <div class="section-header">
                 <h2 class="section-title">Colazioni</h2>
-                <div class="price-badge">6€ cad.</div>
+                <div class="price-badge">6.50€ cad.</div> <!-- ✅ DA: 6€ cad. -->
             </div>
             
             <div class="products-grid" id="breakfast-meals">
                 <!-- Le colazioni verranno generate dinamicamente -->
             </div>
         </section>
-    </div>
-
-    <!-- Carrello floating -->
-    <div class="floating-cart" id="floating-cart">
-        <div class="cart-counter" id="cart-counter">0</div>
-        <span>Carrello</span>
-        <span id="cart-total">0.00€</span>
-    </div>
-
-    <!-- Modal carrello -->
-    <div class="cart-modal" id="cart-modal">
-        <div class="cart-content">
-            <div class="cart-header">
-                <h3>Il tuo Ordine</h3>
-                <button class="close-btn" id="close-cart">&times;</button>
-            </div>
-            
-            <div id="cart-items">
-                <!-- Items del carrello -->
-            </div>
-
-            <!-- Sezione codice promozionale -->
-            <div class="promo-section">
-                <div class="promo-input-group">
-                    <input type="text" class="promo-input" id="promo-code" placeholder="Codice promozionale">
-                    <button class="promo-btn" id="apply-promo">Applica</button>
-                </div>
-                <div class="promo-message" id="promo-message"></div>
-            </div>
-
-            <div id="discount-display"></div>
-
-            <div class="cart-total">
-                <div style="font-size: 1.2rem; font-weight: 700; color: #2d5a2d;">
-                    Totale: <span id="modal-total">0.00€</span>
-                </div>
-                <div style="color: #6c757d; margin-top: 0.25rem;">
-                    <span id="total-items">0</span> articoli
-                </div>
-            </div>
-
-            <div class="order-form">
-                <!-- Sezione informazioni cliente -->
-                <div class="customer-info-section">
-                    <h4 style="color: #3f6844; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
-                        <span>📝</span> Il tuo nome
-                    </h4>
-                    
-                    <div class="form-group">
-                        <label class="form-label" for="customer-name">Nome *</label>
-                        <input type="text" class="form-input" id="customer-name" placeholder="Come ti chiami?" required>
-                        <div class="form-note">
-                            Così possiamo identificare il tuo ordine più facilmente
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="pickup-date">Data di Ritiro *</label>
-                    <div class="date-input-wrapper">
-                        <input type="date" class="form-input date-input" id="pickup-date" required>
-                        <div class="date-placeholder" id="date-placeholder">
-                            <span class="calendar-icon">📅</span>
-                            <span class="placeholder-text">Seleziona la data di ritiro</span>
-                        </div>
-                    </div>
-                    <div class="form-note">L'ordine deve essere effettuato con 2 giorni di anticipo</div>
-                </div>
-
-                <!-- Sezione metodo di pagamento -->
-                <div class="payment-section">
-                    <h4 style="color: #3f6844; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
-                        <span>💳</span> Metodo di Pagamento
-                    </h4>
-                    
-                    <div class="payment-methods">
-                        <div class="payment-method" data-method="stripe">
-                            <div class="payment-icon">💳</div>
-                            <div class="payment-info">
-                                <div class="payment-title">Carta di Credito/Debito</div>
-                                <div class="payment-subtitle">Visa, Mastercard, American Express</div>
-                            </div>
-                            <div class="payment-radio">
-                                <input type="radio" name="payment" value="stripe" id="payment-stripe">
-                            </div>
-                        </div>
-
-                        <div class="payment-method" data-method="paypal">
-                            <div class="payment-icon">🅿️</div>
-                            <div class="payment-info">
-                                <div class="payment-title">PayPal</div>
-                                <div class="payment-subtitle">Paga con il tuo account PayPal</div>
-                            </div>
-                            <div class="payment-radio">
-                                <input type="radio" name="payment" value="paypal" id="payment-paypal">
-                            </div>
-                        </div>
-
-                        <div class="payment-method" data-method="cash" data-selected="true">
-                            <div class="payment-icon">💰</div>
-                            <div class="payment-info">
-                                <div class="payment-title">Contanti alla Consegna</div>
-                                <div class="payment-subtitle">Paga quando ritiri l'ordine</div>
-                            </div>
-                            <div class="payment-radio">
-                                <input type="radio" name="payment" value="cash" id="payment-cash" checked>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="action-buttons">
-                <button class="btn-primary" id="confirm-order">
-                    <span id="order-button-text">📱 Invia su WhatsApp</span>
-                    <div class="spinner" id="loading-spinner" style="display: none;"></div>
-                </button>
-                
-                <!-- Container PayPal -->
-                <div id="paypal-button-container" style="display: none;"></div>
-                
-                <button class="btn-secondary" id="clear-cart">Svuota</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Toast per notifiche -->
-    <div class="toast" id="toast"></div>
-
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-    <script src="firebase-config.js"></script>
-    
-    <!-- Stripe SDK -->
-    <script src="https://js.stripe.com/v3/"></script>
-    
-    <!-- PayPal SDK - LIVE CON CLIENT ID CORRETTO -->
-    <script src="https://www.paypal.com/sdk/js?client-id=ATlcFIUEdRIp6-EwtfEOaL9h0BxMvfW1a9sNIefyEx3_M3TKGgYdMKgpK1HCrzsiIWry6KAyAutjV06k&currency=EUR&components=buttons"></script>
-    
-    <!-- JavaScript -->
-    <script src="script.js"></script>
-</body>
-</html>
