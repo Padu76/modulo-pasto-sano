@@ -43,7 +43,7 @@ const cartItems = document.getElementById('cart-items');
 const discountDisplay = document.getElementById('discount-display');
 const toast = document.getElementById('toast');
 
-// Stripe - CHIAVE CORRETTA
+// Stripe - CHIAVE PUBBLICA CORRETTA
 const stripe = window.Stripe ? Stripe('pk_live_51Mc3WmIYsn5WJ3XKfVY9mm0YZZeUfJ1GyZKjyq1JmA2T37zjQgcjSetaEBAjGTLCnC18Qm7iQ5E7jj5lG9XL4xig00n1Zj4kmZ') : null;
 
 // Inizializzazione
