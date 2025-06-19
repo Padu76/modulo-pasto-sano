@@ -18,12 +18,32 @@ const products = {
     ]
 };
 
-// Codici promozionali
-const promoCodes = {
-    'PRIMAVERA10': 10,
-    'ESTATE15': 15,
-    'BENVENUTO5': 5,
-    'SCONTO20': 20
+// NUOVI CODICI SCONTO CON LIMITAZIONI
+const discountCodes = {
+    'BETA10': {
+        discount: 10,
+        type: 'percentage',
+        maxUses: 20,
+        usesPerUser: 1,
+        expiryDate: '2024-08-31',
+        description: 'Sconto Beta Tester 10%',
+        active: true
+    },
+    'PRIMO5': {
+        discount: 5,
+        type: 'percentage',
+        maxUses: 100,
+        usesPerUser: 1,
+        expiryDate: '2024-12-31',
+        description: 'Sconto Primo Ordine 5%',
+        active: true
+    }
+};
+
+// TRACKING UTILIZZI CODICI
+let discountUsage = {
+    totalUses: {}, // { 'BETA10': 5, 'PRIMO5': 12 }
+    userUses: {} // { 'customer_name': { 'BETA10': 1, 'PRIMO5': 0 } }
 };
 
 // Stato dell'applicazione
@@ -63,8 +83,6 @@ function renderProducts() {
     renderProductSection('breakfast-meals', products.breakfastMeals);
     console.log('✅ Prodotti caricati');
 }
-
-// Rimuovi la funzione renderTestSection separata
 
 function renderProductSection(containerId, productList) {
     const container = document.getElementById(containerId);
@@ -361,27 +379,89 @@ function renderCartItems() {
     }).join('');
 }
 
+// NUOVA FUNZIONE VALIDAZIONE CODICI SCONTO
+function validateDiscountCode(code, userKey) {
+    const upperCode = code.toUpperCase();
+    const discountConfig = discountCodes[upperCode];
+
+    if (!discountConfig) {
+        return { valid: false, error: 'Codice sconto non valido' };
+    }
+
+    if (!discountConfig.active) {
+        return { valid: false, error: 'Codice sconto non più attivo' };
+    }
+
+    // Verifica scadenza
+    const now = new Date();
+    const expiry = new Date(discountConfig.expiryDate);
+    if (now > expiry) {
+        return { valid: false, error: 'Codice sconto scaduto' };
+    }
+
+    // Verifica utilizzi totali
+    const totalUses = discountUsage.totalUses[upperCode] || 0;
+    if (totalUses >= discountConfig.maxUses) {
+        return { valid: false, error: 'Codice sconto esaurito' };
+    }
+
+    // Verifica utilizzi per utente
+    const userUses = discountUsage.userUses[userKey]?.[upperCode] || 0;
+    if (userUses >= discountConfig.usesPerUser) {
+        return { valid: false, error: 'Hai già utilizzato questo codice' };
+    }
+
+    return {
+        valid: true,
+        discount: discountConfig.discount,
+        type: discountConfig.type,
+        description: discountConfig.description
+    };
+}
+
+// NUOVA FUNZIONE REGISTRAZIONE UTILIZZO
+function recordDiscountUsage(code, userKey) {
+    const upperCode = code.toUpperCase();
+    
+    // Incrementa utilizzi totali
+    discountUsage.totalUses[upperCode] = (discountUsage.totalUses[upperCode] || 0) + 1;
+    
+    // Incrementa utilizzi utente
+    if (!discountUsage.userUses[userKey]) {
+        discountUsage.userUses[userKey] = {};
+    }
+    discountUsage.userUses[userKey][upperCode] = (discountUsage.userUses[userKey][upperCode] || 0) + 1;
+    
+    console.log(`✅ Codice ${upperCode} registrato per ${userKey}`);
+    console.log('📊 Utilizzi aggiornati:', discountUsage);
+}
+
+// NUOVA FUNZIONE APPLY PROMO CODE CON LIMITAZIONI
 function applyPromoCode() {
     const promoInput = document.getElementById('promo-code');
     const messageDiv = document.getElementById('promo-message');
+    const customerName = document.getElementById('customer-name')?.value;
     
     if (!promoInput || !messageDiv) return;
     
     const code = promoInput.value.toUpperCase().trim();
+    const userKey = customerName || 'guest'; // Usa nome cliente come chiave
 
     if (!code) {
         messageDiv.innerHTML = '<div class="promo-error">Inserisci un codice promozionale</div>';
         return;
     }
 
-    if (promoCodes[code]) {
-        appliedDiscount = promoCodes[code];
+    const validation = validateDiscountCode(code, userKey);
+    
+    if (validation.valid) {
+        appliedDiscount = validation.discount;
         discountCode = code;
-        messageDiv.innerHTML = `<div class="promo-success">✅ Codice applicato! Sconto del ${appliedDiscount}%</div>`;
+        messageDiv.innerHTML = `<div class="promo-success">✅ ${validation.description} applicato!</div>`;
         updateCartDisplay();
-        showToast(`Sconto del ${appliedDiscount}% applicato!`);
+        showToast(`Sconto del ${validation.discount}% applicato!`);
     } else {
-        messageDiv.innerHTML = '<div class="promo-error">❌ Codice non valido</div>';
+        messageDiv.innerHTML = `<div class="promo-error">❌ ${validation.error}</div>`;
         showToast('Codice promozionale non valido', 'error');
     }
 }
@@ -588,7 +668,15 @@ function initPayPal() {
     });
 }
 
+// MODIFICATA: Registra utilizzo codice sconto
 function handleSuccessfulPayment(method, details) {
+    const customerName = document.getElementById('customer-name')?.value;
+    
+    // NUOVO: Registra utilizzo codice sconto
+    if (discountCode && customerName) {
+        recordDiscountUsage(discountCode, customerName);
+    }
+    
     showToast(`Pagamento ${method} completato con successo! 🎉`);
     
     if (typeof firebase !== 'undefined' && firebase.firestore) {
@@ -602,10 +690,18 @@ function handleSuccessfulPayment(method, details) {
     }, 2000);
 }
 
+// MODIFICATA: Registra utilizzo codice sconto
 function handleCashOrder() {
     if (cart.length === 0) {
         showToast('Aggiungi prodotti al carrello!', 'error');
         return;
+    }
+    
+    const customerName = document.getElementById('customer-name')?.value;
+    
+    // NUOVO: Registra utilizzo codice sconto
+    if (discountCode && customerName) {
+        recordDiscountUsage(discountCode, customerName);
     }
     
     const message = generateWhatsAppMessage();
@@ -759,6 +855,44 @@ function addHapticFeedback() {
     }
 }
 
+// NUOVA FUNZIONE STATISTICHE CODICI SCONTO
+function getDiscountStats() {
+    const stats = {};
+    
+    Object.keys(discountCodes).forEach(code => {
+        const config = discountCodes[code];
+        const totalUses = discountUsage.totalUses[code] || 0;
+        
+        stats[code] = {
+            totalUses: totalUses,
+            maxUses: config.maxUses,
+            remaining: config.maxUses - totalUses,
+            active: config.active,
+            expiryDate: config.expiryDate
+        };
+    });
+    
+    return stats;
+}
+
+// FUNZIONE DEBUG STATISTICHE
+window.showDiscountStats = function() {
+    console.log('📊 STATISTICHE CODICI SCONTO:');
+    console.log('==============================');
+    
+    const stats = getDiscountStats();
+    Object.entries(stats).forEach(([code, data]) => {
+        console.log(`${code}:`);
+        console.log(`  • Utilizzato: ${data.totalUses}/${data.maxUses} volte`);
+        console.log(`  • Rimanenti: ${data.remaining}`);
+        console.log(`  • Attivo: ${data.active ? '✅' : '❌'}`);
+        console.log(`  • Scade: ${data.expiryDate}`);
+        console.log('');
+    });
+    
+    console.log('🔍 Utilizzi per utente:', discountUsage.userUses);
+};
+
 window.addEventListener('beforeunload', () => {
     saveCart();
 });
@@ -805,3 +939,5 @@ setTimeout(() => {
 }, 100);
 
 console.log('🎉 Script caricato completamente!');
+console.log('✅ Sistema codici sconto integrato!');
+console.log('💡 Per vedere le statistiche: showDiscountStats()');
