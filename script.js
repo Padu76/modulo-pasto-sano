@@ -25,7 +25,7 @@ const discountCodes = {
         type: 'percentage',
         maxUses: 20,
         usesPerUser: 1,
-        expiryDate: '2024-08-31',
+        expiryDate: '2025-08-31',
         description: 'Sconto Beta Tester 10%',
         active: true
     },
@@ -34,7 +34,7 @@ const discountCodes = {
         type: 'percentage',
         maxUses: 100,
         usesPerUser: 1,
-        expiryDate: '2024-12-31',
+        expiryDate: '2025-12-31',
         description: 'Sconto Primo Ordine 5%',
         active: true
     }
