@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         await loadDashboardData();
         setupRealTimeListener();
         initializeChart();
+        setupCustomersModal();
         
         console.log('✅ Dashboard inizializzata correttamente');
     } catch (error) {
@@ -32,6 +33,306 @@ document.addEventListener('DOMContentLoaded', async function() {
         showError('Errore durante il caricamento dei dati: ' + error.message);
     }
 });
+
+// Setup modal clienti
+function setupCustomersModal() {
+    const customersCard = document.getElementById('total-customers');
+    if (customersCard) {
+        customersCard.style.cursor = 'pointer';
+        customersCard.addEventListener('click', showCustomersModal);
+    }
+}
+
+// Mostra modal con elenco clienti
+function showCustomersModal() {
+    const customersData = getCustomersData();
+    
+    // Crea modal
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.6);
+        backdrop-filter: blur(4px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 3000;
+        padding: 20px;
+    `;
+    
+    modal.innerHTML = `
+        <div style="
+            background: white;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 30px;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        ">
+            <div style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 25px;
+                padding-bottom: 15px;
+                border-bottom: 2px solid #e2e8f0;
+            ">
+                <h2 style="color: #2d3748; font-size: 24px; margin: 0;">
+                    👥 Elenco Clienti (${customersData.length})
+                </h2>
+                <button onclick="this.closest('.customers-modal').remove()" style="
+                    background: none;
+                    border: none;
+                    font-size: 24px;
+                    cursor: pointer;
+                    color: #6c757d;
+                    padding: 5px;
+                    border-radius: 50%;
+                    transition: all 0.2s;
+                ">×</button>
+            </div>
+            
+            <div style="display: grid; gap: 15px;">
+                ${customersData.map(customer => `
+                    <div style="
+                        background: #f8f9fa;
+                        border-radius: 12px;
+                        padding: 20px;
+                        border-left: 4px solid #7a9e7e;
+                        transition: all 0.2s;
+                        hover: box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                    ">
+                        <div style="
+                            display: grid;
+                            grid-template-columns: 1fr auto;
+                            gap: 20px;
+                            align-items: start;
+                        ">
+                            <div>
+                                <h3 style="
+                                    color: #2d3748;
+                                    font-size: 18px;
+                                    margin: 0 0 8px 0;
+                                    font-weight: 600;
+                                ">
+                                    👤 ${customer.name}
+                                </h3>
+                                <p style="
+                                    color: #4a5568;
+                                    margin: 0 0 12px 0;
+                                    font-size: 16px;
+                                ">
+                                    📱 <a href="tel:${customer.phone}" style="
+                                        color: #7a9e7e;
+                                        text-decoration: none;
+                                        font-weight: 500;
+                                    ">${customer.phone}</a>
+                                </p>
+                                
+                                <div style="
+                                    display: grid;
+                                    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                                    gap: 10px;
+                                    margin-top: 15px;
+                                ">
+                                    <div style="
+                                        background: white;
+                                        padding: 8px 12px;
+                                        border-radius: 8px;
+                                        text-align: center;
+                                        border: 1px solid #e2e8f0;
+                                    ">
+                                        <div style="font-size: 12px; color: #6c757d; text-transform: uppercase; font-weight: 600;">Ordini</div>
+                                        <div style="font-size: 16px; color: #2d3748; font-weight: 700;">${customer.totalOrders}</div>
+                                    </div>
+                                    <div style="
+                                        background: white;
+                                        padding: 8px 12px;
+                                        border-radius: 8px;
+                                        text-align: center;
+                                        border: 1px solid #e2e8f0;
+                                    ">
+                                        <div style="font-size: 12px; color: #6c757d; text-transform: uppercase; font-weight: 600;">Spesa Totale</div>
+                                        <div style="font-size: 16px; color: #7a9e7e; font-weight: 700;">€${customer.totalSpent.toFixed(2)}</div>
+                                    </div>
+                                    <div style="
+                                        background: white;
+                                        padding: 8px 12px;
+                                        border-radius: 8px;
+                                        text-align: center;
+                                        border: 1px solid #e2e8f0;
+                                    ">
+                                        <div style="font-size: 12px; color: #6c757d; text-transform: uppercase; font-weight: 600;">Ultimo Ordine</div>
+                                        <div style="font-size: 14px; color: #2d3748; font-weight: 600;">${formatDate(customer.lastOrder)}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div style="text-align: right;">
+                                <div style="
+                                    background: ${customer.totalOrders >= 5 ? '#c6f6d5' : '#fed7d7'};
+                                    color: ${customer.totalOrders >= 5 ? '#276749' : '#c53030'};
+                                    padding: 6px 12px;
+                                    border-radius: 20px;
+                                    font-size: 12px;
+                                    font-weight: 600;
+                                    text-transform: uppercase;
+                                    display: inline-block;
+                                ">
+                                    ${customer.totalOrders >= 5 ? '⭐ VIP' : '🆕 Nuovo'}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Metodi di pagamento preferiti -->
+                        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e2e8f0;">
+                            <small style="color: #6c757d; font-size: 13px;">
+                                <strong>Metodi pagamento:</strong> 
+                                ${Object.entries(customer.paymentMethods).map(([method, count]) => 
+                                    `${getPaymentIcon(method)} ${method} (${count}x)`
+                                ).join(' • ')}
+                            </small>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+            
+            <div style="
+                margin-top: 25px;
+                padding-top: 20px;
+                border-top: 1px solid #e2e8f0;
+                text-align: center;
+            ">
+                <button onclick="exportCustomersToCSV()" style="
+                    background: #7a9e7e;
+                    color: white;
+                    border: none;
+                    padding: 12px 24px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-weight: 600;
+                    margin-right: 10px;
+                ">📥 Esporta Clienti CSV</button>
+                
+                <button onclick="this.closest('.customers-modal').remove()" style="
+                    background: #6c757d;
+                    color: white;
+                    border: none;
+                    padding: 12px 24px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-weight: 600;
+                ">Chiudi</button>
+            </div>
+        </div>
+    `;
+    
+    modal.className = 'customers-modal';
+    document.body.appendChild(modal);
+    
+    // Click outside to close
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    });
+}
+
+// Calcola dati clienti
+function getCustomersData() {
+    const customerMap = {};
+    
+    allOrders.forEach(order => {
+        const name = order.customerName || 'Cliente Sconosciuto';
+        const phone = order.customerPhone || 'Non fornito';
+        const key = `${name}_${phone}`;
+        
+        if (!customerMap[key]) {
+            customerMap[key] = {
+                name: name,
+                phone: phone,
+                totalOrders: 0,
+                totalSpent: 0,
+                lastOrder: null,
+                paymentMethods: {}
+            };
+        }
+        
+        customerMap[key].totalOrders++;
+        customerMap[key].totalSpent += order.totalAmount || 0;
+        
+        // Ultimo ordine
+        const orderDate = new Date(order.timestamp);
+        if (!customerMap[key].lastOrder || orderDate > new Date(customerMap[key].lastOrder)) {
+            customerMap[key].lastOrder = orderDate;
+        }
+        
+        // Metodi di pagamento
+        const paymentMethod = order.paymentMethodName || order.paymentMethod || 'Non specificato';
+        customerMap[key].paymentMethods[paymentMethod] = (customerMap[key].paymentMethods[paymentMethod] || 0) + 1;
+    });
+    
+    // Converti in array e ordina per spesa totale
+    return Object.values(customerMap)
+        .sort((a, b) => b.totalSpent - a.totalSpent);
+}
+
+// Icone metodi di pagamento
+function getPaymentIcon(method) {
+    switch(method.toLowerCase()) {
+        case 'paypal': return '🅿️';
+        case 'carta di credito/debito': return '💳';
+        case 'stripe': return '💳';
+        case 'contanti alla consegna': return '💰';
+        case 'cash': return '💰';
+        default: return '💳';
+    }
+}
+
+// Esporta clienti in CSV
+function exportCustomersToCSV() {
+    const customersData = getCustomersData();
+    
+    const headers = [
+        'Nome', 'Telefono', 'Totale Ordini', 'Spesa Totale (€)', 
+        'Ultimo Ordine', 'Metodi Pagamento', 'Tipo Cliente'
+    ];
+    
+    const csvData = customersData.map(customer => [
+        `"${customer.name}"`,
+        `"${customer.phone}"`,
+        customer.totalOrders,
+        customer.totalSpent.toFixed(2),
+        formatDate(customer.lastOrder),
+        `"${Object.entries(customer.paymentMethods).map(([method, count]) => `${method} (${count}x)`).join('; ')}"`,
+        customer.totalOrders >= 5 ? 'VIP' : 'Nuovo'
+    ]);
+    
+    const csvContent = [headers, ...csvData]
+        .map(row => row.join(','))
+        .join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', `clienti_pasto_sano_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    console.log(`📥 Esportati ${customersData.length} clienti in CSV`);
+}
 
 // Setup Firestore real-time listener con notifiche migliorate
 function setupRealTimeListener() {
@@ -160,7 +461,7 @@ function hideNotification(notification) {
     }, 300);
 }
 
-// Migliorata: Update orders from Firestore snapshot
+// Update orders from Firestore snapshot
 function updateOrdersFromSnapshot(snapshot) {
     allOrders = [];
     
@@ -177,7 +478,7 @@ function updateOrdersFromSnapshot(snapshot) {
     console.log(`📦 ${allOrders.length} ordini caricati`);
 }
 
-// Migliorata: Render orders con più informazioni
+// MIGLIORATA: Render orders senza status confusi
 function renderOrders() {
     const container = document.getElementById('orders-list');
     if (!container) return;
@@ -196,8 +497,9 @@ function renderOrders() {
     container.innerHTML = filteredOrders.map(order => {
         const isSelected = selectedOrders.includes(order.id);
         const formattedDate = formatDateTime(order.timestamp);
-        const statusClass = getStatusClass(order.status);
-        const statusText = getStatusText(order.status);
+        
+        // NUOVO: Status basato solo su pagamento
+        const paymentStatus = getPaymentStatus(order);
         
         // Calcola numero totale articoli
         const totalItems = order.items?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0;
@@ -210,7 +512,7 @@ function renderOrders() {
                                ${isSelected ? 'checked' : ''} 
                                onchange="toggleOrderSelection('${order.id}')">
                         <span class="order-id">#${order.id.substring(0, 8)}</span>
-                        <span class="order-status ${statusClass}">${statusText}</span>
+                        <span class="payment-status ${paymentStatus.class}">${paymentStatus.text}</span>
                     </div>
                     <span class="order-total">${(order.totalAmount || 0).toFixed(2)}€</span>
                 </div>
@@ -254,6 +556,23 @@ function renderOrders() {
     }).join('');
 
     updateSelectedCount();
+}
+
+// NUOVA: Funzione per determinare status pagamento
+function getPaymentStatus(order) {
+    const paymentMethod = order.paymentMethod?.toLowerCase() || '';
+    
+    if (paymentMethod === 'cash') {
+        return {
+            text: '💰 CASH ALLA CONSEGNA',
+            class: 'payment-cash'
+        };
+    } else {
+        return {
+            text: '💳 PAGATO ONLINE',
+            class: 'payment-online'
+        };
+    }
 }
 
 // Funzione helper per formattare data e ora
@@ -406,7 +725,9 @@ function calculateStats() {
         allOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0) / allOrders.length : 0;
     
     // Clienti unici
-    const uniqueCustomers = new Set(allOrders.map(order => order.customerName)).size;
+    const uniqueCustomers = new Set(
+        allOrders.map(order => `${order.customerName}_${order.customerPhone}`)
+    ).size;
     
     // Update DOM
     updateStatElement('orders-today', todayOrders.length.toString());
@@ -429,28 +750,6 @@ function updateStatElement(elementId, value) {
     }
 }
 
-// Get status class for styling
-function getStatusClass(status) {
-    switch (status?.toLowerCase()) {
-        case 'pending': return 'status-nuovo';
-        case 'confirmed': return 'status-confermato';
-        case 'ready': return 'status-pronto';
-        case 'paid': return 'status-confermato';
-        default: return 'status-nuovo';
-    }
-}
-
-// Get status text
-function getStatusText(status) {
-    switch (status?.toLowerCase()) {
-        case 'pending': return 'Da Confermare';
-        case 'confirmed': return 'Confermato';
-        case 'ready': return 'Pronto';
-        case 'paid': return 'Pagato';
-        default: return 'Nuovo';
-    }
-}
-
 // Export to CSV
 function exportToCSV() {
     const ordersToExport = selectedOrders.length > 0 ? 
@@ -464,7 +763,7 @@ function exportToCSV() {
     
     const headers = [
         'ID Ordine', 'Cliente', 'Telefono', 'Data Ordine', 'Data Ritiro', 
-        'Metodo Pagamento', 'Status', 'Totale', 'Sconto', 'Articoli', 'Dettagli'
+        'Metodo Pagamento', 'Status Pagamento', 'Totale', 'Sconto', 'Articoli', 'Dettagli'
     ];
     
     const csvData = ordersToExport.map(order => [
@@ -474,7 +773,7 @@ function exportToCSV() {
         formatDateTime(order.timestamp),
         formatDate(order.pickupDate),
         `"${order.paymentMethodName || order.paymentMethod || ''}"`,
-        getStatusText(order.status),
+        order.paymentMethod === 'cash' ? 'Cash alla Consegna' : 'Pagato Online',
         (order.totalAmount || 0).toFixed(2),
         order.discountCode || '',
         order.items?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0,
@@ -553,8 +852,10 @@ function generateProductionDoc() {
     ordersToProcess
         .sort((a, b) => new Date(a.pickupDate) - new Date(b.pickupDate))
         .forEach(order => {
+            const paymentStatus = order.paymentMethod === 'cash' ? 'Cash alla Consegna' : 'Pagato Online';
+            
             productionDoc += `\n👤 ${order.customerName || 'Cliente'} - Tel: ${order.customerPhone || 'N/A'}\n`;
-            productionDoc += `📅 Ritiro: ${formatDate(order.pickupDate)} - ${order.paymentMethodName || order.paymentMethod}\n`;
+            productionDoc += `📅 Ritiro: ${formatDate(order.pickupDate)} - ${paymentStatus}\n`;
             productionDoc += `💰 Totale: €${(order.totalAmount || 0).toFixed(2)}\n`;
             
             if (order.discountCode) {
@@ -628,7 +929,7 @@ function initializeChart() {
     const ctx = document.getElementById('salesChart');
     if (!ctx) return;
     
-    // Dati demo per il grafico
+    // Dati per il grafico degli ultimi 7 giorni
     const last7Days = [];
     const revenues = [];
     
@@ -770,12 +1071,12 @@ function toggleSound() {
     console.log(`🔊 Suoni notifiche: ${soundEnabled ? 'attivati' : 'disattivati'}`);
 }
 
-// Aggiungi controllo per i suoni nell'header (opzionale)
+// Aggiungi controllo per i suoni nell'header
 document.addEventListener('DOMContentLoaded', function() {
     const header = document.querySelector('.header .container');
     if (header) {
         const soundButton = document.createElement('button');
-        soundButton.innerHTML = '🔊';
+        soundButton.innerHTML = soundEnabled ? '🔊' : '🔇';
         soundButton.style.cssText = `
             position: absolute;
             top: 20px;
@@ -790,7 +1091,10 @@ document.addEventListener('DOMContentLoaded', function() {
             transition: all 0.2s;
         `;
         soundButton.title = 'Toggle notifiche sonore';
-        soundButton.addEventListener('click', toggleSound);
+        soundButton.addEventListener('click', () => {
+            toggleSound();
+            soundButton.innerHTML = soundEnabled ? '🔊' : '🔇';
+        });
         header.appendChild(soundButton);
     }
 });
@@ -798,3 +1102,5 @@ document.addEventListener('DOMContentLoaded', function() {
 console.log('🎉 Dashboard script caricato completamente!');
 console.log('🔔 Notifiche real-time attivate');
 console.log('📱 Supporto telefono clienti integrato');
+console.log('👥 Sezione clienti cliccabile attivata');
+console.log('💳 Status pagamento semplificati');
