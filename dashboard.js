@@ -1,1009 +1,800 @@
-// Dashboard Pasto Sano - JavaScript Corretto per Gestione Ordini Reali
-// SOSTITUISCI il file "dashboard.js" in GitHub con questo codice
+// DASHBOARD.JS - VERSIONE MIGLIORATA
 
+// State management
 let allOrders = [];
+let selectedOrders = [];
 let currentFilter = 'tutti';
-let lastOrderCount = 0;
-let salesChart = null;
-let selectedOrders = new Set();
+let chart = null;
+let soundEnabled = true;
+let lastNotificationTime = 0;
 
-// INIZIALIZZAZIONE PRINCIPALE
-document.addEventListener('DOMContentLoaded', async () => {
-    console.log('🚀 Dashboard inizializzata');
-    await initializeDashboard();
-});
+// Real-time listener
+let ordersListener = null;
 
-// INIZIALIZZAZIONE DASHBOARD
-async function initializeDashboard() {
-    await requestNotificationPermission();
-    await loadFirebaseConfig();
-    await waitForFirebase();
+// Initialize app
+document.addEventListener('DOMContentLoaded', async function() {
+    console.log('🚀 Inizializzazione Dashboard...');
     
-    try {
-        await loadAllData();
-        if (lastOrderCount === 0) lastOrderCount = allOrders.length;
-        updateStats();
-        displayOrders();
-        updateTopProducts();
-        initSalesChart();
-        console.log('✅ Dashboard completamente caricata');
-    } catch (error) {
-        console.error('❌ Errore caricamento dashboard:', error);
-        showError('Errore nel caricamento dei dati: ' + error.message);
-    }
-}
-
-// RICHIESTA PERMESSI NOTIFICHE
-async function requestNotificationPermission() {
-    if ('Notification' in window) {
-        try {
-            const permission = await Notification.requestPermission();
-            if (permission === 'granted') {
-                console.log('✅ Permessi notifiche concessi');
-                showNotification('🔔 Notifiche Attive', 'Riceverai notifiche per i nuovi ordini');
-            }
-        } catch (error) {
-            console.log('⚠️ Notifiche non supportate:', error);
-        }
-    }
-}
-
-// CARICA FIREBASE CONFIG
-function loadFirebaseConfig() {
-    return new Promise((resolve, reject) => {
-        if (typeof window.getOrders === 'function') {
-            console.log('✅ Firebase già disponibile');
-            resolve();
-            return;
-        }
-        
-        console.log('📄 Caricamento Firebase config...');
-        const script = document.createElement('script');
-        script.src = './firebase-config.js';
-        script.onload = () => {
-            console.log('✅ Firebase config caricato');
-            resolve();
-        };
-        script.onerror = () => {
-            console.error('❌ Errore caricamento Firebase config');
-            reject(new Error('Impossibile caricare Firebase config'));
-        };
-        document.head.appendChild(script);
-    });
-}
-
-// ASPETTA FIREBASE
-function waitForFirebase() {
-    return new Promise((resolve) => {
-        console.log('⏳ Attendo che Firebase sia pronto...');
-        const checkFirebase = () => {
-            if (typeof window.getOrders === 'function') {
-                console.log('✅ Firebase pronto');
-                resolve();
-            } else {
-                setTimeout(checkFirebase, 500);
-            }
-        };
-        checkFirebase();
-    });
-}
-
-// CARICAMENTO DATI - RIMOSSO FALLBACK AI DATI MOCK
-async function loadAllData() {
-    try {
-        console.log('📊 Caricamento ordini da Firebase...');
-        
-        if (typeof window.getOrders !== 'function') {
-            throw new Error('Firebase non inizializzato correttamente');
-        }
-        
-        allOrders = await window.getOrders(100);
-        console.log(`✅ ${allOrders.length} ordini caricati da Firebase`);
-        
-        // VERIFICA DATI ORDINI
-        if (allOrders.length > 0) {
-            console.log('🔍 Verifica primo ordine:', allOrders[0]);
-            
-            // Controlla se gli ordini hanno i campi necessari
-            const firstOrder = allOrders[0];
-            if (!firstOrder.customerName || firstOrder.customerName === 'Cliente Web') {
-                console.warn('⚠️ PROBLEMA: Gli ordini non contengono nomi reali dei clienti');
-                console.warn('📋 Campi disponibili nell\'ordine:', Object.keys(firstOrder));
-            }
-            
-            if (!firstOrder.customerPhone) {
-                console.warn('⚠️ PROBLEMA: Gli ordini non contengono numeri di telefono');
-            }
-        }
-        
-    } catch (error) {
-        console.error('❌ Errore caricamento ordini da Firebase:', error);
-        throw error; // Non usa più dati mock di fallback
-    }
-}
-
-// AGGIORNAMENTO STATISTICHE
-function updateStats() {
-    console.log('📈 Aggiornamento statistiche...');
-    
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    const todayOrders = allOrders.filter(order => {
-        try {
-            const orderDate = order.timestamp && order.timestamp.toDate ? 
-                order.timestamp.toDate() : new Date(order.timestamp);
-            return orderDate >= today;
-        } catch (e) {
-            return false;
-        }
-    });
-    
-    const ordersToday = todayOrders.length;
-    const revenueToday = todayOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
-    const avgOrder = allOrders.length > 0 ? 
-        allOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0) / allOrders.length : 0;
-    const uniqueCustomers = getUniqueCustomers(allOrders).size;
-    
-    document.getElementById('orders-today').textContent = ordersToday;
-    document.getElementById('revenue-today').textContent = `${revenueToday.toFixed(2)}€`;
-    document.getElementById('avg-order').textContent = `${avgOrder.toFixed(2)}€`;
-    document.getElementById('total-customers').textContent = uniqueCustomers;
-    
-    updateChangeIndicators(todayOrders);
-    console.log(`✅ Statistiche aggiornate: ${ordersToday} ordini oggi, ${revenueToday.toFixed(2)}€ fatturato, ${uniqueCustomers} clienti unici`);
-}
-
-// NORMALIZZAZIONE TELEFONO MIGLIORATA
-function normalizePhone(phone) {
-    if (!phone) return '';
-    
-    // Rimuovi spazi, trattini, punti
-    let normalized = phone.replace(/[\s\-\.]/g, '');
-    
-    // Rimuovi prefisso internazionale Italia
-    if (normalized.startsWith('+39')) normalized = normalized.substring(3);
-    if (normalized.startsWith('0039')) normalized = normalized.substring(4);
-    
-    // Rimuovi zero iniziale se presente (numeri fissi italiani)
-    if (normalized.startsWith('0') && normalized.length === 11) {
-        normalized = normalized.substring(1);
-    }
-    
-    return normalized;
-}
-
-function getUniqueCustomers(orders) {
-    const uniqueData = new Map();
-    
-    orders.forEach(order => {
-        // Usa il telefono normalizzato come chiave principale
-        const normalizedPhone = normalizePhone(order.customerPhone);
-        
-        if (normalizedPhone) {
-            // Se non abbiamo ancora questo numero, aggiungilo
-            if (!uniqueData.has(normalizedPhone)) {
-                uniqueData.set(normalizedPhone, {
-                    phone: order.customerPhone,
-                    name: order.customerName || 'Cliente',
-                    email: order.customerEmail || null
-                });
-            }
-        } else if (order.customerEmail) {
-            // Se non c'è telefono ma c'è email, usa l'email
-            uniqueData.set(order.customerEmail, {
-                phone: order.customerPhone || null,
-                name: order.customerName || 'Cliente',
-                email: order.customerEmail
-            });
-        }
-    });
-    
-    return uniqueData;
-}
-
-function updateChangeIndicators(todayOrders) {
-    const ordersChange = todayOrders.length > 0 ? '+100' : '0';
-    const revenueChange = todayOrders.length > 0 ? '+100' : '0';
-    
-    document.getElementById('orders-change').innerHTML = 
-        `<span style="color: #38a169;">↗ ${ordersChange}%</span> vs ieri`;
-    document.getElementById('revenue-change').innerHTML = 
-        `<span style="color: #38a169;">↗ ${revenueChange}%</span> vs ieri`;
-    document.getElementById('avg-change').textContent = 'vs settimana scorsa';
-    document.getElementById('customers-change').textContent = 'clienti registrati';
-}
-
-// VISUALIZZAZIONE ORDINI MIGLIORATA
-function displayOrders() {
-    console.log('📋 Visualizzazione ordini...');
-    
-    const ordersList = document.getElementById('orders-list');
-    if (!ordersList) return;
-    
-    let filteredOrders = getFilteredOrders();
-    
-    if (filteredOrders.length === 0) {
-        ordersList.innerHTML = '<div class="loading">Nessun ordine trovato per il filtro selezionato</div>';
+    if (typeof firebase === 'undefined') {
+        showError('Firebase non caricato correttamente');
         return;
     }
+
+    try {
+        await initializeFirestore();
+        await loadDashboardData();
+        setupRealTimeListener();
+        initializeChart();
+        
+        console.log('✅ Dashboard inizializzata correttamente');
+    } catch (error) {
+        console.error('❌ Errore inizializzazione:', error);
+        showError('Errore durante il caricamento dei dati: ' + error.message);
+    }
+});
+
+// Setup Firestore real-time listener con notifiche migliorate
+function setupRealTimeListener() {
+    console.log('🔄 Configurazione listener real-time...');
     
-    ordersList.innerHTML = filteredOrders.map(order => {
-        const orderDate = order.timestamp && order.timestamp.toDate ? 
-            order.timestamp.toDate() : new Date();
+    if (ordersListener) {
+        ordersListener();
+    }
+
+    ordersListener = firebase.firestore()
+        .collection('orders')
+        .orderBy('timestamp', 'desc')
+        .onSnapshot((snapshot) => {
+            console.log('📡 Aggiornamento real-time ricevuto');
             
-        const formattedDate = orderDate.toLocaleDateString('it-IT', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
+            let hasNewOrders = false;
+            let newOrdersCount = 0;
+            let newOrdersData = [];
+            
+            snapshot.docChanges().forEach((change) => {
+                if (change.type === 'added') {
+                    const orderData = change.doc.data();
+                    const orderTime = orderData.timestamp?.toDate?.()?.getTime() || Date.now();
+                    
+                    // Considera "nuovo" solo se aggiunto negli ultimi 30 secondi
+                    if (orderTime > lastNotificationTime && (Date.now() - orderTime) < 30000) {
+                        hasNewOrders = true;
+                        newOrdersCount++;
+                        newOrdersData.push({
+                            id: change.doc.id,
+                            ...orderData
+                        });
+                    }
+                }
+            });
+
+            // Aggiorna i dati
+            updateOrdersFromSnapshot(snapshot);
+            
+            // Mostra notifiche solo per ordini veramente nuovi
+            if (hasNewOrders && newOrdersCount > 0) {
+                console.log(`🆕 ${newOrdersCount} nuovo/i ordine/i rilevato/i`);
+                showNewOrderNotification(newOrdersCount, newOrdersData);
+                playNotificationSound();
+                lastNotificationTime = Date.now();
+            }
+            
+            calculateStats();
+            renderOrders();
+            updateTopProducts();
+        }, (error) => {
+            console.error('❌ Errore listener:', error);
+            showError('Errore connessione real-time: ' + error.message);
         });
+}
+
+// Funzione migliorata per notifiche ordini nuovi
+function showNewOrderNotification(count, orders) {
+    const container = document.getElementById('notifications');
+    if (!container) return;
+
+    // Crea notifica principale
+    const notification = document.createElement('div');
+    notification.className = 'notification';
+    
+    const mainOrder = orders[0];
+    const customerName = mainOrder.customerName || 'Cliente Sconosciuto';
+    const total = mainOrder.totalAmount || 0;
+    const paymentMethod = mainOrder.paymentMethodName || mainOrder.paymentMethod || 'Non specificato';
+    const pickupDate = mainOrder.pickupDate || 'Data non specificata';
+    
+    notification.innerHTML = `
+        <button class="notification-close">&times;</button>
+        <div class="notification-header">
+            <span>🆕</span>
+            ${count === 1 ? 'Nuovo Ordine!' : `${count} Nuovi Ordini!`}
+        </div>
+        <div class="notification-body">
+            <strong>${customerName}</strong><br>
+            💰 ${total.toFixed(2)}€ - ${paymentMethod}<br>
+            📅 Ritiro: ${formatDate(pickupDate)}<br>
+            📱 Tel: ${mainOrder.customerPhone || 'Non fornito'}
+            ${count > 1 ? `<br><small>+ altri ${count-1} ordini</small>` : ''}
+        </div>
+    `;
+
+    // Event listeners
+    notification.querySelector('.notification-close').addEventListener('click', (e) => {
+        e.stopPropagation();
+        hideNotification(notification);
+    });
+
+    notification.addEventListener('click', () => {
+        hideNotification(notification);
+        // Scroll to the new order in the list
+        const orderElement = document.querySelector(`[data-order-id="${mainOrder.id}"]`);
+        if (orderElement) {
+            orderElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            orderElement.style.backgroundColor = '#fffbeb';
+            setTimeout(() => {
+                orderElement.style.backgroundColor = '';
+            }, 3000);
+        }
+    });
+
+    container.appendChild(notification);
+
+    // Show with animation
+    setTimeout(() => notification.classList.add('show'), 100);
+
+    // Auto-hide after 8 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            hideNotification(notification);
+        }
+    }, 8000);
+}
+
+// Funzione helper per nascondere notifiche
+function hideNotification(notification) {
+    notification.classList.add('hide');
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+        }
+    }, 300);
+}
+
+// Migliorata: Update orders from Firestore snapshot
+function updateOrdersFromSnapshot(snapshot) {
+    allOrders = [];
+    
+    snapshot.forEach((doc) => {
+        const data = doc.data();
+        const order = {
+            id: doc.id,
+            ...data,
+            timestamp: data.timestamp?.toDate?.() || new Date()
+        };
+        allOrders.push(order);
+    });
+    
+    console.log(`📦 ${allOrders.length} ordini caricati`);
+}
+
+// Migliorata: Render orders con più informazioni
+function renderOrders() {
+    const container = document.getElementById('orders-list');
+    if (!container) return;
+
+    const filteredOrders = getFilteredOrders();
+    
+    if (filteredOrders.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: #a0aec0;">
+                <p>📭 Nessun ordine trovato per il filtro selezionato</p>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = filteredOrders.map(order => {
+        const isSelected = selectedOrders.includes(order.id);
+        const formattedDate = formatDateTime(order.timestamp);
+        const statusClass = getStatusClass(order.status);
+        const statusText = getStatusText(order.status);
         
-        const itemsText = (order.items || []).map(item => 
-            `${item.name || 'Prodotto'} (x${item.quantity || 1})`
-        ).join(', ');
-        
-        const discountText = order.appliedDiscount > 0 ? 
-            `<br><small style="color: #e53e3e;">Sconto ${order.discountCode}: -${order.appliedDiscount}%</small>` : '';
-        
-        // GESTIONE MIGLIORATA DEI DATI CLIENTE
-        const customerName = getCustomerDisplayName(order);
-        const customerPhone = getCustomerDisplayPhone(order);
-        const customerInfo = getCustomerInfo(order);
+        // Calcola numero totale articoli
+        const totalItems = order.items?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0;
         
         return `
-            <div class="order-item ${selectedOrders.has(order.id) ? 'selected' : ''}" data-order-id="${order.id}">
+            <div class="order-item ${isSelected ? 'selected' : ''}" data-order-id="${order.id}">
                 <div class="order-header">
-                    <div style="display: flex; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
                         <input type="checkbox" class="order-checkbox" 
-                               ${selectedOrders.has(order.id) ? 'checked' : ''} 
+                               ${isSelected ? 'checked' : ''} 
                                onchange="toggleOrderSelection('${order.id}')">
                         <span class="order-id">#${order.id.substring(0, 8)}</span>
+                        <span class="order-status ${statusClass}">${statusText}</span>
                     </div>
                     <span class="order-total">${(order.totalAmount || 0).toFixed(2)}€</span>
                 </div>
+                
                 <div class="order-details">
-                    <strong style="color: ${customerName === 'Cliente Web' ? '#e53e3e' : '#2d3748'};">
-                        ${customerName}
-                    </strong><br>
-                    📱 ${customerPhone}<br>
-                    ${order.customerEmail ? `📧 ${order.customerEmail}<br>` : ''}
-                    📅 Ritiro: ${order.pickupDate || 'N/A'}<br>
-                    🍽️ ${itemsText || 'Nessun articolo'}${discountText}
-                    ${customerInfo.warning ? `<br><small style="color: #e53e3e;">⚠️ ${customerInfo.warning}</small>` : ''}
-                </div>
-                <div style="margin-top: 8px;">
-                    <span class="order-status status-nuovo">Nuovo</span>
-                    <small style="color: #718096; margin-left: 10px;">${formattedDate}</small>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 10px;">
+                        <div>
+                            <strong>👤 ${order.customerName || 'Nome non disponibile'}</strong><br>
+                            📱 <a href="tel:${order.customerPhone || ''}" style="color: #7a9e7e; text-decoration: none;">
+                                ${order.customerPhone || 'Telefono non fornito'}
+                            </a>
+                        </div>
+                        <div>
+                            📅 <strong>Ritiro:</strong> ${formatDate(order.pickupDate)}<br>
+                            💳 <strong>Pagamento:</strong> ${order.paymentMethodName || order.paymentMethod || 'Non specificato'}
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 8px;">
+                        <strong>📋 Ordine (${totalItems} pezzi):</strong><br>
+                        ${order.items?.map(item => 
+                            `• ${item.name} x${item.quantity || 1} (${((item.price || 0) * (item.quantity || 1)).toFixed(2)}€)`
+                        ).join('<br>') || 'Dettagli non disponibili'}
+                    </div>
+                    
+                    ${order.discountCode ? `
+                        <div style="color: #dc3545; font-weight: 600; margin-bottom: 8px;">
+                            🎁 Sconto ${order.discountCode} (-${order.discountPercent || 0}%): 
+                            -${(order.discountAmount || 0).toFixed(2)}€
+                        </div>
+                    ` : ''}
+                    
+                    <small style="color: #6c757d;">
+                        🕒 Ordinato il ${formattedDate} • 
+                        ${order.source === 'website' ? '🌐 Sito Web' : '📱 App'} •
+                        ID: ${order.id}
+                    </small>
                 </div>
             </div>
         `;
     }).join('');
-    
-    console.log(`✅ Visualizzati ${filteredOrders.length} ordini`);
-}
 
-// FUNZIONI DI SUPPORTO PER I DATI CLIENTE
-function getCustomerDisplayName(order) {
-    // Priorità: customerName reale > from (numero WhatsApp) > fallback
-    if (order.customerName && order.customerName !== 'Cliente Web' && order.customerName !== 'N/A') {
-        return order.customerName;
-    }
-    
-    // Se abbiamo il campo 'from' (numero WhatsApp), usalo
-    if (order.from) {
-        return `Cliente ${order.from.replace('whatsapp:', '').replace('@c.us', '')}`;
-    }
-    
-    // Se abbiamo il numero di telefono, usalo
-    if (order.customerPhone && order.customerPhone !== 'N/A') {
-        return `Cliente ${order.customerPhone}`;
-    }
-    
-    return 'Cliente Web';
-}
-
-function getCustomerDisplayPhone(order) {
-    // Priorità: customerPhone > from > N/A
-    if (order.customerPhone && order.customerPhone !== 'N/A') {
-        return order.customerPhone;
-    }
-    
-    if (order.from) {
-        return order.from.replace('whatsapp:', '').replace('@c.us', '');
-    }
-    
-    return 'N/A';
-}
-
-function getCustomerInfo(order) {
-    const info = { warning: null };
-    
-    // Se il nome è ancora "Cliente Web", c'è un problema
-    if (!order.customerName || order.customerName === 'Cliente Web') {
-        info.warning = 'Dati cliente non estratti correttamente da WhatsApp';
-    }
-    
-    // Se manca il numero di telefono, c'è un problema
-    if (!order.customerPhone || order.customerPhone === 'N/A') {
-        info.warning = 'Numero di telefono mancante';
-    }
-    
-    return info;
-}
-
-function getFilteredOrders() {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    switch (currentFilter) {
-        case 'oggi':
-            return allOrders.filter(order => {
-                try {
-                    const orderDate = order.timestamp && order.timestamp.toDate ? 
-                        order.timestamp.toDate() : new Date(order.timestamp);
-                    return orderDate >= today;
-                } catch (e) {
-                    return false;
-                }
-            });
-        case 'settimana':
-            const weekAgo = new Date(today);
-            weekAgo.setDate(weekAgo.getDate() - 7);
-            return allOrders.filter(order => {
-                try {
-                    const orderDate = order.timestamp && order.timestamp.toDate ? 
-                        order.timestamp.toDate() : new Date(order.timestamp);
-                    return orderDate >= weekAgo;
-                } catch (e) {
-                    return false;
-                }
-            });
-        case 'mese':
-            const monthAgo = new Date(today);
-            monthAgo.setMonth(monthAgo.getMonth() - 1);
-            return allOrders.filter(order => {
-                try {
-                    const orderDate = order.timestamp && order.timestamp.toDate ? 
-                        order.timestamp.toDate() : new Date(order.timestamp);
-                    return orderDate >= monthAgo;
-                } catch (e) {
-                    return false;
-                }
-            });
-        default:
-            return allOrders;
-    }
-}
-
-// FILTRI ORDINI
-window.filterOrders = function(filter) {
-    currentFilter = filter;
-    
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    
-    const clickedBtn = Array.from(document.querySelectorAll('.filter-btn'))
-        .find(btn => btn.textContent.toLowerCase().includes(filter.toLowerCase()));
-    if (clickedBtn) {
-        clickedBtn.classList.add('active');
-    }
-    
-    displayOrders();
-    console.log(`🔍 Filtro applicato: ${filter}`);
-};
-
-// SELEZIONE ORDINI
-window.toggleOrderSelection = function(orderId) {
-    if (selectedOrders.has(orderId)) {
-        selectedOrders.delete(orderId);
-    } else {
-        selectedOrders.add(orderId);
-    }
     updateSelectedCount();
-    updateOrderDisplay(orderId);
-};
-
-window.selectAllOrders = function() {
-    const filteredOrders = getFilteredOrders();
-    selectedOrders.clear();
-    filteredOrders.forEach(order => selectedOrders.add(order.id));
-    updateSelectedCount();
-    displayOrders();
-};
-
-window.clearSelection = function() {
-    selectedOrders.clear();
-    updateSelectedCount();
-    displayOrders();
-};
-
-function updateSelectedCount() {
-    const countElement = document.getElementById('selected-count');
-    if (countElement) {
-        countElement.textContent = `${selectedOrders.size} selezionati`;
-    }
 }
 
-function updateOrderDisplay(orderId) {
-    const orderElement = document.querySelector(`[data-order-id="${orderId}"]`);
-    if (orderElement) {
-        if (selectedOrders.has(orderId)) {
-            orderElement.classList.add('selected');
-        } else {
-            orderElement.classList.remove('selected');
-        }
-    }
-}
-
-// TOP PRODUCTS
-function updateTopProducts() {
-    console.log('🏆 Aggiornamento top products...');
+// Funzione helper per formattare data e ora
+function formatDateTime(date) {
+    if (!date) return 'Data non disponibile';
     
-    const productSales = {};
-    
-    allOrders.forEach(order => {
-        if (order.items) {
-            order.items.forEach(item => {
-                const name = item.name || 'Prodotto sconosciuto';
-                if (productSales[name]) {
-                    productSales[name] += item.quantity || 1;
-                } else {
-                    productSales[name] = item.quantity || 1;
-                }
-            });
-        }
-    });
-    
-    const sortedProducts = Object.entries(productSales)
-        .sort(([,a], [,b]) => b - a)
-        .slice(0, 10);
-    
-    const topProductsList = document.getElementById('top-products-list');
-    if (!topProductsList) return;
-    
-    if (sortedProducts.length === 0) {
-        topProductsList.innerHTML = '<div class="loading">Nessun dato disponibile</div>';
-        return;
-    }
-    
-    topProductsList.innerHTML = sortedProducts.map(([name, sales]) => `
-        <div class="product-item">
-            <span class="product-name">${name.length > 40 ? name.substring(0, 40) + '...' : name}</span>
-            <span class="product-sales">${sales} venduti</span>
-        </div>
-    `).join('');
-    
-    console.log(`✅ Top products aggiornati: ${sortedProducts.length} prodotti`);
-}
-
-// GRAFICO VENDITE
-function initSalesChart() {
-    const ctx = document.getElementById('salesChart');
-    if (!ctx) return;
-
-    if (salesChart) {
-        salesChart.destroy();
-        salesChart = null;
-    }
-
-    const chartData = getSalesChartData();
-    
-    salesChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: chartData.labels,
-            datasets: [
-                {
-                    label: 'Ordini',
-                    data: chartData.orders,
-                    borderColor: '#3f6844',
-                    backgroundColor: 'rgba(63, 104, 68, 0.1)',
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.4,
-                    yAxisID: 'y'
-                },
-                {
-                    label: 'Fatturato (€)',
-                    data: chartData.revenue,
-                    borderColor: '#7a9e7e',
-                    backgroundColor: 'rgba(122, 158, 126, 0.1)',
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.4,
-                    yAxisID: 'y1'
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: {
-                mode: 'index',
-                intersect: false,
-            },
-            scales: {
-                x: {
-                    display: true,
-                    title: {
-                        display: true,
-                        text: 'Giorno'
-                    },
-                    grid: {
-                        color: 'rgba(0,0,0,0.1)'
-                    }
-                },
-                y: {
-                    type: 'linear',
-                    display: true,
-                    position: 'left',
-                    title: {
-                        display: true,
-                        text: 'Numero Ordini',
-                        color: '#3f6844'
-                    },
-                    grid: {
-                        color: 'rgba(0,0,0,0.1)'
-                    },
-                    ticks: {
-                        color: '#3f6844'
-                    }
-                },
-                y1: {
-                    type: 'linear',
-                    display: true,
-                    position: 'right',
-                    title: {
-                        display: true,
-                        text: 'Fatturato (€)',
-                        color: '#7a9e7e'
-                    },
-                    grid: {
-                        drawOnChartArea: false,
-                    },
-                    ticks: {
-                        color: '#7a9e7e'
-                    }
-                }
-            },
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Vendite Ultimi 7 Giorni',
-                    font: {
-                        size: 16,
-                        weight: 'bold'
-                    }
-                },
-                legend: {
-                    display: true,
-                    position: 'top'
-                }
-            }
-        }
-    });
-    
-    console.log('✅ Grafico vendite inizializzato');
-}
-
-function getSalesChartData() {
-    const last7Days = [];
-    const today = new Date();
-    
-    for (let i = 6; i >= 0; i--) {
-        const day = new Date(today);
-        day.setDate(day.getDate() - i);
-        day.setHours(0, 0, 0, 0);
-        last7Days.push(day);
-    }
-    
-    const labels = last7Days.map(date => 
-        date.toLocaleDateString('it-IT', { 
-            month: 'short', 
-            day: 'numeric' 
-        })
-    );
-    
-    const orders = [];
-    const revenue = [];
-    
-    last7Days.forEach(day => {
-        const nextDay = new Date(day);
-        nextDay.setDate(nextDay.getDate() + 1);
-        
-        const dayOrders = allOrders.filter(order => {
-            try {
-                const orderDate = order.timestamp && order.timestamp.toDate ? 
-                    order.timestamp.toDate() : new Date(order.timestamp);
-                return orderDate >= day && orderDate < nextDay;
-            } catch (e) {
-                return false;
-            }
-        });
-        
-        orders.push(dayOrders.length);
-        revenue.push(dayOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0));
-    });
-    
-    return { labels, orders, revenue };
-}
-
-function updateSalesChart() {
-    if (!salesChart) {
-        initSalesChart();
-        return;
-    }
-    
-    const chartData = getSalesChartData();
-    salesChart.data.labels = chartData.labels;
-    salesChart.data.datasets[0].data = chartData.orders;
-    salesChart.data.datasets[1].data = chartData.revenue;
-    salesChart.update('none');
-    console.log('✅ Grafico vendite aggiornato');
-}
-
-// SISTEMA NOTIFICHE
-function showNotification(title, message, isNewOrder = false) {
-    if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification(title, {
-            body: message,
-            icon: '/favicon.ico',
-            badge: '/favicon.ico',
-            tag: isNewOrder ? 'new-order' : 'info'
-        });
-    }
-    showInAppNotification(title, message, isNewOrder);
-}
-
-function showInAppNotification(title, message, isNewOrder = false) {
-    const container = document.getElementById('notifications');
-    if (!container) return;
-    
-    const notification = document.createElement('div');
-    notification.className = 'notification';
-    
-    const icon = isNewOrder ? '🛍️' : '🔔';
-    
-    notification.innerHTML = `
-        <button class="notification-close" onclick="closeNotification(this)">&times;</button>
-        <div class="notification-header">
-            ${icon} ${title}
-        </div>
-        <div class="notification-body">
-            ${message}
-        </div>
-    `;
-    
-    container.appendChild(notification);
-    
-    setTimeout(() => notification.classList.add('show'), 100);
-    setTimeout(() => closeNotification(notification.querySelector('.notification-close')), 8000);
-    
-    notification.addEventListener('click', () => {
-        closeNotification(notification.querySelector('.notification-close'));
-    });
-}
-
-window.closeNotification = function(button) {
-    const notification = button.closest('.notification');
-    if (notification) {
-        notification.classList.add('hide');
-        setTimeout(() => notification.remove(), 300);
-    }
-};
-
-function checkNewOrders() {
-    const currentCount = allOrders.length;
-    
-    if (lastOrderCount > 0 && currentCount > lastOrderCount) {
-        const newOrdersCount = currentCount - lastOrderCount;
-        const message = newOrdersCount === 1 ? 
-            'È arrivato un nuovo ordine!' : 
-            `Sono arrivati ${newOrdersCount} nuovi ordini!`;
-        
-        showNotification('🛍️ Nuovo Ordine', message, true);
-        console.log(`🔔 ${newOrdersCount} nuovi ordini rilevati`);
-    }
-    
-    lastOrderCount = currentCount;
-}
-
-// EXPORT CSV
-window.exportToCSV = function() {
-    console.log('📥 Export CSV...');
-    
-    const filteredOrders = getFilteredOrders();
-    
-    if (filteredOrders.length === 0) {
-        alert('Nessun ordine da esportare');
-        return;
-    }
-    
-    const headers = ['ID', 'Data/Ora', 'Cliente', 'Telefono', 'Email', 'Ritiro', 'Articoli', 'Totale', 'Sconto', 'Status'];
-    
-    const csvData = filteredOrders.map(order => {
-        const orderDate = order.timestamp && order.timestamp.toDate ? 
-            order.timestamp.toDate().toLocaleString('it-IT') : 'N/A';
-        const items = (order.items || []).map(item => 
-            `${item.name || 'Prodotto'} (x${item.quantity || 1})`
-        ).join('; ');
-        const discount = order.appliedDiscount > 0 ? 
-            `${order.discountCode} -${order.appliedDiscount}%` : 'Nessuno';
-        
-        return [
-            order.id.substring(0, 8),
-            orderDate,
-            getCustomerDisplayName(order),
-            getCustomerDisplayPhone(order),
-            order.customerEmail || 'N/A',
-            order.pickupDate || 'N/A',
-            items,
-            `${(order.totalAmount || 0).toFixed(2)}€`,
-            discount,
-            'Nuovo'
-        ].map(field => `"${field}"`).join(',');
-    });
-    
-    const csvContent = [headers.join(','), ...csvData].join('\n');
-    
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `ordini_pasto_sano_${new Date().toISOString().split('T')[0]}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    console.log(`✅ CSV esportato con ${filteredOrders.length} ordini`);
-};
-
-// GENERAZIONE DOCUMENTO PRODUZIONE
-window.generateProductionDoc = function() {
-    if (selectedOrders.size === 0) {
-        alert('Seleziona almeno un ordine per generare il documento di produzione');
-        return;
-    }
-    
-    const selectedOrdersData = allOrders.filter(order => selectedOrders.has(order.id));
-    
-    const productSummary = {};
-    const orderDetails = [];
-    
-    selectedOrdersData.forEach(order => {
-        orderDetails.push({
-            customerName: getCustomerDisplayName(order),
-            pickupDate: order.pickupDate || 'N/A',
-            orderId: order.id.substring(0, 8),
-            items: order.items || []
-        });
-        
-        (order.items || []).forEach(item => {
-            const productName = item.name || 'Prodotto sconosciuto';
-            const quantity = item.quantity || 1;
-            
-            if (productSummary[productName]) {
-                productSummary[productName] += quantity;
-            } else {
-                productSummary[productName] = quantity;
-            }
-        });
-    });
-    
-    generateProductionHTML(orderDetails, productSummary);
-};
-
-function generateProductionHTML(orderDetails, productSummary) {
-    const today = new Date();
-    const formattedDate = today.toLocaleDateString('it-IT', {
+    const options = {
         day: '2-digit',
         month: '2-digit', 
         year: 'numeric',
         hour: '2-digit',
         minute: '2-digit'
-    });
+    };
     
-    const productList = Object.entries(productSummary)
-        .sort(([,a], [,b]) => b - a)
-        .map(([name, quantity]) => `
-            <tr>
-                <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">${name}</td>
-                <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: center; font-weight: bold; color: #3f6844;">${quantity}</td>
-            </tr>
-        `).join('');
-    
-    const ordersList = orderDetails.map(order => {
-        const itemsList = order.items.map((item, index) => 
-            `<div style="margin-bottom: 3px;">${index + 1}. ${item.name || 'Prodotto'} (x${item.quantity || 1})</div>`
-        ).join('');
-        
-        return `
-        <div style="margin-bottom: 20px; padding: 15px; border-left: 3px solid #7a9e7e; background: #f8f9fa;">
-            <div style="margin-bottom: 8px;">
-                <strong style="color: #2d3748; font-size: 16px;">${order.customerName}</strong> 
-                <span style="color: #718096; margin-left: 10px;">#${order.orderId}</span>
-            </div>
-            <div style="color: #4a5568; margin-bottom: 8px;">📅 Ritiro: ${order.pickupDate}</div>
-            <div style="color: #4a5568;">
-                <strong>🍽️ ${order.items.length} articoli:</strong>
-                <div style="margin-left: 15px; margin-top: 8px;">
-                    ${itemsList}
-                </div>
-            </div>
-        </div>
-        `;
-    }).join('');
-    
-    const htmlContent = `
-    <!DOCTYPE html>
-    <html lang="it">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Documento Produzione - Pasto Sano</title>
-        <style>
-            body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
-            .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #3f6844; padding-bottom: 20px; }
-            .summary { background: #f0fff4; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
-            table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-            th { background: #3f6844; color: white; padding: 15px; text-align: left; }
-            .orders-detail { margin-top: 30px; }
-            @media print { body { margin: 0; } }
-        </style>
-    </head>
-    <body>
-        <div class="header">
-            <h1 style="color: #3f6844; margin: 0;">🥗 PASTO SANO</h1>
-            <h2 style="color: #7a9e7e; margin: 10px 0;">Documento di Produzione</h2>
-            <p style="color: #718096;">Generato il ${formattedDate}</p>
-        </div>
-        
-        <div class="summary">
-            <h3 style="color: #3f6844; margin-top: 0;">📊 Riepilogo Produzione</h3>
-            <p><strong>Totale Ordini:</strong> ${orderDetails.length}</p>
-            <p><strong>Totale Prodotti:</strong> ${Object.values(productSummary).reduce((sum, qty) => sum + qty, 0)} pezzi</p>
-            <p><strong>Tipologie Diverse:</strong> ${Object.keys(productSummary).length}</p>
-        </div>
-        
-        <h3 style="color: #3f6844;">🍽️ Prodotti da Preparare</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Prodotto</th>
-                    <th style="text-align: center; width: 120px;">Quantità</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${productList}
-            </tbody>
-        </table>
-        
-        <div class="orders-detail">
-            <h3 style="color: #3f6844;">📋 Dettaglio Ordini</h3>
-            ${ordersList}
-        </div>
-        
-        <div style="margin-top: 40px; text-align: center; color: #718096; border-top: 1px solid #e2e8f0; padding-top: 20px;">
-            <p>Documento generato automaticamente dalla Dashboard Pasto Sano</p>
-        </div>
-    </body>
-    </html>`;
-    
-    const newWindow = window.open('', '_blank');
-    newWindow.document.write(htmlContent);
-    newWindow.document.close();
-    
-    setTimeout(() => newWindow.print(), 500);
-    
-    console.log(`✅ Documento produzione generato per ${selectedOrders.size} ordini`);
+    return new Date(date).toLocaleDateString('it-IT', options);
 }
 
-// GESTIONE ERRORI MIGLIORATA
-function showError(message) {
-    console.error('❌ Errore dashboard:', message);
+// Funzione helper per formattare solo la data
+function formatDate(dateString) {
+    if (!dateString) return 'Non specificata';
     
-    const errorElement = document.getElementById('error-message');
-    if (errorElement) {
-        errorElement.innerHTML = `
-            <strong>⚠️ Errore di Connessione</strong><br>
-            ${message}<br><br>
-            <strong>Possibili cause:</strong><br>
-            • Problema di connessione a Firebase<br>
-            • Configurazione Firebase non corretta<br>
-            • Gli ordini non contengono i dati corretti del cliente<br><br>
-            <strong>Verifica:</strong><br>
-            • Apri la Console (F12) per vedere i log dettagliati<br>
-            • Controlla che il webhook WhatsApp stia salvando correttamente i dati<br>
-            • Assicurati che i campi 'customerName' e 'customerPhone' vengano popolati
-        `;
-        errorElement.style.display = 'block';
+    try {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('it-IT', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+    } catch (error) {
+        return dateString;
+    }
+}
+
+// Play notification sound
+function playNotificationSound() {
+    if (!soundEnabled) return;
+    
+    try {
+        // Crea un suono semplice usando AudioContext
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+        oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
+        oscillator.frequency.setValueAtTime(800, audioContext.currentTime + 0.2);
+        
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.3);
+        
+        console.log('🔊 Suono notifica riprodotto');
+    } catch (error) {
+        console.log('🔇 Impossibile riprodurre suono:', error.message);
+    }
+}
+
+// Toggle order selection
+function toggleOrderSelection(orderId) {
+    const index = selectedOrders.indexOf(orderId);
+    
+    if (index > -1) {
+        selectedOrders.splice(index, 1);
+    } else {
+        selectedOrders.push(orderId);
     }
     
-    // Non usare più dati mock come fallback
-    allOrders = [];
-    updateStats();
-    displayOrders();
-    updateTopProducts();
-    if (salesChart) updateSalesChart();
+    renderOrders();
 }
 
-// FUNZIONE DI DIAGNOSI PER DEBUG
-window.diagnoseOrders = function() {
-    console.log('🔍 DIAGNOSI ORDINI:');
-    console.log('==================');
+// Select all orders
+function selectAllOrders() {
+    const filteredOrders = getFilteredOrders();
+    selectedOrders = filteredOrders.map(order => order.id);
+    renderOrders();
+}
+
+// Clear selection
+function clearSelection() {
+    selectedOrders = [];
+    renderOrders();
+}
+
+// Update selected count
+function updateSelectedCount() {
+    const countElement = document.getElementById('selected-count');
+    if (countElement) {
+        countElement.textContent = `${selectedOrders.length} selezionati`;
+    }
+}
+
+// Get filtered orders based on current filter
+function getFilteredOrders() {
+    const now = new Date();
     
-    if (allOrders.length === 0) {
-        console.log('❌ Nessun ordine caricato');
+    return allOrders.filter(order => {
+        const orderDate = new Date(order.timestamp);
+        
+        switch (currentFilter) {
+            case 'oggi':
+                return orderDate.toDateString() === now.toDateString();
+            case 'settimana':
+                const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                return orderDate >= weekAgo;
+            case 'mese':
+                const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+                return orderDate >= monthAgo;
+            default:
+                return true;
+        }
+    });
+}
+
+// Filter orders
+function filterOrders(filter) {
+    currentFilter = filter;
+    
+    // Update filter buttons
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    renderOrders();
+    calculateStats();
+}
+
+// Calculate and display statistics
+function calculateStats() {
+    const now = new Date();
+    const today = now.toDateString();
+    
+    // Ordini oggi
+    const todayOrders = allOrders.filter(order => 
+        new Date(order.timestamp).toDateString() === today
+    );
+    
+    // Fatturato oggi
+    const todayRevenue = todayOrders.reduce((sum, order) => 
+        sum + (order.totalAmount || 0), 0
+    );
+    
+    // Ordine medio
+    const avgOrder = allOrders.length > 0 ? 
+        allOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0) / allOrders.length : 0;
+    
+    // Clienti unici
+    const uniqueCustomers = new Set(allOrders.map(order => order.customerName)).size;
+    
+    // Update DOM
+    updateStatElement('orders-today', todayOrders.length.toString());
+    updateStatElement('revenue-today', `${todayRevenue.toFixed(2)}€`);
+    updateStatElement('avg-order', `${avgOrder.toFixed(2)}€`);
+    updateStatElement('total-customers', uniqueCustomers.toString());
+    
+    // Update changes (simplified)
+    updateStatElement('orders-change', `${todayOrders.length} ordini oggi`);
+    updateStatElement('revenue-change', `${todayRevenue.toFixed(2)}€ oggi`);
+    updateStatElement('avg-change', `Media generale`);
+    updateStatElement('customers-change', `${uniqueCustomers} clienti unici`);
+}
+
+// Update statistic element
+function updateStatElement(elementId, value) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        element.textContent = value;
+    }
+}
+
+// Get status class for styling
+function getStatusClass(status) {
+    switch (status?.toLowerCase()) {
+        case 'pending': return 'status-nuovo';
+        case 'confirmed': return 'status-confermato';
+        case 'ready': return 'status-pronto';
+        case 'paid': return 'status-confermato';
+        default: return 'status-nuovo';
+    }
+}
+
+// Get status text
+function getStatusText(status) {
+    switch (status?.toLowerCase()) {
+        case 'pending': return 'Da Confermare';
+        case 'confirmed': return 'Confermato';
+        case 'ready': return 'Pronto';
+        case 'paid': return 'Pagato';
+        default: return 'Nuovo';
+    }
+}
+
+// Export to CSV
+function exportToCSV() {
+    const ordersToExport = selectedOrders.length > 0 ? 
+        allOrders.filter(order => selectedOrders.includes(order.id)) : 
+        getFilteredOrders();
+    
+    if (ordersToExport.length === 0) {
+        alert('Nessun ordine da esportare');
         return;
     }
     
-    console.log(`📊 Totale ordini: ${allOrders.length}`);
+    const headers = [
+        'ID Ordine', 'Cliente', 'Telefono', 'Data Ordine', 'Data Ritiro', 
+        'Metodo Pagamento', 'Status', 'Totale', 'Sconto', 'Articoli', 'Dettagli'
+    ];
     
-    // Analizza il primo ordine
-    const firstOrder = allOrders[0];
-    console.log('🔍 Primo ordine disponibile:');
-    console.log('ID:', firstOrder.id);
-    console.log('Campi disponibili:', Object.keys(firstOrder));
+    const csvData = ordersToExport.map(order => [
+        order.id,
+        `"${order.customerName || ''}"`,
+        `"${order.customerPhone || ''}"`,
+        formatDateTime(order.timestamp),
+        formatDate(order.pickupDate),
+        `"${order.paymentMethodName || order.paymentMethod || ''}"`,
+        getStatusText(order.status),
+        (order.totalAmount || 0).toFixed(2),
+        order.discountCode || '',
+        order.items?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0,
+        `"${order.items?.map(item => `${item.name} x${item.quantity || 1}`).join('; ') || ''}"`
+    ]);
     
-    // Verifica presenza dati cliente
-    const clientsWithName = allOrders.filter(o => o.customerName && o.customerName !== 'Cliente Web').length;
-    const clientsWithPhone = allOrders.filter(o => o.customerPhone && o.customerPhone !== 'N/A').length;
-    const clientsWithFrom = allOrders.filter(o => o.from).length;
+    const csvContent = [headers, ...csvData]
+        .map(row => row.join(','))
+        .join('\n');
     
-    console.log('📊 Analisi dati cliente:');
-    console.log(`• Ordini con nome reale: ${clientsWithName}/${allOrders.length}`);
-    console.log(`• Ordini con telefono: ${clientsWithPhone}/${allOrders.length}`);
-    console.log(`• Ordini con campo 'from': ${clientsWithFrom}/${allOrders.length}`);
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
     
-    if (clientsWithName === 0) {
-        console.warn('⚠️ PROBLEMA: Nessun ordine ha un nome cliente reale');
-        console.warn('💡 SOLUZIONE: Verifica che il webhook WhatsApp salvi il campo "profile.name"');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `ordini_pasto_sano_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    console.log(`📥 Esportati ${ordersToExport.length} ordini in CSV`);
+}
+
+// Generate production document
+function generateProductionDoc() {
+    const ordersToProcess = selectedOrders.length > 0 ? 
+        allOrders.filter(order => selectedOrders.includes(order.id)) : 
+        getFilteredOrders();
+    
+    if (ordersToProcess.length === 0) {
+        alert('Nessun ordine selezionato per la produzione');
+        return;
     }
     
-    if (clientsWithPhone === 0) {
-        console.warn('⚠️ PROBLEMA: Nessun ordine ha un numero di telefono');
-        console.warn('💡 SOLUZIONE: Verifica che il webhook WhatsApp salvi il campo "from"');
-    }
+    // Raggruppa gli articoli per nome
+    const itemsCount = {};
+    let totalRevenue = 0;
     
-    // Mostra esempio di ordine completo
-    console.log('📋 Esempio di come dovrebbe essere un ordine:');
-    console.log({
-        id: 'order123',
-        customerName: 'Mario Rossi', // Dal profile.name di WhatsApp
-        customerPhone: '+39 347 123 4567', // Dal campo from
-        customerEmail: 'mario@email.com', // Opzionale
-        from: 'whatsapp:+393471234567@c.us', // ID WhatsApp originale
-        items: [
-            {name: 'Fusilli con verdure', quantity: 2, price: 8}
-        ],
-        totalAmount: 16,
-        timestamp: 'Timestamp Firebase',
-        pickupDate: '2025-06-16'
+    ordersToProcess.forEach(order => {
+        totalRevenue += order.totalAmount || 0;
+        
+        order.items?.forEach(item => {
+            const itemName = item.name;
+            const quantity = item.quantity || 1;
+            
+            if (itemsCount[itemName]) {
+                itemsCount[itemName] += quantity;
+            } else {
+                itemsCount[itemName] = quantity;
+            }
+        });
     });
-};
+    
+    // Genera documento di produzione
+    let productionDoc = `📋 DOCUMENTO DI PRODUZIONE - PASTO SANO\n`;
+    productionDoc += `📅 Generato il: ${new Date().toLocaleDateString('it-IT')} alle ${new Date().toLocaleTimeString('it-IT')}\n`;
+    productionDoc += `📦 Ordini da processare: ${ordersToProcess.length}\n`;
+    productionDoc += `💰 Fatturato totale: €${totalRevenue.toFixed(2)}\n\n`;
+    
+    productionDoc += `🍽️ RIEPILOGO PRODUZIONE:\n`;
+    productionDoc += `${'='.repeat(50)}\n`;
+    
+    // Ordina per quantità decrescente
+    const sortedItems = Object.entries(itemsCount)
+        .sort(([,a], [,b]) => b - a);
+    
+    sortedItems.forEach(([itemName, quantity]) => {
+        productionDoc += `• ${itemName}: ${quantity} porzioni\n`;
+    });
+    
+    productionDoc += `\n📋 DETTAGLI ORDINI PER CLIENTE:\n`;
+    productionDoc += `${'='.repeat(50)}\n`;
+    
+    ordersToProcess
+        .sort((a, b) => new Date(a.pickupDate) - new Date(b.pickupDate))
+        .forEach(order => {
+            productionDoc += `\n👤 ${order.customerName || 'Cliente'} - Tel: ${order.customerPhone || 'N/A'}\n`;
+            productionDoc += `📅 Ritiro: ${formatDate(order.pickupDate)} - ${order.paymentMethodName || order.paymentMethod}\n`;
+            productionDoc += `💰 Totale: €${(order.totalAmount || 0).toFixed(2)}\n`;
+            
+            if (order.discountCode) {
+                productionDoc += `🎁 Sconto: ${order.discountCode} (-${order.discountPercent}%)\n`;
+            }
+            
+            productionDoc += `📋 Articoli:\n`;
+            order.items?.forEach(item => {
+                productionDoc += `   • ${item.name} x${item.quantity || 1}\n`;
+            });
+            productionDoc += `${'─'.repeat(30)}\n`;
+        });
+    
+    // Download del documento
+    const blob = new Blob([productionDoc], { type: 'text/plain;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', `produzione_${new Date().toISOString().split('T')[0]}.txt`);
+    link.style.visibility = 'hidden';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    console.log(`📋 Documento di produzione generato per ${ordersToProcess.length} ordini`);
+}
 
-// AUTO-REFRESH ogni 30 secondi
-setInterval(async () => {
-    try {
-        console.log('🔄 Auto-refresh dashboard...');
-        await loadAllData();
-        checkNewOrders();
-        updateStats();
-        displayOrders();
-        updateTopProducts();
-        updateSalesChart();
-        console.log('✅ Auto-refresh completato');
-    } catch (error) {
-        console.error('❌ Errore auto-refresh:', error);
+// Update top products
+function updateTopProducts() {
+    const container = document.getElementById('top-products-list');
+    if (!container) return;
+    
+    // Calcola i prodotti più venduti
+    const productCounts = {};
+    
+    allOrders.forEach(order => {
+        order.items?.forEach(item => {
+            const name = item.name;
+            const quantity = item.quantity || 1;
+            
+            if (productCounts[name]) {
+                productCounts[name] += quantity;
+            } else {
+                productCounts[name] = quantity;
+            }
+        });
+    });
+    
+    // Ordina per quantità
+    const sortedProducts = Object.entries(productCounts)
+        .sort(([,a], [,b]) => b - a)
+        .slice(0, 10); // Top 10
+    
+    if (sortedProducts.length === 0) {
+        container.innerHTML = '<div class="loading">Nessun dato disponibile</div>';
+        return;
     }
-}, 30000);
+    
+    container.innerHTML = sortedProducts.map(([name, count]) => `
+        <div class="product-item">
+            <div class="product-name">${name}</div>
+            <div class="product-sales">${count} venduti</div>
+        </div>
+    `).join('');
+}
 
-// Esporre funzione di diagnosi globalmente
-window.diagnoseOrders = window.diagnoseOrders;
+// Initialize chart
+function initializeChart() {
+    const ctx = document.getElementById('salesChart');
+    if (!ctx) return;
+    
+    // Dati demo per il grafico
+    const last7Days = [];
+    const revenues = [];
+    
+    for (let i = 6; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        
+        const dayRevenue = allOrders
+            .filter(order => {
+                const orderDate = new Date(order.timestamp);
+                return orderDate.toDateString() === date.toDateString();
+            })
+            .reduce((sum, order) => sum + (order.totalAmount || 0), 0);
+        
+        last7Days.push(date.toLocaleDateString('it-IT', { 
+            day: '2-digit', 
+            month: '2-digit' 
+        }));
+        revenues.push(dayRevenue);
+    }
+    
+    if (chart) {
+        chart.destroy();
+    }
+    
+    chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: last7Days,
+            datasets: [{
+                label: 'Fatturato (€)',
+                data: revenues,
+                borderColor: '#7a9e7e',
+                backgroundColor: 'rgba(122, 158, 126, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#7a9e7e',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '€' + value.toFixed(0);
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(0,0,0,0.1)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            },
+            elements: {
+                point: {
+                    hoverBackgroundColor: '#7a9e7e'
+                }
+            }
+        }
+    });
+}
 
-console.log('📊 Dashboard.js corretto caricato completamente');
-console.log('💡 Per diagnosticare problemi, digita: diagnoseOrders() nella console');
+// Load dashboard data
+async function loadDashboardData() {
+    try {
+        console.log('📊 Caricamento dati dashboard...');
+        
+        const snapshot = await firebase.firestore()
+            .collection('orders')
+            .orderBy('timestamp', 'desc')
+            .limit(500)
+            .get();
+        
+        updateOrdersFromSnapshot(snapshot);
+        calculateStats();
+        renderOrders();
+        updateTopProducts();
+        
+        // Set last notification time to now to avoid showing notifications for existing orders
+        lastNotificationTime = Date.now();
+        
+        console.log('✅ Dati dashboard caricati');
+        
+    } catch (error) {
+        console.error('❌ Errore caricamento dati:', error);
+        throw error;
+    }
+}
+
+// Initialize Firestore
+async function initializeFirestore() {
+    if (!firebase.apps.length) {
+        throw new Error('Firebase non inizializzato');
+    }
+    
+    console.log('🔥 Firebase collegato correttamente');
+}
+
+// Show error message
+function showError(message) {
+    const errorDiv = document.getElementById('error-message');
+    if (errorDiv) {
+        errorDiv.textContent = message;
+        errorDiv.style.display = 'block';
+    }
+    console.error('❌', message);
+}
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', () => {
+    if (ordersListener) {
+        ordersListener();
+    }
+    if (chart) {
+        chart.destroy();
+    }
+});
+
+// Toggle sound notifications
+function toggleSound() {
+    soundEnabled = !soundEnabled;
+    console.log(`🔊 Suoni notifiche: ${soundEnabled ? 'attivati' : 'disattivati'}`);
+}
+
+// Aggiungi controllo per i suoni nell'header (opzionale)
+document.addEventListener('DOMContentLoaded', function() {
+    const header = document.querySelector('.header .container');
+    if (header) {
+        const soundButton = document.createElement('button');
+        soundButton.innerHTML = '🔊';
+        soundButton.style.cssText = `
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            font-size: 24px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        `;
+        soundButton.title = 'Toggle notifiche sonore';
+        soundButton.addEventListener('click', toggleSound);
+        header.appendChild(soundButton);
+    }
+});
+
+console.log('🎉 Dashboard script caricato completamente!');
+console.log('🔔 Notifiche real-time attivate');
+console.log('📱 Supporto telefono clienti integrato');
