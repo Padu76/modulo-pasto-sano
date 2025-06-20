@@ -1,14 +1,12 @@
-// DASHBOARD.JS - VERSIONE FINALE CORRETTA
+// DASHBOARD.JS - VERSIONE FINALE CORRETTA E PULITA
 
 // State management
 let allOrders = [];
 let selectedOrders = [];
-let currentFilter = 'oggi'; // DEFAULT SU OGGI
+let currentFilter = 'oggi';
 let chart = null;
 let soundEnabled = true;
 let lastNotificationTime = 0;
-
-// Real-time listener
 let ordersListener = null;
 
 // Initialize app
@@ -47,7 +45,6 @@ function setupCustomersModal() {
 function showCustomersModal() {
     const customersData = getCustomersData();
     
-    // Crea modal
     const modal = document.createElement('div');
     modal.style.cssText = `
         position: fixed;
@@ -107,7 +104,6 @@ function showCustomersModal() {
                         padding: 20px;
                         border-left: 4px solid #7a9e7e;
                         transition: all 0.2s;
-                        hover: box-shadow: 0 4px 12px rgba(0,0,0,0.1);
                     ">
                         <div style="
                             display: grid;
@@ -191,7 +187,6 @@ function showCustomersModal() {
                             </div>
                         </div>
                         
-                        <!-- Metodi di pagamento preferiti -->
                         <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e2e8f0;">
                             <small style="color: #6c757d; font-size: 13px;">
                                 <strong>Metodi pagamento:</strong> 
@@ -237,7 +232,6 @@ function showCustomersModal() {
     modal.className = 'customers-modal';
     document.body.appendChild(modal);
     
-    // Click outside to close
     modal.addEventListener('click', (e) => {
         if (e.target === modal) {
             modal.remove();
@@ -268,20 +262,16 @@ function getCustomersData() {
         customerMap[key].totalOrders++;
         customerMap[key].totalSpent += order.totalAmount || 0;
         
-        // Ultimo ordine
         const orderDate = new Date(order.timestamp);
         if (!customerMap[key].lastOrder || orderDate > new Date(customerMap[key].lastOrder)) {
             customerMap[key].lastOrder = orderDate;
         }
         
-        // Metodi di pagamento
         const paymentMethod = order.paymentMethodName || order.paymentMethod || 'Non specificato';
         customerMap[key].paymentMethods[paymentMethod] = (customerMap[key].paymentMethods[paymentMethod] || 0) + 1;
     });
     
-    // Converti in array e ordina per spesa totale
-    return Object.values(customerMap)
-        .sort((a, b) => b.totalSpent - a.totalSpent);
+    return Object.values(customerMap).sort((a, b) => b.totalSpent - a.totalSpent);
 }
 
 // Icone metodi di pagamento
@@ -321,9 +311,7 @@ function exportCustomersToCSV() {
         customer.totalOrders >= 5 ? 'VIP' : 'Nuovo'
     ]);
     
-    const csvContent = [headers, ...csvData]
-        .map(row => row.join(','))
-        .join('\n');
+    const csvContent = [headers, ...csvData].map(row => row.join(',')).join('\n');
     
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
@@ -340,7 +328,7 @@ function exportCustomersToCSV() {
     console.log(`📥 Esportati ${customersData.length} clienti in CSV`);
 }
 
-// Setup Firestore real-time listener con notifiche migliorate
+// Setup Firestore real-time listener
 function setupRealTimeListener() {
     console.log('🔄 Configurazione listener real-time...');
     
@@ -363,7 +351,6 @@ function setupRealTimeListener() {
                     const orderData = change.doc.data();
                     const orderTime = orderData.timestamp?.toDate?.()?.getTime() || Date.now();
                     
-                    // Considera "nuovo" solo se aggiunto negli ultimi 30 secondi
                     if (orderTime > lastNotificationTime && (Date.now() - orderTime) < 30000) {
                         hasNewOrders = true;
                         newOrdersCount++;
@@ -375,10 +362,8 @@ function setupRealTimeListener() {
                 }
             });
 
-            // Aggiorna i dati
             updateOrdersFromSnapshot(snapshot);
             
-            // Mostra notifiche solo per ordini veramente nuovi
             if (hasNewOrders && newOrdersCount > 0) {
                 console.log(`🆕 ${newOrdersCount} nuovo/i ordine/i rilevato/i`);
                 showNewOrderNotification(newOrdersCount, newOrdersData);
@@ -396,12 +381,11 @@ function setupRealTimeListener() {
         });
 }
 
-// Funzione migliorata per notifiche ordini nuovi
+// Funzione per notifiche ordini nuovi
 function showNewOrderNotification(count, orders) {
     const container = document.getElementById('notifications');
     if (!container) return;
 
-    // Crea notifica principale
     const notification = document.createElement('div');
     notification.className = 'notification';
     
@@ -426,7 +410,6 @@ function showNewOrderNotification(count, orders) {
         </div>
     `;
 
-    // Event listeners
     notification.querySelector('.notification-close').addEventListener('click', (e) => {
         e.stopPropagation();
         hideNotification(notification);
@@ -434,7 +417,6 @@ function showNewOrderNotification(count, orders) {
 
     notification.addEventListener('click', () => {
         hideNotification(notification);
-        // Scroll to the new order in the list
         const orderElement = document.querySelector(`[data-order-id="${mainOrder.id}"]`);
         if (orderElement) {
             orderElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -447,10 +429,8 @@ function showNewOrderNotification(count, orders) {
 
     container.appendChild(notification);
 
-    // Show with animation
     setTimeout(() => notification.classList.add('show'), 100);
 
-    // Auto-hide after 8 seconds
     setTimeout(() => {
         if (notification.parentNode) {
             hideNotification(notification);
@@ -489,13 +469,11 @@ function updateOrdersFromSnapshot(snapshot) {
 function filterOrders(filter) {
     currentFilter = filter;
     
-    // Update filter buttons
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.classList.remove('active');
     });
     event.target.classList.add('active');
     
-    // Aggiorna tutto in base al filtro
     renderOrders();
     calculateDynamicStats();
     updateChart();
@@ -505,17 +483,14 @@ function filterOrders(filter) {
 function calculateDynamicStats() {
     const filteredOrders = getFilteredOrders();
     
-    // Calcola statistiche per il periodo selezionato
     const totalOrders = filteredOrders.length;
     const totalRevenue = filteredOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
     const avgOrder = totalOrders > 0 ? totalRevenue / totalOrders : 0;
     
-    // Clienti unici nel periodo
     const uniqueCustomers = new Set(
         filteredOrders.map(order => `${order.customerName}_${order.customerPhone}`)
     ).size;
     
-    // Determina le etichette in base al filtro
     let periodLabel, revenueLabel, ordersLabel;
     
     switch(currentFilter) {
@@ -542,17 +517,14 @@ function calculateDynamicStats() {
             break;
     }
     
-    // Aggiorna le etichette delle card
     updateStatLabel('orders-today-label', ordersLabel);
     updateStatLabel('revenue-today-label', revenueLabel);
     
-    // Aggiorna i valori
     updateStatElement('orders-today', totalOrders.toString());
     updateStatElement('revenue-today', `${totalRevenue.toFixed(2)}€`);
     updateStatElement('avg-order', `${avgOrder.toFixed(2)}€`);
     updateStatElement('total-customers', uniqueCustomers.toString());
     
-    // Aggiorna le descrizioni
     updateStatElement('orders-change', `${totalOrders} ordini ${periodLabel.toLowerCase()}`);
     updateStatElement('revenue-change', `${totalRevenue.toFixed(2)}€ ${periodLabel.toLowerCase()}`);
     updateStatElement('avg-change', `Media ${periodLabel.toLowerCase()}`);
@@ -569,12 +541,12 @@ function updateStatLabel(elementId, text) {
     }
 }
 
-// Calculate and display statistics - USA QUELLA DINAMICA
+// Calculate and display statistics
 function calculateStats() {
     calculateDynamicStats();
 }
 
-// Render orders senza status confusi
+// Render orders
 function renderOrders() {
     const container = document.getElementById('orders-list');
     if (!container) return;
@@ -593,11 +565,7 @@ function renderOrders() {
     container.innerHTML = filteredOrders.map(order => {
         const isSelected = selectedOrders.includes(order.id);
         const formattedDate = formatDateTime(order.timestamp);
-        
-        // Status basato solo su pagamento
         const paymentStatus = getPaymentStatus(order);
-        
-        // Calcola numero totale articoli
         const totalItems = order.items?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0;
         
         return `
@@ -707,7 +675,6 @@ function playNotificationSound() {
     if (!soundEnabled) return;
     
     try {
-        // Crea un suono semplice usando AudioContext
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
         const oscillator = audioContext.createOscillator();
         const gainNode = audioContext.createGain();
@@ -825,9 +792,7 @@ function exportToCSV() {
         `"${order.items?.map(item => `${item.name} x${item.quantity || 1}`).join('; ') || ''}"`
     ]);
     
-    const csvContent = [headers, ...csvData]
-        .map(row => row.join(','))
-        .join('\n');
+    const csvContent = [headers, ...csvData].map(row => row.join(',')).join('\n');
     
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
@@ -844,7 +809,7 @@ function exportToCSV() {
     console.log(`📥 Esportati ${ordersToExport.length} ordini in CSV`);
 }
 
-// Generate production document - VERSIONE SEMPLIFICATA PER FORNITORE
+// Generate production document
 function generateProductionDoc() {
     const ordersToProcess = selectedOrders.length > 0 ? 
         allOrders.filter(order => selectedOrders.includes(order.id)) : 
@@ -855,7 +820,6 @@ function generateProductionDoc() {
         return;
     }
     
-    // Raggruppa gli articoli per nome
     const itemsCount = {};
     let totalItems = 0;
     
@@ -873,7 +837,6 @@ function generateProductionDoc() {
         });
     });
     
-    // Genera documento di produzione SEMPLIFICATO
     let productionDoc = `🍽️ DOCUMENTO PRODUZIONE - PASTO SANO\n`;
     productionDoc += `📅 Data: ${new Date().toLocaleDateString('it-IT')}\n`;
     productionDoc += `📦 Ordini: ${ordersToProcess.length}\n`;
@@ -882,9 +845,7 @@ function generateProductionDoc() {
     productionDoc += `📋 RIEPILOGO PRODUZIONE:\n`;
     productionDoc += `${'='.repeat(40)}\n`;
     
-    // Ordina per quantità decrescente
-    const sortedItems = Object.entries(itemsCount)
-        .sort(([,a], [,b]) => b - a);
+    const sortedItems = Object.entries(itemsCount).sort(([,a], [,b]) => b - a);
     
     sortedItems.forEach(([itemName, quantity]) => {
         productionDoc += `• ${itemName}: ${quantity} porzioni\n`;
@@ -893,7 +854,6 @@ function generateProductionDoc() {
     productionDoc += `\n📅 ORDINI PER DATA RITIRO:\n`;
     productionDoc += `${'='.repeat(40)}\n`;
     
-    // Raggruppa ordini per data di ritiro
     const ordersByDate = {};
     ordersToProcess.forEach(order => {
         const pickupDate = order.pickupDate || 'Data non specificata';
@@ -903,7 +863,6 @@ function generateProductionDoc() {
         ordersByDate[pickupDate].push(order);
     });
     
-    // Ordina le date
     const sortedDates = Object.keys(ordersByDate).sort();
     
     sortedDates.forEach(date => {
@@ -914,7 +873,6 @@ function generateProductionDoc() {
         ordersForDate.forEach(order => {
             productionDoc += `👤 ${order.customerName || 'Cliente'}\n`;
             
-            // Solo gli articoli, senza prezzi e telefoni
             order.items?.forEach(item => {
                 productionDoc += `   • ${item.name} x${item.quantity || 1}\n`;
             });
@@ -927,7 +885,6 @@ function generateProductionDoc() {
     productionDoc += `• Preparare contenitori per ${totalItems} porzioni\n`;
     productionDoc += `• Verificare date di ritiro\n`;
     
-    // Download del documento
     const blob = new Blob([productionDoc], { type: 'text/plain;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
@@ -948,7 +905,6 @@ function updateTopProducts() {
     const container = document.getElementById('top-products-list');
     if (!container) return;
     
-    // Calcola i prodotti più venduti
     const productCounts = {};
     
     allOrders.forEach(order => {
@@ -964,10 +920,9 @@ function updateTopProducts() {
         });
     });
     
-    // Ordina per quantità
     const sortedProducts = Object.entries(productCounts)
         .sort(([,a], [,b]) => b - a)
-        .slice(0, 10); // Top 10
+        .slice(0, 10);
     
     if (sortedProducts.length === 0) {
         container.innerHTML = '<div class="loading">Nessun dato disponibile</div>';
@@ -998,7 +953,6 @@ function updateChart() {
     
     switch(currentFilter) {
         case 'oggi':
-            // Grafico ore del giorno corrente
             for (let hour = 0; hour < 24; hour += 3) {
                 const startHour = hour;
                 const endHour = hour + 3;
@@ -1021,7 +975,6 @@ function updateChart() {
             break;
             
         case 'settimana':
-            // Grafico ultimi 7 giorni
             for (let i = 6; i >= 0; i--) {
                 const date = new Date();
                 date.setDate(date.getDate() - i);
@@ -1043,7 +996,6 @@ function updateChart() {
             break;
             
         case 'mese':
-            // Grafico ultime 4 settimane
             for (let week = 3; week >= 0; week--) {
                 const endDate = new Date();
                 endDate.setDate(endDate.getDate() - (week * 7));
@@ -1065,7 +1017,6 @@ function updateChart() {
             
         case 'tutti':
         default:
-            // Grafico ultimi 6 mesi
             for (let month = 5; month >= 0; month--) {
                 const date = new Date();
                 date.setMonth(date.getMonth() - month);
@@ -1090,12 +1041,10 @@ function updateChart() {
             break;
     }
     
-    // Distruggi grafico esistente
     if (chart) {
         chart.destroy();
     }
     
-    // Crea nuovo grafico
     chart = new Chart(ctx, {
         type: 'line',
         data: {
@@ -1159,7 +1108,7 @@ function updateChart() {
     });
 }
 
-// Load dashboard data - AGGIORNATA CON DEFAULT SU OGGI
+// Load dashboard data
 async function loadDashboardData() {
     try {
         console.log('📊 Caricamento dati dashboard...');
@@ -1172,10 +1121,8 @@ async function loadDashboardData() {
         
         updateOrdersFromSnapshot(snapshot);
         
-        // Inizializza con filtro "oggi" di default e bottone attivo
         currentFilter = 'oggi';
         
-        // Imposta il bottone "Oggi" come attivo
         document.querySelectorAll('.filter-btn').forEach(btn => {
             btn.classList.remove('active');
         });
@@ -1190,7 +1137,6 @@ async function loadDashboardData() {
         updateTopProducts();
         updateChart();
         
-        // Set last notification time to now to avoid showing notifications for existing orders
         lastNotificationTime = Date.now();
         
         console.log('✅ Dati dashboard caricati con filtro default "Oggi"');
@@ -1271,4 +1217,3 @@ console.log('👥 Sezione clienti cliccabile attivata');
 console.log('💳 Status pagamento semplificati');
 console.log('📋 Documento produzione fornitore semplificato');
 console.log('📊 Statistiche dinamiche implementate - Default: OGGI');
-        }
