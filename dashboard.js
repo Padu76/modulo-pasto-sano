@@ -1,6 +1,304 @@
-        case 'contanti alla consegna': return '💰';
-        case 'cash': return '💰';
-        default: return '💳';
+// DASHBOARD.JS - VERSIONE FINALE CORRETTA
+
+// State management
+let allOrders = [];
+let selectedOrders = [];
+let currentFilter = 'oggi'; // DEFAULT SU OGGI
+let chart = null;
+let soundEnabled = true;
+let lastNotificationTime = 0;
+
+// Real-time listener
+let ordersListener = null;
+
+// Initialize app
+document.addEventListener('DOMContentLoaded', async function() {
+    console.log('🚀 Inizializzazione Dashboard...');
+    
+    if (typeof firebase === 'undefined') {
+        showError('Firebase non caricato correttamente');
+        return;
+    }
+
+    try {
+        await initializeFirestore();
+        await loadDashboardData();
+        setupRealTimeListener();
+        initializeChart();
+        setupCustomersModal();
+        
+        console.log('✅ Dashboard inizializzata correttamente');
+    } catch (error) {
+        console.error('❌ Errore inizializzazione:', error);
+        showError('Errore durante il caricamento dei dati: ' + error.message);
+    }
+});
+
+// Setup modal clienti
+function setupCustomersModal() {
+    const customersCard = document.getElementById('total-customers');
+    if (customersCard) {
+        customersCard.style.cursor = 'pointer';
+        customersCard.addEventListener('click', showCustomersModal);
+    }
+}
+
+// Mostra modal con elenco clienti
+function showCustomersModal() {
+    const customersData = getCustomersData();
+    
+    // Crea modal
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.6);
+        backdrop-filter: blur(4px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 3000;
+        padding: 20px;
+    `;
+    
+    modal.innerHTML = `
+        <div style="
+            background: white;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 30px;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        ">
+            <div style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 25px;
+                padding-bottom: 15px;
+                border-bottom: 2px solid #e2e8f0;
+            ">
+                <h2 style="color: #2d3748; font-size: 24px; margin: 0;">
+                    👥 Elenco Clienti (${customersData.length})
+                </h2>
+                <button onclick="this.closest('.customers-modal').remove()" style="
+                    background: none;
+                    border: none;
+                    font-size: 24px;
+                    cursor: pointer;
+                    color: #6c757d;
+                    padding: 5px;
+                    border-radius: 50%;
+                    transition: all 0.2s;
+                ">×</button>
+            </div>
+            
+            <div style="display: grid; gap: 15px;">
+                ${customersData.map(customer => `
+                    <div style="
+                        background: #f8f9fa;
+                        border-radius: 12px;
+                        padding: 20px;
+                        border-left: 4px solid #7a9e7e;
+                        transition: all 0.2s;
+                        hover: box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                    ">
+                        <div style="
+                            display: grid;
+                            grid-template-columns: 1fr auto;
+                            gap: 20px;
+                            align-items: start;
+                        ">
+                            <div>
+                                <h3 style="
+                                    color: #2d3748;
+                                    font-size: 18px;
+                                    margin: 0 0 8px 0;
+                                    font-weight: 600;
+                                ">
+                                    👤 ${customer.name}
+                                </h3>
+                                <p style="
+                                    color: #4a5568;
+                                    margin: 0 0 12px 0;
+                                    font-size: 16px;
+                                ">
+                                    📱 <a href="tel:${customer.phone}" style="
+                                        color: #7a9e7e;
+                                        text-decoration: none;
+                                        font-weight: 500;
+                                    ">${customer.phone}</a>
+                                </p>
+                                
+                                <div style="
+                                    display: grid;
+                                    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                                    gap: 10px;
+                                    margin-top: 15px;
+                                ">
+                                    <div style="
+                                        background: white;
+                                        padding: 8px 12px;
+                                        border-radius: 8px;
+                                        text-align: center;
+                                        border: 1px solid #e2e8f0;
+                                    ">
+                                        <div style="font-size: 12px; color: #6c757d; text-transform: uppercase; font-weight: 600;">Ordini</div>
+                                        <div style="font-size: 16px; color: #2d3748; font-weight: 700;">${customer.totalOrders}</div>
+                                    </div>
+                                    <div style="
+                                        background: white;
+                                        padding: 8px 12px;
+                                        border-radius: 8px;
+                                        text-align: center;
+                                        border: 1px solid #e2e8f0;
+                                    ">
+                                        <div style="font-size: 12px; color: #6c757d; text-transform: uppercase; font-weight: 600;">Spesa Totale</div>
+                                        <div style="font-size: 16px; color: #7a9e7e; font-weight: 700;">€${customer.totalSpent.toFixed(2)}</div>
+                                    </div>
+                                    <div style="
+                                        background: white;
+                                        padding: 8px 12px;
+                                        border-radius: 8px;
+                                        text-align: center;
+                                        border: 1px solid #e2e8f0;
+                                    ">
+                                        <div style="font-size: 12px; color: #6c757d; text-transform: uppercase; font-weight: 600;">Ultimo Ordine</div>
+                                        <div style="font-size: 14px; color: #2d3748; font-weight: 600;">${formatDate(customer.lastOrder)}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div style="text-align: right;">
+                                <div style="
+                                    background: ${customer.totalOrders >= 5 ? '#c6f6d5' : '#fed7d7'};
+                                    color: ${customer.totalOrders >= 5 ? '#276749' : '#c53030'};
+                                    padding: 6px 12px;
+                                    border-radius: 20px;
+                                    font-size: 12px;
+                                    font-weight: 600;
+                                    text-transform: uppercase;
+                                    display: inline-block;
+                                ">
+                                    ${customer.totalOrders >= 5 ? '⭐ VIP' : '🆕 Nuovo'}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Metodi di pagamento preferiti -->
+                        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e2e8f0;">
+                            <small style="color: #6c757d; font-size: 13px;">
+                                <strong>Metodi pagamento:</strong> 
+                                ${Object.entries(customer.paymentMethods).map(([method, count]) => 
+                                    `${getPaymentIcon(method)} ${method} (${count}x)`
+                                ).join(' • ')}
+                            </small>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+            
+            <div style="
+                margin-top: 25px;
+                padding-top: 20px;
+                border-top: 1px solid #e2e8f0;
+                text-align: center;
+            ">
+                <button onclick="exportCustomersToCSV()" style="
+                    background: #7a9e7e;
+                    color: white;
+                    border: none;
+                    padding: 12px 24px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-weight: 600;
+                    margin-right: 10px;
+                ">📥 Esporta Clienti CSV</button>
+                
+                <button onclick="this.closest('.customers-modal').remove()" style="
+                    background: #6c757d;
+                    color: white;
+                    border: none;
+                    padding: 12px 24px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-weight: 600;
+                ">Chiudi</button>
+            </div>
+        </div>
+    `;
+    
+    modal.className = 'customers-modal';
+    document.body.appendChild(modal);
+    
+    // Click outside to close
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    });
+}
+
+// Calcola dati clienti
+function getCustomersData() {
+    const customerMap = {};
+    
+    allOrders.forEach(order => {
+        const name = order.customerName || 'Cliente Sconosciuto';
+        const phone = order.customerPhone || 'Non fornito';
+        const key = `${name}_${phone}`;
+        
+        if (!customerMap[key]) {
+            customerMap[key] = {
+                name: name,
+                phone: phone,
+                totalOrders: 0,
+                totalSpent: 0,
+                lastOrder: null,
+                paymentMethods: {}
+            };
+        }
+        
+        customerMap[key].totalOrders++;
+        customerMap[key].totalSpent += order.totalAmount || 0;
+        
+        // Ultimo ordine
+        const orderDate = new Date(order.timestamp);
+        if (!customerMap[key].lastOrder || orderDate > new Date(customerMap[key].lastOrder)) {
+            customerMap[key].lastOrder = orderDate;
+        }
+        
+        // Metodi di pagamento
+        const paymentMethod = order.paymentMethodName || order.paymentMethod || 'Non specificato';
+        customerMap[key].paymentMethods[paymentMethod] = (customerMap[key].paymentMethods[paymentMethod] || 0) + 1;
+    });
+    
+    // Converti in array e ordina per spesa totale
+    return Object.values(customerMap)
+        .sort((a, b) => b.totalSpent - a.totalSpent);
+}
+
+// Icone metodi di pagamento
+function getPaymentIcon(method) {
+    switch(method.toLowerCase()) {
+        case 'paypal': 
+            return '🅿️';
+        case 'carta di credito/debito': 
+            return '💳';
+        case 'stripe': 
+            return '💳';
+        case 'contanti alla consegna': 
+            return '💰';
+        case 'cash': 
+            return '💰';
+        default: 
+            return '💳';
     }
 }
 
@@ -187,7 +485,7 @@ function updateOrdersFromSnapshot(snapshot) {
     console.log(`📦 ${allOrders.length} ordini caricati`);
 }
 
-// NUOVA FUNZIONE: Filter orders con statistiche dinamiche
+// Filter orders con statistiche dinamiche
 function filterOrders(filter) {
     currentFilter = filter;
     
@@ -203,7 +501,7 @@ function filterOrders(filter) {
     updateChart();
 }
 
-// NUOVA FUNZIONE: Calculate dynamic statistics based on current filter
+// Calculate dynamic statistics based on current filter
 function calculateDynamicStats() {
     const filteredOrders = getFilteredOrders();
     
@@ -263,7 +561,7 @@ function calculateDynamicStats() {
     console.log(`📊 Statistiche aggiornate per: ${periodLabel}`);
 }
 
-// NUOVA FUNZIONE: Update stat labels
+// Update stat labels
 function updateStatLabel(elementId, text) {
     const element = document.getElementById(elementId);
     if (element) {
@@ -689,7 +987,7 @@ function initializeChart() {
     updateChart();
 }
 
-// NUOVA FUNZIONE: Update chart based on current filter
+// Update chart based on current filter
 function updateChart() {
     const ctx = document.getElementById('salesChart');
     if (!ctx) return;
@@ -972,297 +1270,5 @@ console.log('📱 Supporto telefono clienti integrato');
 console.log('👥 Sezione clienti cliccabile attivata');
 console.log('💳 Status pagamento semplificati');
 console.log('📋 Documento produzione fornitore semplificato');
-console.log('📊 Statistiche dinamiche implementate - Default: OGGI');// DASHBOARD.JS - VERSIONE FINALE CON STATISTICHE DINAMICHE
-
-// State management
-let allOrders = [];
-let selectedOrders = [];
-let currentFilter = 'oggi'; // DEFAULT SU OGGI
-let chart = null;
-let soundEnabled = true;
-let lastNotificationTime = 0;
-
-// Real-time listener
-let ordersListener = null;
-
-// Initialize app
-document.addEventListener('DOMContentLoaded', async function() {
-    console.log('🚀 Inizializzazione Dashboard...');
-    
-    if (typeof firebase === 'undefined') {
-        showError('Firebase non caricato correttamente');
-        return;
-    }
-
-    try {
-        await initializeFirestore();
-        await loadDashboardData();
-        setupRealTimeListener();
-        initializeChart();
-        setupCustomersModal();
-        
-        console.log('✅ Dashboard inizializzata correttamente');
-    } catch (error) {
-        console.error('❌ Errore inizializzazione:', error);
-        showError('Errore durante il caricamento dei dati: ' + error.message);
-    }
-});
-
-// Setup modal clienti
-function setupCustomersModal() {
-    const customersCard = document.getElementById('total-customers');
-    if (customersCard) {
-        customersCard.style.cursor = 'pointer';
-        customersCard.addEventListener('click', showCustomersModal);
-    }
-}
-
-// Mostra modal con elenco clienti
-function showCustomersModal() {
-    const customersData = getCustomersData();
-    
-    // Crea modal
-    const modal = document.createElement('div');
-    modal.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.6);
-        backdrop-filter: blur(4px);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 3000;
-        padding: 20px;
-    `;
-    
-    modal.innerHTML = `
-        <div style="
-            background: white;
-            border-radius: 20px;
-            width: 100%;
-            max-width: 800px;
-            max-height: 80vh;
-            overflow-y: auto;
-            padding: 30px;
-            position: relative;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-        ">
-            <div style="
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 25px;
-                padding-bottom: 15px;
-                border-bottom: 2px solid #e2e8f0;
-            ">
-                <h2 style="color: #2d3748; font-size: 24px; margin: 0;">
-                    👥 Elenco Clienti (${customersData.length})
-                </h2>
-                <button onclick="this.closest('.customers-modal').remove()" style="
-                    background: none;
-                    border: none;
-                    font-size: 24px;
-                    cursor: pointer;
-                    color: #6c757d;
-                    padding: 5px;
-                    border-radius: 50%;
-                    transition: all 0.2s;
-                ">×</button>
-            </div>
-            
-            <div style="display: grid; gap: 15px;">
-                ${customersData.map(customer => `
-                    <div style="
-                        background: #f8f9fa;
-                        border-radius: 12px;
-                        padding: 20px;
-                        border-left: 4px solid #7a9e7e;
-                        transition: all 0.2s;
-                        hover: box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-                    ">
-                        <div style="
-                            display: grid;
-                            grid-template-columns: 1fr auto;
-                            gap: 20px;
-                            align-items: start;
-                        ">
-                            <div>
-                                <h3 style="
-                                    color: #2d3748;
-                                    font-size: 18px;
-                                    margin: 0 0 8px 0;
-                                    font-weight: 600;
-                                ">
-                                    👤 ${customer.name}
-                                </h3>
-                                <p style="
-                                    color: #4a5568;
-                                    margin: 0 0 12px 0;
-                                    font-size: 16px;
-                                ">
-                                    📱 <a href="tel:${customer.phone}" style="
-                                        color: #7a9e7e;
-                                        text-decoration: none;
-                                        font-weight: 500;
-                                    ">${customer.phone}</a>
-                                </p>
-                                
-                                <div style="
-                                    display: grid;
-                                    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-                                    gap: 10px;
-                                    margin-top: 15px;
-                                ">
-                                    <div style="
-                                        background: white;
-                                        padding: 8px 12px;
-                                        border-radius: 8px;
-                                        text-align: center;
-                                        border: 1px solid #e2e8f0;
-                                    ">
-                                        <div style="font-size: 12px; color: #6c757d; text-transform: uppercase; font-weight: 600;">Ordini</div>
-                                        <div style="font-size: 16px; color: #2d3748; font-weight: 700;">${customer.totalOrders}</div>
-                                    </div>
-                                    <div style="
-                                        background: white;
-                                        padding: 8px 12px;
-                                        border-radius: 8px;
-                                        text-align: center;
-                                        border: 1px solid #e2e8f0;
-                                    ">
-                                        <div style="font-size: 12px; color: #6c757d; text-transform: uppercase; font-weight: 600;">Spesa Totale</div>
-                                        <div style="font-size: 16px; color: #7a9e7e; font-weight: 700;">€${customer.totalSpent.toFixed(2)}</div>
-                                    </div>
-                                    <div style="
-                                        background: white;
-                                        padding: 8px 12px;
-                                        border-radius: 8px;
-                                        text-align: center;
-                                        border: 1px solid #e2e8f0;
-                                    ">
-                                        <div style="font-size: 12px; color: #6c757d; text-transform: uppercase; font-weight: 600;">Ultimo Ordine</div>
-                                        <div style="font-size: 14px; color: #2d3748; font-weight: 600;">${formatDate(customer.lastOrder)}</div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div style="text-align: right;">
-                                <div style="
-                                    background: ${customer.totalOrders >= 5 ? '#c6f6d5' : '#fed7d7'};
-                                    color: ${customer.totalOrders >= 5 ? '#276749' : '#c53030'};
-                                    padding: 6px 12px;
-                                    border-radius: 20px;
-                                    font-size: 12px;
-                                    font-weight: 600;
-                                    text-transform: uppercase;
-                                    display: inline-block;
-                                ">
-                                    ${customer.totalOrders >= 5 ? '⭐ VIP' : '🆕 Nuovo'}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Metodi di pagamento preferiti -->
-                        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e2e8f0;">
-                            <small style="color: #6c757d; font-size: 13px;">
-                                <strong>Metodi pagamento:</strong> 
-                                ${Object.entries(customer.paymentMethods).map(([method, count]) => 
-                                    `${getPaymentIcon(method)} ${method} (${count}x)`
-                                ).join(' • ')}
-                            </small>
-                        </div>
-                    </div>
-                `).join('')}
-            </div>
-            
-            <div style="
-                margin-top: 25px;
-                padding-top: 20px;
-                border-top: 1px solid #e2e8f0;
-                text-align: center;
-            ">
-                <button onclick="exportCustomersToCSV()" style="
-                    background: #7a9e7e;
-                    color: white;
-                    border: none;
-                    padding: 12px 24px;
-                    border-radius: 8px;
-                    cursor: pointer;
-                    font-weight: 600;
-                    margin-right: 10px;
-                ">📥 Esporta Clienti CSV</button>
-                
-                <button onclick="this.closest('.customers-modal').remove()" style="
-                    background: #6c757d;
-                    color: white;
-                    border: none;
-                    padding: 12px 24px;
-                    border-radius: 8px;
-                    cursor: pointer;
-                    font-weight: 600;
-                ">Chiudi</button>
-            </div>
-        </div>
-    `;
-    
-    modal.className = 'customers-modal';
-    document.body.appendChild(modal);
-    
-    // Click outside to close
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            modal.remove();
+console.log('📊 Statistiche dinamiche implementate - Default: OGGI');
         }
-    });
-}
-
-// Calcola dati clienti
-function getCustomersData() {
-    const customerMap = {};
-    
-    allOrders.forEach(order => {
-        const name = order.customerName || 'Cliente Sconosciuto';
-        const phone = order.customerPhone || 'Non fornito';
-        const key = `${name}_${phone}`;
-        
-        if (!customerMap[key]) {
-            customerMap[key] = {
-                name: name,
-                phone: phone,
-                totalOrders: 0,
-                totalSpent: 0,
-                lastOrder: null,
-                paymentMethods: {}
-            };
-        }
-        
-        customerMap[key].totalOrders++;
-        customerMap[key].totalSpent += order.totalAmount || 0;
-        
-        // Ultimo ordine
-        const orderDate = new Date(order.timestamp);
-        if (!customerMap[key].lastOrder || orderDate > new Date(customerMap[key].lastOrder)) {
-            customerMap[key].lastOrder = orderDate;
-        }
-        
-        // Metodi di pagamento
-        const paymentMethod = order.paymentMethodName || order.paymentMethod || 'Non specificato';
-        customerMap[key].paymentMethods[paymentMethod] = (customerMap[key].paymentMethods[paymentMethod] || 0) + 1;
-    });
-    
-    // Converti in array e ordina per spesa totale
-    return Object.values(customerMap)
-        .sort((a, b) => b.totalSpent - a.totalSpent);
-}
-
-// Icone metodi di pagamento
-function getPaymentIcon(method) {
-    switch(method.toLowerCase()) {
-        case 'paypal': return '🅿️';
-        case 'carta di credito/debito': return '💳';
-        case 'stripe': return '💳';
-        case 'contanti alla consegna': return '💰';
-        case 'cash': return '💰';
