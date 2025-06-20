@@ -480,6 +480,7 @@ function confirmOrder() {
     const totalQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
     const pickupDate = document.getElementById('pickup-date')?.value;
     const customerName = document.getElementById('customer-name')?.value;
+    const customerPhone = document.getElementById('customer-phone')?.value;
     const confirmButton = document.getElementById('confirm-order');
     const spinner = document.getElementById('loading-spinner');
 
@@ -489,8 +490,14 @@ function confirmOrder() {
         return;
     }
 
-    if (!customerName || !pickupDate) {
+    if (!customerName || !pickupDate || !customerPhone) {
         showToast('Errore: Compila tutti i campi obbligatori', 'error');
+        return;
+    }
+
+    // Validazione formato telefono basilare
+    if (customerPhone && !customerPhone.match(/[\d\s\+\-\(\)]{8,}/)) {
+        showToast('Errore: Inserisci un numero di telefono valido', 'error');
         return;
     }
 
@@ -536,6 +543,7 @@ async function processStripePayment() {
     }
 
     const customerName = document.getElementById('customer-name')?.value;
+    const customerPhone = document.getElementById('customer-phone')?.value;
     const pickupDate = document.getElementById('pickup-date')?.value;
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const discountAmount = (subtotal * appliedDiscount) / 100;
@@ -544,6 +552,7 @@ async function processStripePayment() {
     try {
         const orderData = {
             customerName: customerName,
+            customerPhone: customerPhone,
             pickupDate: pickupDate,
             amount: finalTotal,
             items: cart.map(item => ({
@@ -668,13 +677,18 @@ function initPayPal() {
     });
 }
 
-// MODIFICATA: Registra utilizzo codice sconto
+// MODIFICATA: Registra utilizzo codice sconto e invia sempre WhatsApp
 function handleSuccessfulPayment(method, details) {
     const customerName = document.getElementById('customer-name')?.value;
     
-    // NUOVO: Registra utilizzo codice sconto
+    // Registra utilizzo codice sconto
     if (discountCode && customerName) {
         recordDiscountUsage(discountCode, customerName);
+    }
+    
+    // NUOVO: Invia sempre notifica WhatsApp per tutti i pagamenti
+    if (method !== 'cash') {
+        sendWhatsAppNotificationForPaidOrder(method, details);
     }
     
     showToast(`Pagamento ${method} completato con successo! 🎉`);
@@ -690,6 +704,64 @@ function handleSuccessfulPayment(method, details) {
     }, 2000);
 }
 
+// NUOVA FUNZIONE per notifiche WhatsApp ordini pagati
+function sendWhatsAppNotificationForPaidOrder(paymentMethod, paymentDetails) {
+    const customerName = document.getElementById('customer-name')?.value || 'Cliente';
+    const customerPhone = document.getElementById('customer-phone')?.value || 'Non fornito';
+    const pickupDate = document.getElementById('pickup-date')?.value || 'Da definire';
+    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const totalQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
+    const discountAmount = (subtotal * appliedDiscount) / 100;
+    const finalTotal = subtotal - discountAmount;
+    
+    let message = `🍽️ *NUOVO ORDINE PAGATO - Pasto Sano*\n\n`;
+    message += `👤 Nome: ${customerName}\n`;
+    message += `📱 Telefono: ${customerPhone}\n`;
+    message += `📅 Data ritiro: ${pickupDate}\n`;
+    message += `💳 Pagamento: ${getPaymentMethodName(paymentMethod)} - ✅ PAGATO\n`;
+    
+    if (paymentMethod === 'paypal' && paymentDetails?.paypal_order_id) {
+        message += `💰 ID Transazione: ${paymentDetails.paypal_order_id}\n`;
+    }
+    message += `\n`;
+    
+    if (cart.length > 0) {
+        message += `📋 *Dettagli Ordine:*\n`;
+        cart.forEach(item => {
+            const itemTotal = (item.quantity * item.price).toFixed(2);
+            message += `• ${item.name}\n`;
+            message += `  Quantità: ${item.quantity} x ${item.price}€ = ${itemTotal}€\n\n`;
+        });
+        
+        message += `📦 Totale Articoli: ${totalQuantity}\n`;
+        
+        if (appliedDiscount > 0) {
+            message += `💰 Subtotale: ${subtotal.toFixed(2)}€\n`;
+            message += `🎁 Sconto ${discountCode} (-${appliedDiscount}%): -${discountAmount.toFixed(2)}€\n`;
+            message += `💰 Totale Finale: ${finalTotal.toFixed(2)}€\n\n`;
+        } else {
+            message += `💰 Totale Ordine: ${subtotal.toFixed(2)}€\n\n`;
+        }
+    }
+    
+    message += `✅ *ORDINE GIÀ PAGATO*\n`;
+    message += `📱 Ordine automatico dal sito web`;
+    
+    // Invia su WhatsApp
+    const whatsappUrl = `https://wa.me/393478881515?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+}
+
+// FUNZIONE helper per nomi metodi pagamento
+function getPaymentMethodName(method) {
+    switch(method) {
+        case 'stripe': return 'Carta di Credito/Debito';
+        case 'paypal': return 'PayPal';
+        case 'cash': return 'Contanti alla Consegna';
+        default: return method;
+    }
+}
+
 // MODIFICATA: Registra utilizzo codice sconto
 function handleCashOrder() {
     if (cart.length === 0) {
@@ -699,7 +771,7 @@ function handleCashOrder() {
     
     const customerName = document.getElementById('customer-name')?.value;
     
-    // NUOVO: Registra utilizzo codice sconto
+    // Registra utilizzo codice sconto
     if (discountCode && customerName) {
         recordDiscountUsage(discountCode, customerName);
     }
@@ -722,8 +794,10 @@ function handleCashOrder() {
     }, 1000);
 }
 
+// MODIFICATA: Aggiunto telefono nel messaggio WhatsApp
 function generateWhatsAppMessage() {
     const customerName = document.getElementById('customer-name')?.value || 'Cliente';
+    const customerPhone = document.getElementById('customer-phone')?.value || 'Non fornito';
     const pickupDate = document.getElementById('pickup-date')?.value || 'Da definire';
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const totalQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -732,6 +806,7 @@ function generateWhatsAppMessage() {
     
     let message = `🍽️ *Nuovo Ordine Pasto Sano*\n\n`;
     message += `👤 Nome: ${customerName}\n`;
+    message += `📱 Telefono: ${customerPhone}\n`;
     message += `📅 Data ritiro: ${pickupDate}\n`;
     message += `💵 Pagamento: Contanti alla consegna\n\n`;
     
@@ -758,6 +833,7 @@ function generateWhatsAppMessage() {
     return message;
 }
 
+// MODIFICATA: Aggiunto telefono e dettagli pagamento in Firebase
 async function saveOrderToFirebase(paymentMethod, paymentDetails = null) {
     try {
         if (typeof firebase === 'undefined' || !firebase.firestore) {
@@ -772,6 +848,7 @@ async function saveOrderToFirebase(paymentMethod, paymentDetails = null) {
 
         const orderData = {
             customerName: document.getElementById('customer-name')?.value || 'Cliente',
+            customerPhone: document.getElementById('customer-phone')?.value || 'Non fornito',
             pickupDate: document.getElementById('pickup-date')?.value,
             items: cart.map(item => ({
                 name: item.name,
@@ -786,6 +863,7 @@ async function saveOrderToFirebase(paymentMethod, paymentDetails = null) {
             discountAmount: discountAmount || 0,
             totalAmount: finalTotal,
             paymentMethod: paymentMethod,
+            paymentMethodName: getPaymentMethodName(paymentMethod),
             paymentDetails: paymentDetails,
             status: paymentMethod === 'cash' ? 'pending' : 'paid',
             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
@@ -810,11 +888,13 @@ function clearCart() {
     const promoMessage = document.getElementById('promo-message');
     const pickupDate = document.getElementById('pickup-date');
     const customerName = document.getElementById('customer-name');
+    const customerPhone = document.getElementById('customer-phone');
     
     if (promoInput) promoInput.value = '';
     if (promoMessage) promoMessage.innerHTML = '';
     if (pickupDate) pickupDate.value = '';
     if (customerName) customerName.value = '';
+    if (customerPhone) customerPhone.value = '';
 
     document.querySelectorAll('.quantity-display').forEach(display => {
         if (display.id && display.id.startsWith('qty-')) {
@@ -855,7 +935,7 @@ function addHapticFeedback() {
     }
 }
 
-// NUOVA FUNZIONE STATISTICHE CODICI SCONTO
+// FUNZIONE STATISTICHE CODICI SCONTO
 function getDiscountStats() {
     const stats = {};
     
@@ -940,4 +1020,6 @@ setTimeout(() => {
 
 console.log('🎉 Script caricato completamente!');
 console.log('✅ Sistema codici sconto integrato!');
+console.log('📱 Campo telefono aggiunto!');
+console.log('🔔 Notifiche WhatsApp per tutti i pagamenti!');
 console.log('💡 Per vedere le statistiche: showDiscountStats()');
