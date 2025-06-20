@@ -376,8 +376,6 @@
             }
         }
 
-        /* 🆕 NUOVI STILI AGGIUNTI */
-        
         /* Nuovi stili per status pagamento */
         .payment-status {
             display: inline-block;
@@ -491,9 +489,10 @@
     <div class="container">
         <div id="error-message" class="error" style="display: none;"></div>
         
+        <!-- SEZIONE STATISTICHE AGGIORNATA CON ETICHETTE DINAMICHE -->
         <div class="stats-grid">
             <div class="stat-card">
-                <h3>Ordini Oggi</h3>
+                <h3 id="orders-today-label">Ordini Oggi</h3>
                 <div class="stat-value" id="orders-today">-</div>
                 <div class="stat-change neutral">
                     <span id="orders-change">Caricamento...</span>
@@ -501,7 +500,7 @@
             </div>
             
             <div class="stat-card">
-                <h3>Fatturato Oggi</h3>
+                <h3 id="revenue-today-label">Fatturato Oggi</h3>
                 <div class="stat-value" id="revenue-today">-</div>
                 <div class="stat-change neutral">
                     <span id="revenue-change">Caricamento...</span>
@@ -542,10 +541,10 @@
                 </div>
                 
                 <div class="filters">
-                    <button class="filter-btn active" onclick="filterOrders('tutti')">Tutti</button>
-                    <button class="filter-btn" onclick="filterOrders('oggi')">Oggi</button>
+                    <button class="filter-btn active" onclick="filterOrders('oggi')">Oggi</button>
                     <button class="filter-btn" onclick="filterOrders('settimana')">Settimana</button>
                     <button class="filter-btn" onclick="filterOrders('mese')">Mese</button>
+                    <button class="filter-btn" onclick="filterOrders('tutti')">Tutti</button>
                 </div>
                 
                 <div id="orders-list" class="orders-list">
