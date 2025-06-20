@@ -1,4 +1,4 @@
-// DASHBOARD.JS - VERSIONE MIGLIORATA
+// DASHBOARD.JS - VERSIONE FINALE COMPLETA
 
 // State management
 let allOrders = [];
@@ -478,7 +478,7 @@ function updateOrdersFromSnapshot(snapshot) {
     console.log(`📦 ${allOrders.length} ordini caricati`);
 }
 
-// MIGLIORATA: Render orders senza status confusi
+// Render orders senza status confusi - VERSIONE AGGIORNATA
 function renderOrders() {
     const container = document.getElementById('orders-list');
     if (!container) return;
@@ -498,7 +498,7 @@ function renderOrders() {
         const isSelected = selectedOrders.includes(order.id);
         const formattedDate = formatDateTime(order.timestamp);
         
-        // NUOVO: Status basato solo su pagamento
+        // Status basato solo su pagamento
         const paymentStatus = getPaymentStatus(order);
         
         // Calcola numero totale articoli
@@ -558,7 +558,7 @@ function renderOrders() {
     updateSelectedCount();
 }
 
-// NUOVA: Funzione per determinare status pagamento
+// Funzione per determinare status pagamento
 function getPaymentStatus(order) {
     const paymentMethod = order.paymentMethod?.toLowerCase() || '';
     
@@ -799,7 +799,7 @@ function exportToCSV() {
     console.log(`📥 Esportati ${ordersToExport.length} ordini in CSV`);
 }
 
-// Generate production document
+// Generate production document - VERSIONE SEMPLIFICATA PER FORNITORE
 function generateProductionDoc() {
     const ordersToProcess = selectedOrders.length > 0 ? 
         allOrders.filter(order => selectedOrders.includes(order.id)) : 
@@ -812,11 +812,9 @@ function generateProductionDoc() {
     
     // Raggruppa gli articoli per nome
     const itemsCount = {};
-    let totalRevenue = 0;
+    let totalItems = 0;
     
     ordersToProcess.forEach(order => {
-        totalRevenue += order.totalAmount || 0;
-        
         order.items?.forEach(item => {
             const itemName = item.name;
             const quantity = item.quantity || 1;
@@ -826,17 +824,18 @@ function generateProductionDoc() {
             } else {
                 itemsCount[itemName] = quantity;
             }
+            totalItems += quantity;
         });
     });
     
-    // Genera documento di produzione
-    let productionDoc = `📋 DOCUMENTO DI PRODUZIONE - PASTO SANO\n`;
-    productionDoc += `📅 Generato il: ${new Date().toLocaleDateString('it-IT')} alle ${new Date().toLocaleTimeString('it-IT')}\n`;
-    productionDoc += `📦 Ordini da processare: ${ordersToProcess.length}\n`;
-    productionDoc += `💰 Fatturato totale: €${totalRevenue.toFixed(2)}\n\n`;
+    // Genera documento di produzione SEMPLIFICATO
+    let productionDoc = `🍽️ DOCUMENTO PRODUZIONE - PASTO SANO\n`;
+    productionDoc += `📅 Data: ${new Date().toLocaleDateString('it-IT')}\n`;
+    productionDoc += `📦 Ordini: ${ordersToProcess.length}\n`;
+    productionDoc += `🥘 Pezzi totali: ${totalItems}\n\n`;
     
-    productionDoc += `🍽️ RIEPILOGO PRODUZIONE:\n`;
-    productionDoc += `${'='.repeat(50)}\n`;
+    productionDoc += `📋 RIEPILOGO PRODUZIONE:\n`;
+    productionDoc += `${'='.repeat(40)}\n`;
     
     // Ordina per quantità decrescente
     const sortedItems = Object.entries(itemsCount)
@@ -846,28 +845,42 @@ function generateProductionDoc() {
         productionDoc += `• ${itemName}: ${quantity} porzioni\n`;
     });
     
-    productionDoc += `\n📋 DETTAGLI ORDINI PER CLIENTE:\n`;
-    productionDoc += `${'='.repeat(50)}\n`;
+    productionDoc += `\n📅 ORDINI PER DATA RITIRO:\n`;
+    productionDoc += `${'='.repeat(40)}\n`;
     
-    ordersToProcess
-        .sort((a, b) => new Date(a.pickupDate) - new Date(b.pickupDate))
-        .forEach(order => {
-            const paymentStatus = order.paymentMethod === 'cash' ? 'Cash alla Consegna' : 'Pagato Online';
+    // Raggruppa ordini per data di ritiro
+    const ordersByDate = {};
+    ordersToProcess.forEach(order => {
+        const pickupDate = order.pickupDate || 'Data non specificata';
+        if (!ordersByDate[pickupDate]) {
+            ordersByDate[pickupDate] = [];
+        }
+        ordersByDate[pickupDate].push(order);
+    });
+    
+    // Ordina le date
+    const sortedDates = Object.keys(ordersByDate).sort();
+    
+    sortedDates.forEach(date => {
+        const ordersForDate = ordersByDate[date];
+        productionDoc += `\n📅 ${formatDate(date)} (${ordersForDate.length} ordini):\n`;
+        productionDoc += `${'-'.repeat(30)}\n`;
+        
+        ordersForDate.forEach(order => {
+            productionDoc += `👤 ${order.customerName || 'Cliente'}\n`;
             
-            productionDoc += `\n👤 ${order.customerName || 'Cliente'} - Tel: ${order.customerPhone || 'N/A'}\n`;
-            productionDoc += `📅 Ritiro: ${formatDate(order.pickupDate)} - ${paymentStatus}\n`;
-            productionDoc += `💰 Totale: €${(order.totalAmount || 0).toFixed(2)}\n`;
-            
-            if (order.discountCode) {
-                productionDoc += `🎁 Sconto: ${order.discountCode} (-${order.discountPercent}%)\n`;
-            }
-            
-            productionDoc += `📋 Articoli:\n`;
+            // Solo gli articoli, senza prezzi e telefoni
             order.items?.forEach(item => {
                 productionDoc += `   • ${item.name} x${item.quantity || 1}\n`;
             });
-            productionDoc += `${'─'.repeat(30)}\n`;
+            productionDoc += `\n`;
         });
+    });
+    
+    productionDoc += `\n📝 Note:\n`;
+    productionDoc += `• Controllare disponibilità ingredienti\n`;
+    productionDoc += `• Preparare contenitori per ${totalItems} porzioni\n`;
+    productionDoc += `• Verificare date di ritiro\n`;
     
     // Download del documento
     const blob = new Blob([productionDoc], { type: 'text/plain;charset=utf-8;' });
@@ -875,14 +888,14 @@ function generateProductionDoc() {
     const url = URL.createObjectURL(blob);
     
     link.setAttribute('href', url);
-    link.setAttribute('download', `produzione_${new Date().toISOString().split('T')[0]}.txt`);
+    link.setAttribute('download', `produzione_fornitore_${new Date().toISOString().split('T')[0]}.txt`);
     link.style.visibility = 'hidden';
     
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     
-    console.log(`📋 Documento di produzione generato per ${ordersToProcess.length} ordini`);
+    console.log(`📋 Documento produzione fornitore generato per ${ordersToProcess.length} ordini`);
 }
 
 // Update top products
@@ -1104,3 +1117,4 @@ console.log('🔔 Notifiche real-time attivate');
 console.log('📱 Supporto telefono clienti integrato');
 console.log('👥 Sezione clienti cliccabile attivata');
 console.log('💳 Status pagamento semplificati');
+console.log('📋 Documento produzione fornitore semplificato');
