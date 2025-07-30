@@ -32,8 +32,7 @@ const discountCodes = {
 
 // INIZIALIZZAZIONE EMAILJS
 (function() {
-    // IMPORTANTE: Sostituisci con la tua PUBLIC KEY di EmailJS
-    emailjs.init("YOUR_PUBLIC_KEY_HERE"); // ← CAMBIARE QUESTA CHIAVE
+    emailjs.init("ME0ru3KkNko0P6d2Y");
 })();
 
 // FUNZIONE INVIO EMAIL NOTIFICATION
@@ -63,8 +62,7 @@ function sendEmailNotification(orderData, orderId) {
     };
     
     // Invia email tramite EmailJS
-    // IMPORTANTE: Sostituisci YOUR_SERVICE_ID e YOUR_TEMPLATE_ID con i tuoi ID EmailJS
-    emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', emailData)
+    emailjs.send('service_xiyczlr', 'template_lqxqdze', emailData)
         .then(function(response) {
             console.log('✅ Email inviata con successo:', response.status, response.text);
         })
