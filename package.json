@@ -11,14 +11,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/pasto-sano"
+    "url": "https://github.com/yourusername/pasto-sano"  
   },
   "keywords": [
     "food",
     "orders",
-    "stripe",
+    "stripe", 
     "paypal",
-    "netlify"
+    "netlify",
+    "emailjs",
+    "notifications"
   ],
   "author": "Pasto Sano",
   "license": "MIT"
