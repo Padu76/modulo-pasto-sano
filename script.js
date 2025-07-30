@@ -1,121 +1,163 @@
-// TROVA questa sezione nel tuo script.js (intorno alla riga 600-700)
-// SOSTITUISCI la funzione PayPal con questa versione corretta:
+// SOSTITUISCI la funzione handleCashOrder nel tuo script.js con questa:
 
-// PayPal configuration
-paypal.Buttons({
-    createOrder: function(data, actions) {
-        // ⚠️ VALIDAZIONE PRIMA DI PAYPAL - AGGIUNTA
-        const customerName = document.getElementById('customer-name').value.trim();
-        const customerPhone = document.getElementById('customer-phone').value.trim();
-        const pickupDate = document.getElementById('pickup-date').value;
-        
-        // Controlla campi obbligatori
-        if (!customerName || customerName === 'Cliente') {
-            showToast('❌ Inserisci il tuo nome completo', 'error');
-            return Promise.reject('Nome mancante');
-        }
-        
-        if (!customerPhone || customerPhone === 'Non fornito') {
-            showToast('❌ Inserisci il tuo numero di telefono', 'error');
-            return Promise.reject('Telefono mancante');
-        }
-        
-        if (!pickupDate) {
-            showToast('❌ Seleziona la data di ritiro', 'error');
-            return Promise.reject('Data mancante');
-        }
-        
-        // Validazione data (almeno 2 giorni di anticipo)
-        const pickup = new Date(pickupDate);
-        const today = new Date();
-        const diffDays = Math.ceil((pickup - today) / (1000 * 60 * 60 * 24));
-        
-        if (diffDays < 2) {
-            showToast('❌ La data di ritiro deve essere almeno 2 giorni in anticipo', 'error');
-            return Promise.reject('Data troppo vicina');
-        }
-        
-        // Validazione carrello
-        const totalQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
-        if (totalQuantity < 4) {
-            showToast('❌ Il minimo d\'ordine è 4 pezzi a scelta', 'error');
-            return Promise.reject('Quantità insufficiente');
-        }
-        
-        if (cart.length === 0) {
-            showToast('❌ Aggiungi prodotti al carrello', 'error');
-            return Promise.reject('Carrello vuoto');
-        }
-        
-        // Se tutto OK, procedi con PayPal
-        const total = calculateTotal();
-        
-        return actions.order.create({
-            purchase_units: [{
-                amount: {
-                    value: total.toFixed(2)
-                },
-                description: `Ordine Pasto Sano - ${totalQuantity} pezzi`
-            }]
-        });
-    },
-    
-    onApprove: function(data, actions) {
-        return actions.order.capture().then(function(details) {
-            console.log('💰 Pagamento PayPal completato:', details);
-            
-            // ✅ USA I DATI DEL FORM (non PayPal) per il cliente
-            const customerName = document.getElementById('customer-name').value.trim();
-            const customerPhone = document.getElementById('customer-phone').value.trim();
-            const pickupDate = document.getElementById('pickup-date').value;
-            
-            // Salva ordine con dati corretti
-            const orderData = {
-                customerName: customerName, // ← DAL FORM
-                customerPhone: customerPhone, // ← DAL FORM  
-                pickupDate: pickupDate, // ← DAL FORM
-                items: cart,
-                totalAmount: calculateTotal(),
-                subtotalAmount: calculateSubtotal(),
-                discountAmount: currentDiscount.amount,
-                discountPercent: currentDiscount.percent,
-                discountCode: currentDiscount.code,
-                totalItems: cart.reduce((sum, item) => sum + item.quantity, 0),
-                paymentMethod: 'paypal',
-                paymentMethodName: 'PayPal',
-                paymentDetails: details,
-                status: 'paid',
-                timestamp: new Date(),
-                source: 'website'
-            };
-            
-            // Salva in Firebase
-            firebase.firestore()
-                .collection('orders')
-                .add(orderData)
-                .then(docRef => {
-                    console.log('✅ Ordine salvato:', docRef.id);
-                    
-                    // Invia notifica WhatsApp
-                    sendWhatsAppNotificationForPaidOrder(orderData, docRef.id);
-                    
-                    // Reset e ringraziamento
-                    cart = [];
-                    updateCartDisplay();
-                    showToast('✅ Pagamento completato! Ordine inviato.', 'success');
-                    
-                    // Chiudi modal
-                    document.getElementById('order-modal').style.display = 'none';
-                })
-                .catch(error => {
-                    console.error('❌ Errore salvataggio:', error);
-                    showToast('❌ Errore nel salvataggio ordine', 'error');
-                });
-        });
-    },
-    
-    onError: function(err) {
-        console.error('❌ Errore PayPal:', err);
-        showToast('❌ Errore durante il pagamento', 'error');
+// MODIFICATA: Registra utilizzo codice sconto E invia notifica email
+function handleCashOrder() {
+    if (cart.length === 0) {
+        showToast('Aggiungi prodotti al carrello!', 'error');
+        return;
     }
-}).render('#paypal-button-container');
+    
+    const customerName = document.getElementById('customer-name')?.value;
+    const customerPhone = document.getElementById('customer-phone')?.value;
+    const pickupDate = document.getElementById('pickup-date')?.value;
+    
+    // Registra utilizzo codice sconto
+    if (discountCode && customerName) {
+        recordDiscountUsage(discountCode, customerName);
+    }
+    
+    // Prepara dati ordine per email
+    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const discountAmount = (subtotal * appliedDiscount) / 100; 
+    const finalTotal = subtotal - discountAmount;
+    
+    const orderData = {
+        customerName: customerName || 'Cliente',
+        customerPhone: customerPhone || 'Non fornito',
+        pickupDate: pickupDate || 'Da definire',
+        items: cart.map(item => ({
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity
+        })),
+        subtotalAmount: subtotal,
+        discountCode: discountCode || null,
+        discountPercent: appliedDiscount || 0,
+        discountAmount: discountAmount || 0,
+        totalAmount: finalTotal,
+        paymentMethod: 'cash',
+        source: 'website_whatsapp'
+    };
+    
+    // Invia notifica email tramite Netlify Function
+    sendCashOrderNotification(orderData);
+    
+    // Genera e invia messaggio WhatsApp
+    const message = generateWhatsAppMessage();
+    const whatsappUrl = `https://wa.me/393478881515?text=${encodeURIComponent(message)}`;
+    
+    window.open(whatsappUrl, '_blank');
+    
+    // Salva anche su Firebase se disponibile
+    if (typeof firebase !== 'undefined' && firebase.firestore) {
+        saveOrderToFirebase('cash');
+    }
+    
+    setTimeout(() => {
+        closeCartModal();
+        showToast('Ordine inviato su WhatsApp! 📱');
+        if (confirm('Ordine inviato! Vuoi svuotare il carrello?')) {
+            clearCart();
+        }
+    }, 1000);
+}
+
+// NUOVA FUNZIONE per inviare notifica email ordini contanti
+async function sendCashOrderNotification(orderData) {
+    try {
+        console.log('📧 Invio notifica email ordine contanti...');
+        
+        const response = await fetch('/.netlify/functions/cash-order', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(orderData)
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            console.log('✅ Notifica email inviata:', result.message);
+        } else {
+            const error = await response.json();
+            console.error('❌ Errore invio email:', error.error);
+        }
+        
+    } catch (error) {
+        console.error('❌ Errore chiamata email API:', error);
+        // Non bloccare l'ordine per errori email
+    }
+}
+
+// AGGIUNGI ANCHE questa funzione per PayPal (da mettere dopo initPayPal)
+// Modifica la funzione onApprove di PayPal:
+
+// Dentro la funzione initPayPal, SOSTITUISCI il blocco onApprove con questo:
+/*
+onApprove: function(data, actions) {
+    console.log('PayPal onApprove chiamato:', data);
+    
+    return actions.order.capture().then(function(details) {
+        console.log('Pagamento PayPal completato:', details);
+        
+        // Prepara dati per webhook (opzionale - il webhook dovrebbe gestire automaticamente)
+        const webhookData = {
+            event_type: 'PAYMENT.CAPTURE.COMPLETED',
+            resource: {
+                id: data.orderID,
+                amount: {
+                    value: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) - ((cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) * appliedDiscount) / 100),
+                    currency_code: 'EUR'
+                },
+                payer: details.payer,
+                supplementary_data: {
+                    related_ids: {
+                        order_id: data.orderID
+                    }
+                }
+            }
+        };
+        
+        // Invia manualmente al webhook (backup nel caso il webhook PayPal non arrivi)
+        sendPayPalWebhookBackup(webhookData);
+        
+        // Salva dettagli ordine
+        const orderDetails = {
+            paypal_order_id: data.orderID,
+            payer: details.payer,
+            amount: details.purchase_units[0].amount.value,
+            currency: details.purchase_units[0].amount.currency_code,
+            status: details.status
+        };
+        
+        handleSuccessfulPayment('paypal', orderDetails);
+    }).catch(function(error) {
+        console.error('Errore cattura pagamento:', error);
+        showToast('Errore durante la finalizzazione del pagamento', 'error');
+    });
+},
+*/
+
+// NUOVA FUNZIONE backup per webhook PayPal
+async function sendPayPalWebhookBackup(webhookData) {
+    try {
+        console.log('📧 Invio backup webhook PayPal...');
+        
+        const response = await fetch('/.netlify/functions/paypal-webhook', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(webhookData)
+        });
+        
+        if (response.ok) {
+            console.log('✅ Backup webhook PayPal elaborato');
+        } else {
+            console.warn('⚠️ Errore backup webhook PayPal');
+        }
+        
+    } catch (error) {
+        console.error('❌ Errore backup webhook:', error);
+    }
+}
